@@ -6,6 +6,7 @@ import java.io.RandomAccessFile;
 
 import ar.com.datos.serializer.HydrateInfo;
 import ar.com.datos.serializer.Serializer;
+import ar.com.datos.serializer.common.SerializerCache;
 import ar.com.datos.serializer.common.ShortSerializer;
 import ar.com.datos.serializer.common.StringSerializerDelimiter;
 
@@ -35,7 +36,7 @@ public class SerializarADisco {
 		
 		
 		// Creo los serializadores a usar
-		Serializer<Short> shortSerializer = new ShortSerializer();
+		Serializer<Short> shortSerializer = (ShortSerializer)SerializerCache.getInstance().getSerializer(ShortSerializer.class);
 		// Ver javadoc de StringSerializerDelimiter para entender el constructor...
 		// Hay tambien un StringSerializerSize, quizas mirarlo les haga entender mejor el
 		// concepto.

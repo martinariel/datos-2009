@@ -16,6 +16,11 @@ import ar.com.datos.serializer.common.StringSerializerDelimiter;
 import ar.com.datos.serializer.common.StringSerializerSize;
 import ar.com.datos.test.ExtendedTestCase;
 
+/**
+ * Test para Serializadores.
+ *  
+ * @author fvalido
+ */
 public class TestSerializer extends ExtendedTestCase {
 	/**
 	 * Test para la clase {@link PrimitiveTypeSerializer}
