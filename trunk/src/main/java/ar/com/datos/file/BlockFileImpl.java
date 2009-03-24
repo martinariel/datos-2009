@@ -5,6 +5,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
+import ar.com.datos.file.exception.InvalidBlockException;
+import ar.com.datos.file.exception.OutOfBoundsException;
 import ar.com.datos.file.exception.ValidacionIncorrectaException;
 
 
@@ -29,9 +31,18 @@ public class BlockFileImpl implements BlockFile {
 	 * En caso de no existir también lo crea
 	 */
 	protected void verifyFile() {
+		if (!this.getFile().exists()) {
+			try {
+				this.getFile().createNewFile();
+			} catch (IOException e) {
+				throw new ValidacionIncorrectaException(e);
+			}
+		}
+		
 		if (!(this.getFile().canRead() && this.getFile().canWrite()))
 			throw new ValidacionIncorrectaException("Problemas de Lectura/Escritura");
-		if (this.getFile().getTotalSpace() % this.getBlockSize() != 0)
+
+		if (this.getFile().length() % this.getBlockSize() != 0)
 			throw new ValidacionIncorrectaException("Cantidad de bloques inconsistente");
 	}
 	/**
@@ -86,13 +97,30 @@ public class BlockFileImpl implements BlockFile {
 	}
 	@Override
 	public void appendBlock(byte[] block) {
-		// TODO Auto-generated method stub
-		
+		if (!this.getBlockSize().equals(block.length)) {
+			throw new InvalidBlockException("Se esperaba un bloque de tamaño " + getBlockSize());
+		}
+		try {
+			getFileAccessor().seek(getFile().length());
+			getFileAccessor().write(block);
+		} catch (IOException e) {
+			// TODO Ver en que caso podría tirar esta excepción y hacer
+			// un manejo apropiado de la misma
+			throw new RuntimeException(e);
+		}
 	}
 	@Override
 	public byte[] readBlock(Long blockNumber) {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+			getFileAccessor().seek(blockNumber);
+			byte[] leido = new byte[getBlockSize()];
+			if (getFileAccessor().read(leido) == -1) throw new OutOfBoundsException(); 
+			return leido;
+		} catch (IOException e) {
+			// TODO Ver en que caso podría tirar esta excepción y hacer
+			// un manejo apropiado de la misma
+			throw new RuntimeException(e);
+		}
 	}
 	@Override
 	public void close() {
