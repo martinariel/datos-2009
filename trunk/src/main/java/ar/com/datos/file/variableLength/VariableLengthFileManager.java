@@ -3,6 +3,7 @@ package ar.com.datos.file.variableLength;
 import java.util.Collection;
 import java.util.Iterator;
 
+import ar.com.datos.buffer.OutputBuffer;
 import ar.com.datos.file.Address;
 import ar.com.datos.file.BlockFile;
 import ar.com.datos.file.BlockFileImpl;

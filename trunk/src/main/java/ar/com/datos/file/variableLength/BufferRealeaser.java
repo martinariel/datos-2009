@@ -1,4 +1,7 @@
 package ar.com.datos.file.variableLength;
+
+import ar.com.datos.buffer.OutputBuffer;
+
 /**
  * Las clases que implementan esta interfaz, son las encargadas de
  * liberar desagotar un buffer que excedió su capacidad.

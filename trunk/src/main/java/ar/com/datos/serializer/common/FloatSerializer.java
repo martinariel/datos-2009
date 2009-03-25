@@ -1,6 +1,7 @@
 package ar.com.datos.serializer.common;
 
-import ar.com.datos.serializer.HydrateInfo;
+import ar.com.datos.buffer.InputBuffer;
+import ar.com.datos.buffer.OutputBuffer;
 import ar.com.datos.serializer.PrimitiveTypeSerializer;
 import ar.com.datos.serializer.Serializer;
 
@@ -9,37 +10,29 @@ import ar.com.datos.serializer.Serializer;
  *
  * @author fvalido
  */
-public class FloatSerializer implements Serializer<Float> {
+public class FloatSerializer extends NumberSerializer<Float> {
+
 	/*
 	 * (non-Javadoc)
-	 * @see ar.com.marotte.serializer.Serializer#dehydrate(java.lang.Object)
+	 * @see ar.com.datos.serializer.Serializer#dehydrate(ar.com.datos.buffer.OutputBuffer, java.lang.Object)
 	 */
-	public byte[] dehydrate(Float object) {
-		return PrimitiveTypeSerializer.toByte(object);
+	public void dehydrate(OutputBuffer output, Float object) {
+		output.write(PrimitiveTypeSerializer.toByte(object));		
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see ar.com.marotte.serializer.Serializer#hydrate(byte[])
+	 * @see ar.com.datos.serializer.Serializer#hydrate(ar.com.datos.buffer.InputBuffer)
 	 */
-	public HydrateInfo<Float> hydrate(byte[] preObject) {
-		// Obtengo el valor convertido.
-		byte[] realPreObject = new byte[4];
-		System.arraycopy(preObject, 0, realPreObject, 0, 4);
-		float value = PrimitiveTypeSerializer.toFloat(realPreObject);
-
-		// Obtengo el resto del Byte
-		byte[] remaining = new byte[preObject.length - 4];
-		System.arraycopy(preObject, 4, remaining, 0, remaining.length);
-
-		return new HydrateInfo<Float>(value, remaining);
+	public Float hydrate(InputBuffer input) {
+		return PrimitiveTypeSerializer.toFloat(input.read(new byte[4]));
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * @see ar.com.marotte.serializer.Serializer#getDehydrateSize(java.lang.Object)
 	 */
-	public int getDehydrateSize(Float object) {
+	public long getDehydrateSize(Float object) {
 		return 4;
 	}
 }
