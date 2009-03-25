@@ -1,8 +1,10 @@
 package ar.com.datos.serializer.common;
 
-import ar.com.datos.serializer.HydrateInfo;
+import ar.com.datos.buffer.InputBuffer;
+import ar.com.datos.buffer.OutputBuffer;
 import ar.com.datos.serializer.PrimitiveTypeSerializer;
 import ar.com.datos.serializer.Serializer;
+import ar.com.datos.util.ArraysUtils;
 
 /**
  * {@link Serializer} para String que, en la deshidratacion, pone al final del
@@ -45,61 +47,70 @@ public class StringSerializerDelimiter implements Serializer<String> {
 		this.delimiter = stringToByte(delimiter);
 	}
 
+	
 	/*
 	 * (non-Javadoc)
-	 * @see ar.com.marotte.serializer.Serializer#dehydrate(java.lang.Object)
+	 * @see ar.com.datos.serializer.Serializer#dehydrate(ar.com.datos.buffer.OutputBuffer, java.lang.Object)
 	 */
-	public byte[] dehydrate(String object) {
+	public void dehydrate(OutputBuffer output, String object) {
 		byte[] bytes = new byte[object.length() * 2 + this.delimiter.length];
 
 		byte[] convertedString = stringToByte(object);
 		System.arraycopy(convertedString, 0, bytes, 0, convertedString.length);
 		System.arraycopy(this.delimiter, 0, bytes, convertedString.length, this.delimiter.length);
 
-		return bytes;
+		output.write(bytes);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see ar.com.marotte.serializer.Serializer#hydrate(byte[])
-	 */
-	public HydrateInfo<String> hydrate(byte[] preObject) {
-		// Encuentro el delimitador.
+    /*
+     * (non-Javadoc)
+     * @see ar.com.datos.serializer.Serializer#hydrate(ar.com.datos.buffer.InputBuffer)
+     */
+	public String hydrate(InputBuffer input) {
+		// Pido bytes hasta llegar al delimitador.
+		byte[] preObject = new byte[10];
+		byte[] delimiterSuspect = new byte[this.delimiter.length];
 		int pos = 0;
 		int posDelimiter = 0;
 		boolean found = false;
+		byte currentByte = input.read();
 		while (!found) {
-			if (this.delimiter[posDelimiter] == preObject[pos]) {
+			if (this.delimiter[posDelimiter] == currentByte) {
 				found = true;
+				posDelimiter = 0;
+				delimiterSuspect[posDelimiter] = currentByte;
 				posDelimiter++;
 				while (found && posDelimiter < this.delimiter.length) {
-					found = this.delimiter[posDelimiter] == preObject[pos + posDelimiter];
+					currentByte = input.read();
+					delimiterSuspect[posDelimiter] = currentByte;
+					found = this.delimiter[posDelimiter] == currentByte;
 					posDelimiter++;
 				}
 				if (!found) {
+					preObject = ArraysUtils.ensureCapacity(preObject, pos + posDelimiter);
+					System.arraycopy(delimiterSuspect, 0, preObject, pos, posDelimiter - 1);
+					pos += posDelimiter - 1;
 					posDelimiter = 0;
 				}
 			}
-			pos++;
+			if (!found) {
+				preObject = ArraysUtils.ensureCapacity(preObject, pos + 1);
+				preObject[pos] = currentByte;
+				pos++;
+				currentByte = input.read();
+			}
 		}
-
-		// Obtengo el String buscado.
-		byte[] realPreObject = new byte[pos - 1];
-		System.arraycopy(preObject, 0, realPreObject, 0, realPreObject.length);
-		String string = new String(PrimitiveTypeSerializer.toCharArray(realPreObject));
-
-		// Obtengo el resto del Byte
-		byte[] remaining = new byte[preObject.length - (realPreObject.length + this.delimiter.length)];
-		System.arraycopy(preObject, realPreObject.length + this.delimiter.length, remaining, 0, remaining.length);
-
-		return new HydrateInfo<String>(string, remaining);
+				
+		byte[] realPreObject = new byte[pos];
+		System.arraycopy(preObject, 0, realPreObject, 0, pos);
+		return new String(PrimitiveTypeSerializer.toCharArray(realPreObject));
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * @see ar.com.marotte.serializer.Serializer#getDehydrateSize(java.lang.Object)
 	 */
-	public int getDehydrateSize(String object) {
+	public long getDehydrateSize(String object) {
 		return object.length() * 2 + this.delimiter.length;
 	}
 }

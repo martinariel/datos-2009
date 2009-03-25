@@ -1,20 +1,29 @@
 package ar.com.datos.test.serializer;
 
-import ar.com.datos.serializer.HydrateInfo;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.Queue;
+
+import ar.com.datos.buffer.InputBuffer;
+import ar.com.datos.buffer.exception.BufferException;
+import ar.com.datos.serializer.DynamicSerializer;
 import ar.com.datos.serializer.PrimitiveTypeSerializer;
 import ar.com.datos.serializer.Serializer;
 import ar.com.datos.serializer.common.BooleanSerializer;
 import ar.com.datos.serializer.common.ByteSerializer;
 import ar.com.datos.serializer.common.CharacterSerializer;
+import ar.com.datos.serializer.common.CollectionSerializer;
 import ar.com.datos.serializer.common.DoubleSerializer;
 import ar.com.datos.serializer.common.FloatSerializer;
 import ar.com.datos.serializer.common.IntegerSerializer;
 import ar.com.datos.serializer.common.LongSerializer;
+import ar.com.datos.serializer.common.NumberSerializer;
 import ar.com.datos.serializer.common.SerializerCache;
 import ar.com.datos.serializer.common.ShortSerializer;
 import ar.com.datos.serializer.common.StringSerializerDelimiter;
 import ar.com.datos.serializer.common.StringSerializerSize;
 import ar.com.datos.test.ExtendedTestCase;
+import ar.com.datos.test.serializer.mock.OutputBufferTest;
 
 /**
  * Test para Serializadores.
@@ -26,6 +35,7 @@ public class TestSerializer extends ExtendedTestCase {
 	 * Test para la clase {@link PrimitiveTypeSerializer}
 	 */
 	public void testPrimitiveTypeSerializer() {
+		System.out.println("Este test (testPrimitiveTypeSerializer()) tarda mucho! Por ahi queres detener el test y comentarlo.");
 		// Boolean
 		assertEquals(PrimitiveTypeSerializer.toBoolean(PrimitiveTypeSerializer.toByte(true)), true);
 		assertEquals(PrimitiveTypeSerializer.toBoolean(PrimitiveTypeSerializer.toByte(false)), false);
@@ -84,297 +94,277 @@ public class TestSerializer extends ExtendedTestCase {
 		}
 		assertEquals(8, PrimitiveTypeSerializer.toByte((double)44).length);
 		assertEquals(new double[] {(double)2121, (double)452, (double)-451, (double)0}, PrimitiveTypeSerializer.toDoubleArray(PrimitiveTypeSerializer.toByte(new double[] {(double)2121, (double)452, (double)-451, (double)0})));
-
 	}
 
 	/**
-	 * Test para la clase {@link BooleanSerializer}
+	 * Esquema general de todos los tests.
 	 */
 	@SuppressWarnings("unchecked")
-	public void testBooleanSerializer() {
-		Serializer<Boolean> serializer = SerializerCache.getInstance().getSerializer(BooleanSerializer.class);
-		boolean first = true;
-		boolean second = false;
+	private void generalTest(Serializer serializer, Object first, Object second) {
+		// Deshidrato en un OutputBuffer los objetos recibido.
+		OutputBufferTest oBuffer = new OutputBufferTest();
+		serializer.dehydrate(oBuffer, first);
+		serializer.dehydrate(oBuffer, second);
+		
+		// Rehidrato los objetos usando un InputBuffer obtenido a partir del OutputBuffer.
+		Object recoveredFirst, recoveredSecond;
+		InputBuffer iBuffer = oBuffer.getAsInputBuffer();
+		recoveredFirst = serializer.hydrate(iBuffer);
+		recoveredSecond = serializer.hydrate(iBuffer);
 
-		byte[] firstSerialized = serializer.dehydrate(first);
-		byte[] secondSerialized = serializer.dehydrate(second);
-		byte[] bytes = new byte[serializer.getDehydrateSize(first) + serializer.getDehydrateSize(second)];
-		System.arraycopy(firstSerialized, 0, bytes, 0, firstSerialized.length);
-		System.arraycopy(secondSerialized, 0, bytes, firstSerialized.length, secondSerialized.length);
-
-		boolean recoveredFirst, recoveredSecond;
-		HydrateInfo<Boolean> hydrateInfo = serializer.hydrate(bytes);
-		recoveredFirst = hydrateInfo.getHydratedObject();
-		hydrateInfo = serializer.hydrate(hydrateInfo.getHydrateRemaining());
-		recoveredSecond = hydrateInfo.getHydratedObject();
-		byte[] remaining = hydrateInfo.getHydrateRemaining();
-
+		// Realizo las comparaciones.
 		assertEquals(first, recoveredFirst);
 		assertEquals(second, recoveredSecond);
-		assertEquals(remaining.length, 0);
+		try {
+			iBuffer.read();
+			assertFalse(true);
+		} catch (BufferException e) {
+			assertTrue(true);
+		}
+		
+		// Cuento el dehydrateSize para compararlo con el metodo correspondiente.
+		iBuffer = oBuffer.getAsInputBuffer();
+		long count = 0;
+		try {
+			while (true) {
+				iBuffer.read();
+				count++;
+			}
+		} catch (BufferException e) {
+		}
+		assertEquals(count, serializer.getDehydrateSize(first) + serializer.getDehydrateSize(second));
+	}
+	
+	/**
+	 * Test para la clase {@link BooleanSerializer}
+	 */
+	public void testBooleanSerializer() {
+		Serializer<Boolean> serializer = (BooleanSerializer)SerializerCache.getInstance().getSerializer(BooleanSerializer.class);
+		boolean first = true;
+		boolean second = false;
+		
+		generalTest(serializer, first, second);
 	}
 
 	/**
 	 * Test para la clase {@link ByteSerializer}
 	 */
-	@SuppressWarnings("unchecked")
 	public void testByteSerializer() {
-		Serializer<Byte> serializer = SerializerCache.getInstance().getSerializer(ByteSerializer.class);
+		Serializer<Byte> serializer = (ByteSerializer)SerializerCache.getInstance().getSerializer(ByteSerializer.class);
 		byte first = (byte)22;
 		byte second = (byte)45;
 
-		byte[] firstSerialized = serializer.dehydrate(first);
-		byte[] secondSerialized = serializer.dehydrate(second);
-		byte[] bytes = new byte[serializer.getDehydrateSize(first) + serializer.getDehydrateSize(second)];
-		System.arraycopy(firstSerialized, 0, bytes, 0, firstSerialized.length);
-		System.arraycopy(secondSerialized, 0, bytes, firstSerialized.length, secondSerialized.length);
-
-		byte recoveredFirst, recoveredSecond;
-		HydrateInfo<Byte> hydrateInfo = serializer.hydrate(bytes);
-		recoveredFirst = hydrateInfo.getHydratedObject();
-		hydrateInfo = serializer.hydrate(hydrateInfo.getHydrateRemaining());
-		recoveredSecond = hydrateInfo.getHydratedObject();
-		byte[] remaining = hydrateInfo.getHydrateRemaining();
-
-		assertEquals(first, recoveredFirst);
-		assertEquals(second, recoveredSecond);
-		assertEquals(remaining.length, 0);
+		generalTest(serializer, first, second);
 	}
 
 	/**
 	 * Test para la clase {@link CharacterSerializer}
 	 */
-	@SuppressWarnings("unchecked")
 	public void testCharacterSerializer() {
-		Serializer<Character> serializer = SerializerCache.getInstance().getSerializer(CharacterSerializer.class);
+		Serializer<Character> serializer = (CharacterSerializer)SerializerCache.getInstance().getSerializer(CharacterSerializer.class);
 		char first = 'a';
 		char second = 'Z';
 
-		byte[] firstSerialized = serializer.dehydrate(first);
-		byte[] secondSerialized = serializer.dehydrate(second);
-		byte[] bytes = new byte[serializer.getDehydrateSize(first) + serializer.getDehydrateSize(second)];
-		System.arraycopy(firstSerialized, 0, bytes, 0, firstSerialized.length);
-		System.arraycopy(secondSerialized, 0, bytes, firstSerialized.length, secondSerialized.length);
-
-		char recoveredFirst, recoveredSecond;
-		HydrateInfo<Character> hydrateInfo = serializer.hydrate(bytes);
-		recoveredFirst = hydrateInfo.getHydratedObject();
-		hydrateInfo = serializer.hydrate(hydrateInfo.getHydrateRemaining());
-		recoveredSecond = hydrateInfo.getHydratedObject();
-		byte[] remaining = hydrateInfo.getHydrateRemaining();
-
-		assertEquals(first, recoveredFirst);
-		assertEquals(second, recoveredSecond);
-		assertEquals(remaining.length, 0);
+		generalTest(serializer, first, second);
 	}
 
 	/**
 	 * Test para la clase {@link ShortSerializer}
 	 */
-	@SuppressWarnings("unchecked")
 	public void testShortSerializer() {
-		Serializer<Short> serializer = SerializerCache.getInstance().getSerializer(ShortSerializer.class);
+		Serializer<Short> serializer = (ShortSerializer)SerializerCache.getInstance().getSerializer(ShortSerializer.class);
 		short first = (short)22;
 		short second = (short)-45;
 
-		byte[] firstSerialized = serializer.dehydrate(first);
-		byte[] secondSerialized = serializer.dehydrate(second);
-		byte[] bytes = new byte[serializer.getDehydrateSize(first) + serializer.getDehydrateSize(second)];
-		System.arraycopy(firstSerialized, 0, bytes, 0, firstSerialized.length);
-		System.arraycopy(secondSerialized, 0, bytes, firstSerialized.length, secondSerialized.length);
-
-		short recoveredFirst, recoveredSecond;
-		HydrateInfo<Short> hydrateInfo = serializer.hydrate(bytes);
-		recoveredFirst = hydrateInfo.getHydratedObject();
-		hydrateInfo = serializer.hydrate(hydrateInfo.getHydrateRemaining());
-		recoveredSecond = hydrateInfo.getHydratedObject();
-		byte[] remaining = hydrateInfo.getHydrateRemaining();
-
-		assertEquals(first, recoveredFirst);
-		assertEquals(second, recoveredSecond);
-		assertEquals(remaining.length, 0);
+		generalTest(serializer, first, second);
 	}
 
 	/**
 	 * Test para la clase {@link IntegerSerializer}
 	 */
-	@SuppressWarnings("unchecked")
 	public void testIntegerSerializer() {
-		Serializer<Integer> serializer = SerializerCache.getInstance().getSerializer(IntegerSerializer.class);
+		Serializer<Integer> serializer = (IntegerSerializer)SerializerCache.getInstance().getSerializer(IntegerSerializer.class);
 		int first = 22;
 		int second = -45;
 
-		byte[] firstSerialized = serializer.dehydrate(first);
-		byte[] secondSerialized = serializer.dehydrate(second);
-		byte[] bytes = new byte[serializer.getDehydrateSize(first) + serializer.getDehydrateSize(second)];
-		System.arraycopy(firstSerialized, 0, bytes, 0, firstSerialized.length);
-		System.arraycopy(secondSerialized, 0, bytes, firstSerialized.length, secondSerialized.length);
-
-		int recoveredFirst, recoveredSecond;
-		HydrateInfo<Integer> hydrateInfo = serializer.hydrate(bytes);
-		recoveredFirst = hydrateInfo.getHydratedObject();
-		hydrateInfo = serializer.hydrate(hydrateInfo.getHydrateRemaining());
-		recoveredSecond = hydrateInfo.getHydratedObject();
-		byte[] remaining = hydrateInfo.getHydrateRemaining();
-
-		assertEquals(first, recoveredFirst);
-		assertEquals(second, recoveredSecond);
-		assertEquals(remaining.length, 0);
+		generalTest(serializer, first, second);
 	}
 
 	/**
 	 * Test para la clase {@link LongSerializer}
 	 */
-	@SuppressWarnings("unchecked")
 	public void testLongSerializer() {
-		Serializer<Long> serializer = SerializerCache.getInstance().getSerializer(LongSerializer.class);
+		Serializer<Long> serializer = (LongSerializer)SerializerCache.getInstance().getSerializer(LongSerializer.class);
 		long first = (long)22;
 		long second = (long)-45;
 
-		byte[] firstSerialized = serializer.dehydrate(first);
-		byte[] secondSerialized = serializer.dehydrate(second);
-		byte[] bytes = new byte[serializer.getDehydrateSize(first) + serializer.getDehydrateSize(second)];
-		System.arraycopy(firstSerialized, 0, bytes, 0, firstSerialized.length);
-		System.arraycopy(secondSerialized, 0, bytes, firstSerialized.length, secondSerialized.length);
-
-		long recoveredFirst, recoveredSecond;
-		HydrateInfo<Long> hydrateInfo = serializer.hydrate(bytes);
-		recoveredFirst = hydrateInfo.getHydratedObject();
-		hydrateInfo = serializer.hydrate(hydrateInfo.getHydrateRemaining());
-		recoveredSecond = hydrateInfo.getHydratedObject();
-		byte[] remaining = hydrateInfo.getHydrateRemaining();
-
-		assertEquals(first, recoveredFirst);
-		assertEquals(second, recoveredSecond);
-		assertEquals(remaining.length, 0);
+		generalTest(serializer, first, second);
 	}
 
 	/**
 	 * Test para la clase {@link FloatSerializer}
 	 */
-	@SuppressWarnings("unchecked")
 	public void testFloatSerializer() {
-		Serializer<Float> serializer = SerializerCache.getInstance().getSerializer(FloatSerializer.class);
+		Serializer<Float> serializer = (FloatSerializer)SerializerCache.getInstance().getSerializer(FloatSerializer.class);
 		float first = (float)22;
 		float second = (float)-45;
 
-		byte[] firstSerialized = serializer.dehydrate(first);
-		byte[] secondSerialized = serializer.dehydrate(second);
-		byte[] bytes = new byte[serializer.getDehydrateSize(first) + serializer.getDehydrateSize(second)];
-		System.arraycopy(firstSerialized, 0, bytes, 0, firstSerialized.length);
-		System.arraycopy(secondSerialized, 0, bytes, firstSerialized.length, secondSerialized.length);
-
-		float recoveredFirst, recoveredSecond;
-		HydrateInfo<Float> hydrateInfo = serializer.hydrate(bytes);
-		recoveredFirst = hydrateInfo.getHydratedObject();
-		hydrateInfo = serializer.hydrate(hydrateInfo.getHydrateRemaining());
-		recoveredSecond = hydrateInfo.getHydratedObject();
-		byte[] remaining = hydrateInfo.getHydrateRemaining();
-
-		assertEquals(first, recoveredFirst);
-		assertEquals(second, recoveredSecond);
-		assertEquals(remaining.length, 0);
+		generalTest(serializer, first, second);
 	}
 
 	/**
 	 * Test para la clase {@link DoubleSerializer}
 	 */
-	@SuppressWarnings("unchecked")
 	public void testDoubleSerializer() {
-		Serializer<Double> serializer = SerializerCache.getInstance().getSerializer(DoubleSerializer.class);
+		Serializer<Double> serializer = (DoubleSerializer)SerializerCache.getInstance().getSerializer(DoubleSerializer.class);
 		double first = (double)22;
 		double second = (double)-45;
 
-		byte[] firstSerialized = serializer.dehydrate(first);
-		byte[] secondSerialized = serializer.dehydrate(second);
-		byte[] bytes = new byte[serializer.getDehydrateSize(first) + serializer.getDehydrateSize(second)];
-		System.arraycopy(firstSerialized, 0, bytes, 0, firstSerialized.length);
-		System.arraycopy(secondSerialized, 0, bytes, firstSerialized.length, secondSerialized.length);
-
-		double recoveredFirst, recoveredSecond;
-		HydrateInfo<Double> hydrateInfo = serializer.hydrate(bytes);
-		recoveredFirst = hydrateInfo.getHydratedObject();
-		hydrateInfo = serializer.hydrate(hydrateInfo.getHydrateRemaining());
-		recoveredSecond = hydrateInfo.getHydratedObject();
-		byte[] remaining = hydrateInfo.getHydrateRemaining();
-
-		assertEquals(first, recoveredFirst);
-		assertEquals(second, recoveredSecond);
-		assertEquals(remaining.length, 0);
+		generalTest(serializer, first, second);
 	}
 
 	/**
 	 * Test para la clase {@link StringSerializerDelimiter}
 	 */
-	@SuppressWarnings("unchecked")
 	public void testStringSerializerDelimiter() {
 		// Uso un delimitador originado a partir de un String.
 		Serializer<String> serializer = new StringSerializerDelimiter("$$");
-		String first = "Nelson Marotte, alias \"Tentaculos\"";
-		String second = "La caca de la nona (primer banda de Nelson)";
+		String first = "La Ley, en su magnifica ecuanimidad, prohibe, tanto al rico como al pobre, dormir bajo los puentes, mendigar por las calles y robar pan.";
+		String second = "Todos los pobres tienen la libertad de morirse de hambre bajo los puentes de Paris";
 
-		byte[] firstSerialized = serializer.dehydrate(first);
-		byte[] secondSerialized = serializer.dehydrate(second);
-		byte[] bytes = new byte[serializer.getDehydrateSize(first) + serializer.getDehydrateSize(second)];
-		System.arraycopy(firstSerialized, 0, bytes, 0, firstSerialized.length);
-		System.arraycopy(secondSerialized, 0, bytes, firstSerialized.length, secondSerialized.length);
-
-		String recoveredFirst, recoveredSecond;
-		HydrateInfo<String> hydrateInfo = serializer.hydrate(bytes);
-		recoveredFirst = hydrateInfo.getHydratedObject();
-		hydrateInfo = serializer.hydrate(hydrateInfo.getHydrateRemaining());
-		recoveredSecond = hydrateInfo.getHydratedObject();
-		byte[] remaining = hydrateInfo.getHydrateRemaining();
-
-		assertEquals(first, recoveredFirst);
-		assertEquals(second, recoveredSecond);
-		assertEquals(remaining.length, 0);
+		generalTest(serializer, first, second);
 
 		// Uso un delimitador originado a partir de un byte[]
+		second = "";
 		serializer = new StringSerializerDelimiter(new byte[] {(byte)0, (byte)0});
-		firstSerialized = serializer.dehydrate(first);
-		secondSerialized = serializer.dehydrate(second);
-		bytes = new byte[serializer.getDehydrateSize(first) + serializer.getDehydrateSize(second)];
-		System.arraycopy(firstSerialized, 0, bytes, 0, firstSerialized.length);
-		System.arraycopy(secondSerialized, 0, bytes, firstSerialized.length, secondSerialized.length);
-
-		hydrateInfo = serializer.hydrate(bytes);
-		recoveredFirst = hydrateInfo.getHydratedObject();
-		hydrateInfo = serializer.hydrate(hydrateInfo.getHydrateRemaining());
-		recoveredSecond = hydrateInfo.getHydratedObject();
-		remaining = hydrateInfo.getHydrateRemaining();
-
-		assertEquals(first, recoveredFirst);
-		assertEquals(second, recoveredSecond);
-		assertEquals(remaining.length, 0);
+		generalTest(serializer, first, second);
 	}
-
-
+	
+	/**
+	 * Test para la clase {@link CollectionSerializer}
+	 */
+	public void testCollectionSerializer() {
+		Serializer<String> stringSizeSerializer = new StringSerializerSize();
+		Serializer serializer = new CollectionSerializer<String>(stringSizeSerializer);
+		Collection<String> first = new LinkedList<String>();
+		first.add("1");
+		first.add("22");
+		first.add("333");
+		first.add("4444");
+		Collection<String> second = new LinkedList<String>();
+		
+		generalTest(serializer, first, second);		
+	}
+	
 	/**
 	 * Test para la clase {@link StringSerializerSize}
 	 */
-	@SuppressWarnings("unchecked")
 	public void testStringSerializerSize() {
 		// Uso un delimitador originado a partir de un String.
-		Serializer<String> serializer = new StringSerializerSize((short)40);
-		String first = "Nelson Marotte, alias \"Tentaculos\"";
-		String second = "La caca de la nona (primer banda de Nelson)";
+		Serializer<String> serializer = new StringSerializerSize((ShortSerializer)SerializerCache.getInstance().getSerializer(ShortSerializer.class));
+		String first = "La Ley, en su magnifica ecuanimidad, prohibe, tanto al rico como al pobre, dormir bajo los puentes, mendigar por las calles y robar pan";
+		String second = "Todos los pobres tienen la libertad de morirse de hambre bajo los puentes de Paris";
 
-		byte[] firstSerialized = serializer.dehydrate(first);
-		byte[] secondSerialized = serializer.dehydrate(second);
-		byte[] bytes = new byte[serializer.getDehydrateSize(first) + serializer.getDehydrateSize(second)];
-		System.arraycopy(firstSerialized, 0, bytes, 0, firstSerialized.length);
-		System.arraycopy(secondSerialized, 0, bytes, firstSerialized.length, secondSerialized.length);
+		generalTest(serializer, first, second);
+		
+		// Uso un serializador distinto para el size.
+		first = "Texto con mas de 255. Texto con mas de 255. Texto con mas de 255. Texto con mas de 255. Texto con mas de 255. Texto con mas de 255. Texto con mas de 255. Texto con mas de 255. Texto con mas de 255. Texto con mas de 255. Texto con mas de 255.Sale hasta acaESTO NO SALE";
+		String firstCompare = "Texto con mas de 255. Texto con mas de 255. Texto con mas de 255. Texto con mas de 255. Texto con mas de 255. Texto con mas de 255. Texto con mas de 255. Texto con mas de 255. Texto con mas de 255. Texto con mas de 255. Texto con mas de 255.Sale hasta aca";
+		second = "";
+		serializer = new StringSerializerSize(); // Usa ByteSerializer por defecto.
+		
+		OutputBufferTest oBuffer = new OutputBufferTest();
+		serializer.dehydrate(oBuffer, first);
+		serializer.dehydrate(oBuffer, second);
+		
+		Object recoveredFirst, recoveredSecond;
+		InputBuffer iBuffer = oBuffer.getAsInputBuffer();
+		recoveredFirst = serializer.hydrate(iBuffer);
+		recoveredSecond = serializer.hydrate(iBuffer);
 
-		String recoveredFirst, recoveredSecond;
-		HydrateInfo<String> hydrateInfo = serializer.hydrate(bytes);
-		recoveredFirst = hydrateInfo.getHydratedObject();
-		hydrateInfo = serializer.hydrate(hydrateInfo.getHydrateRemaining());
-		recoveredSecond = hydrateInfo.getHydratedObject();
-		byte[] remaining = hydrateInfo.getHydrateRemaining();
+		assertEquals(firstCompare, recoveredFirst);
+		assertEquals(second, recoveredSecond);
+		try {
+			iBuffer.read();
+			assertFalse(true);
+		} catch (BufferException e) {
+			assertTrue(true);
+		}
+	}
+	
+	/**
+	 * Test para la clase {@link DynamicSerializer}
+	 */
+	public void testDynamicSerializer() {
+		// Creo los objetos para la cola.
+		Integer first = 356;
+		Double second = 43.32;
+		String third = "Una tonteria sigue siendo una tonteria aunque sea dicha por cincuenta millones de personas";
+		Collection<String> fourth = new LinkedList<String>();
+		fourth.add("1");
+		fourth.add("22");
+		fourth.add("333");
+		fourth.add("4444");
+		String fifth = "5";
+		
+		// Agrego los objetos en la cola.
+		Queue<Object> queue = new LinkedList<Object>();
+		queue.add(first);
+		queue.add(second);
+		queue.add(third);
+		queue.add(fourth);
+		queue.add(fifth);
+		
+		// Genero los serializadores que conformaran el DynamicSerializer.
+		Serializer integerSerializer = SerializerCache.getInstance().getSerializer(IntegerSerializer.class);
+		Serializer doubleSerializer = SerializerCache.getInstance().getSerializer(DoubleSerializer.class);
+		Serializer<String> stringDelimiterSerializer = new StringSerializerDelimiter(new byte[] {(byte)0, (byte)0});
+		Serializer<String> stringSizeSerializer = new StringSerializerSize((NumberSerializer<Integer>)integerSerializer);
+		Serializer collectionSerializer = new CollectionSerializer<String>(stringSizeSerializer);
+		
+		// Creo el DynamicSerializer con el primer serializador a usar.
+		DynamicSerializer dynamicSerializer = new DynamicSerializer(integerSerializer);
+		// Agrego en orden los demas serializadores.
+		dynamicSerializer.setNextSerializer(doubleSerializer)
+						 .setNextSerializer(stringDelimiterSerializer)
+						 .setNextSerializer(collectionSerializer)
+						 .setNextSerializer(stringDelimiterSerializer);
+		
+		// Guardo el dehydrateSize
+		long dehydrateSize = dynamicSerializer.getDehydrateSize(queue);
+		
+		// Deshidrato.
+		OutputBufferTest oBuffer = new OutputBufferTest();
+		dynamicSerializer.dehydrate(oBuffer, queue);
 
-		assertEquals(first, recoveredFirst);
-		assertEquals(second.substring(0, 40), recoveredSecond);
-		assertEquals(0, remaining.length);
+		// Rehidrato
+		Queue recoveredQueue;
+		InputBuffer iBuffer = oBuffer.getAsInputBuffer();
+		recoveredQueue = dynamicSerializer.hydrate(iBuffer);
+		
+		// Realizo las demas comparaciones.
+		assertEquals(first, recoveredQueue.poll());
+		assertEquals(second, recoveredQueue.poll());
+		assertEquals(third, recoveredQueue.poll());
+		assertEquals(fourth, recoveredQueue.poll());
+		assertEquals(fifth, recoveredQueue.poll());
+		try {
+			iBuffer.read();
+			assertFalse(true);
+		} catch (BufferException e) {
+			assertTrue(true);
+		}
+		
+		// Cuento el dehydrateSize para compararlo con el metodo correspondiente.
+		iBuffer = oBuffer.getAsInputBuffer();
+		int count = 0;
+		try {
+			while (true) {
+				iBuffer.read();
+				count++;
+			}
+		} catch (BufferException e) {
+		}
+		assertEquals(count, dehydrateSize);
 	}
 }

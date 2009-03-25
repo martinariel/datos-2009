@@ -1,29 +1,29 @@
-package ar.com.datos.serializer.common.exception;
+package ar.com.datos.buffer.exception;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @SuppressWarnings("serial")
-public class StringSerializerSizeException extends RuntimeException {
+public class BufferException extends RuntimeException {
 	private List<Throwable> causes;
 
-	public StringSerializerSizeException() {
+	public BufferException() {
 		super();
 	}
 
-	public StringSerializerSizeException(String message) {
+	public BufferException(String message) {
 		super(message);
 	}
 
-	public StringSerializerSizeException(String message, Throwable cause) {
+	public BufferException(String message, Throwable cause) {
 		super(message, cause);
 	}
 
-	public StringSerializerSizeException(Throwable cause) {
+	public BufferException(Throwable cause) {
 		super(cause);
 	}
 
-	public StringSerializerSizeException(String message, List<Throwable> causes) {
+	public BufferException(String message, List<Throwable> causes) {
 		super(message);
 		this.causes = causes;
 	}

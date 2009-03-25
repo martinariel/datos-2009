@@ -1,6 +1,7 @@
 package ar.com.datos.serializer.common;
 
-import ar.com.datos.serializer.HydrateInfo;
+import ar.com.datos.buffer.InputBuffer;
+import ar.com.datos.buffer.OutputBuffer;
 import ar.com.datos.serializer.Serializer;
 
 /**
@@ -8,36 +9,28 @@ import ar.com.datos.serializer.Serializer;
  *
  * @author fvalido
  */
-public class ByteSerializer implements Serializer<Byte> {
+public class ByteSerializer extends NumberSerializer<Byte> {
 	/*
 	 * (non-Javadoc)
-	 * @see ar.com.marotte.serializer.Serializer#dehydrate(java.lang.Object)
+	 * @see ar.com.datos.serializer.Serializer#dehydrate(ar.com.datos.buffer.OutputBuffer, java.lang.Object)
 	 */
-	public byte[] dehydrate(Byte object) {
-		return new byte[] { object };
+	public void dehydrate(OutputBuffer output, Byte object) {
+		output.write(new byte[] { object });
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see ar.com.marotte.serializer.Serializer#hydrate(byte[])
+	 * @see ar.com.datos.serializer.Serializer#hydrate(ar.com.datos.buffer.InputBuffer)
 	 */
-	public HydrateInfo<Byte> hydrate(byte[] preObject) {
-		// Obtengo el valor convertido.
-		byte value = preObject[0];
-
-		// Obtengo el resto del Byte
-		byte[] remaining = new byte[preObject.length - 1];
-		System.arraycopy(preObject, 1, remaining, 0, remaining.length);
-
-		return new HydrateInfo<Byte>(value, remaining);
+	public Byte hydrate(InputBuffer input) {
+		return input.read(new byte[1])[0];
 	}
-
+	
 	/*
 	 * (non-Javadoc)
 	 * @see ar.com.marotte.serializer.Serializer#getDehydrateSize(java.lang.Object)
 	 */
-	public int getDehydrateSize(Byte object) {
+	public long getDehydrateSize(Byte object) {
 		return 1;
 	}
-
 }

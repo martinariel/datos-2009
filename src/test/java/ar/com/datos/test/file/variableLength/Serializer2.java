@@ -2,8 +2,8 @@ package ar.com.datos.test.file.variableLength;
 
 import java.util.Collection;
 
-import ar.com.datos.file.variableLength.InputBuffer;
-import ar.com.datos.file.variableLength.OutputBuffer;
+import ar.com.datos.buffer.InputBuffer;
+import ar.com.datos.buffer.OutputBuffer;
 /**
  * Interfacez creada para hacer algunas pruebas
  * debería ser reemplazada por la de Federico

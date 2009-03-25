@@ -1,4 +1,4 @@
-package ar.com.datos.file.variableLength;
+package ar.com.datos.buffer;
 
 import java.util.Collection;
 
@@ -21,9 +21,15 @@ public interface OutputBuffer {
 	
 	/**
 	 * agrega los <b>datos</b> al final de la entidad/registro actual  
-	 * @param datos
+	 * @param data
 	 */
-	public void write(byte[] datos);
+	public void write(byte[] data);
+	
+	/**
+	 * Agrega el <b>dato</b> al final de la entidad/registro actual.
+	 * @param data
+	 */
+	public void write(byte data);
 	
 	/**
 	 * Marca el fin de entidad/registro y avisa si hay exceso
