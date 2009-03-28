@@ -1,5 +1,6 @@
 package ar.com.datos.file.variableLength;
 
+import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -28,6 +29,7 @@ public class VariableLengthFileManager implements DynamicAccesor, BufferRealease
 	private Long cachedBlockNumber;
 	private List<Queue<Object>> cachedBlock;
 	public VariableLengthFileManager(String nombreArchivo, Integer blockSize, QueueSerializer serializador) {
+		if (blockSize < (POINTER_SIZE + 2)) throw new InvalidParameterException("block Size Inválido, debe ser mayor a 10");
 		setRealFile(constructFile(nombreArchivo, blockSize));
 		setSerializador(serializador);
 		setLastBlockBufferBlockNumber(0L);

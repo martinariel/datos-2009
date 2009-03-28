@@ -115,10 +115,14 @@ public class TestVariableLength extends MockObjectTestCase {
 		assertEquals(cantidadDeObjetos.shortValue(), direccion.getObjectNumber().shortValue());
 	}
 	/**
-	 * Voy a pedirle que hidrate un objeto X que no se encuentra en el último bloque
-	 * y que su número de objeto es 0 (es decir el primero de dicho bloque)
+	 * Voy a pedirle que hidrate dos objetos que no se encuentra en el último bloque
+	 * y que su número de objeto son 0 y 1 (es decir son los dos primeros de dicho bloque)
 	 * En el bloque existe únicamente dicho registro
-	 * Espero que, primero le pida el último bloque (porque  
+	 * Espero que, primero le pida el último bloque (porque tiene que prepararse para recibir datos)
+	 * Luego espero que lea el bloque correspondiente a ambos registros
+	 * Que hidrate ambos y que me devuelva el segundo.
+	 * Cuando, después, le pido el primero espero que no acceda al archivo pero si que me devuelva 
+	 * el primero hidratado (que hidrató anteriormente)  
 	 * @throws Exception
 	 */
 	public void testLecturaAntesDelUltimoBloque() throws Exception {
@@ -129,9 +133,9 @@ public class TestVariableLength extends MockObjectTestCase {
 		campos2.add(1);
 		final byte[] bloqueFinal = new byte[blockSize];
 		final byte[] bloqueDatos = new byte[blockSize];
-		final Long numeroDeBloqueBuscado = 0L;
 		Byte cantidadDeObjetos = 0;
 		bloqueFinal[blockSize-1] = cantidadDeObjetos;
+		final Long numeroDeBloqueBuscado = 0L;
 		cantidadDeObjetos = 2;
 		bloqueDatos[blockSize-1] = cantidadDeObjetos;
 		checking(new Expectations(){{
@@ -145,8 +149,58 @@ public class TestVariableLength extends MockObjectTestCase {
 			will(returnValue(campos2));
 		}});
 		DynamicAccesor unDynamicAccesor = crearArchivo();
-		assertEquals(campos1, unDynamicAccesor.get(new VariableLengthAddress(numeroDeBloqueBuscado, (short)0)));
 		assertEquals(campos2, unDynamicAccesor.get(new VariableLengthAddress(numeroDeBloqueBuscado, (short)1)));
+		assertEquals(campos1, unDynamicAccesor.get(new VariableLengthAddress(numeroDeBloqueBuscado, (short)0)));
+	}
+	/**
+	 * Voy a pedirle que hidrate un objeto X que se encuentra en varios bloques
+	 * por ende su número de objeto es 0
+	 * En el bloque existe únicamente dicho registro
+	 * Espero que, primero le pida el último bloque (porque  
+	 * @throws Exception
+	 */
+	public void testLecturaRegistroEnVariosBloques() throws Exception {
+		this.cantidadDeBloquesInicial = 3L;
+		final Queue<Object> campos1 = new LinkedList<Object>();
+		campos1.add(1);
+		final byte[] bloqueFinal = new byte[blockSize];
+		// Está serializado a mano, esperemos no haberle pifiado
+		bloqueFinal[blockSize-2] = 2;
+		bloqueFinal[blockSize-3] = 0;
+		bloqueFinal[blockSize-4] = 0;
+		bloqueFinal[blockSize-5] = 0;
+		bloqueFinal[blockSize-6] = 0;
+		bloqueFinal[blockSize-7] = 0;
+		bloqueFinal[blockSize-8] = 0;
+		bloqueFinal[blockSize-9] = 0;
+		final byte[] bloqueDatos = new byte[blockSize];
+		Byte cantidadDeObjetos = 0;
+		bloqueFinal[blockSize-1] = cantidadDeObjetos;
+		final Long numeroDeBloqueBuscado = 1L;
+		cantidadDeObjetos = 0;
+		bloqueDatos[blockSize-1] = cantidadDeObjetos;
+		// Está serializado a mano, esperemos no haberle pifiado
+		bloqueDatos[blockSize-2] = 2;
+		bloqueDatos[blockSize-3] = 0;
+		bloqueDatos[blockSize-4] = 0;
+		bloqueDatos[blockSize-5] = 0;
+		bloqueDatos[blockSize-6] = 0;
+		bloqueDatos[blockSize-7] = 0;
+		bloqueDatos[blockSize-8] = 0;
+		bloqueDatos[blockSize-9] = 0;
+		final Long numeroDeSegundoBloque = 2L;
+		checking(new Expectations(){{
+			one(fileMock).readBlock(cantidadDeBloquesInicial - 1);
+			will(returnValue(bloqueFinal));
+			one(fileMock).readBlock(numeroDeBloqueBuscado);
+			will(returnValue(bloqueDatos));
+			one(fileMock).readBlock(numeroDeSegundoBloque);
+			will(returnValue(bloqueFinal));
+			one(serializerMock).hydrate(with(any(InputBuffer.class)));
+			will(returnValue(campos1));
+		}});
+		DynamicAccesor unDynamicAccesor = crearArchivo();
+		assertEquals(campos1, unDynamicAccesor.get(new VariableLengthAddress(numeroDeBloqueBuscado, (short)0)));
 	}
 	private DynamicAccesor crearArchivo() {
 		checking(new Expectations(){{
