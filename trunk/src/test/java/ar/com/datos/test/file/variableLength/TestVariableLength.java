@@ -123,25 +123,30 @@ public class TestVariableLength extends MockObjectTestCase {
 	 */
 	public void testLecturaAntesDelUltimoBloque() throws Exception {
 		this.cantidadDeBloquesInicial = 3L;
-		final Queue<Object> campos = new LinkedList<Object>();
+		final Queue<Object> campos1 = new LinkedList<Object>();
+		campos1.add(1);
+		final Queue<Object> campos2 = new LinkedList<Object>();
+		campos2.add(1);
 		final byte[] bloqueFinal = new byte[blockSize];
 		final byte[] bloqueDatos = new byte[blockSize];
 		final Long numeroDeBloqueBuscado = 0L;
 		Byte cantidadDeObjetos = 0;
 		bloqueFinal[blockSize-1] = cantidadDeObjetos;
-		cantidadDeObjetos = 1;
+		cantidadDeObjetos = 2;
 		bloqueDatos[blockSize-1] = cantidadDeObjetos;
 		checking(new Expectations(){{
 			one(fileMock).readBlock(cantidadDeBloquesInicial - 1);
 			will(returnValue(bloqueFinal));
 			one(fileMock).readBlock(numeroDeBloqueBuscado);
 			will(returnValue(bloqueDatos));
-			allowing(serializerMock).hydrate(with(any(InputBuffer.class)));
-			will(returnValue(campos));
+			one(serializerMock).hydrate(with(any(InputBuffer.class)));
+			will(returnValue(campos1));
+			one(serializerMock).hydrate(with(any(InputBuffer.class)));
+			will(returnValue(campos2));
 		}});
 		DynamicAccesor unDynamicAccesor = crearArchivo();
-		Address<Long, Short> direccion = new VariableLengthAddress(numeroDeBloqueBuscado, (short)0);
-		assertEquals(campos, unDynamicAccesor.get(direccion));
+		assertEquals(campos1, unDynamicAccesor.get(new VariableLengthAddress(numeroDeBloqueBuscado, (short)0)));
+		assertEquals(campos2, unDynamicAccesor.get(new VariableLengthAddress(numeroDeBloqueBuscado, (short)1)));
 	}
 	private DynamicAccesor crearArchivo() {
 		checking(new Expectations(){{
