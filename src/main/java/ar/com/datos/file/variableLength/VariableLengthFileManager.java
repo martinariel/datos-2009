@@ -24,6 +24,9 @@ public class VariableLengthFileManager implements DynamicAccesor, BufferRealease
 
 	private OutputBuffer lastBlockBuffer;
 	private Long lastBlockBufferBlockNumber;
+	// Implementación simple de caché de un solo bloque
+	private Long cachedBlockNumber;
+	private List<Queue<Object>> cachedBlock;
 	public VariableLengthFileManager(String nombreArchivo, Integer blockSize, QueueSerializer serializador) {
 		setRealFile(constructFile(nombreArchivo, blockSize));
 		setSerializador(serializador);
@@ -47,6 +50,8 @@ public class VariableLengthFileManager implements DynamicAccesor, BufferRealease
 
 	@Override
 	public Queue<Object> get(Address<Long, Short> direccion) {
+		if (isInCache(direccion)) return getFromCache(direccion);
+		
 		byte[] bloque = getRealFile().readBlock(direccion.getBlockNumber());
 		// Para el caso que el registro está en varios bloques me va a decir que no hay registros,
 		// pero el inputBuffer finalmente tendrá todo el registro. Así que se corrige la cantidad de registros a uno
@@ -57,9 +62,23 @@ public class VariableLengthFileManager implements DynamicAccesor, BufferRealease
 		for (Short i = 0; i < cantidadRegistrosHidratar; i++) {
 			co.add(this.getSerializador().hydrate(data));
 		}
+		
+		addToCache(direccion.getBlockNumber(), co);
+		
 		return co.get(direccion.getObjectNumber());
 	}
 
+	private void addToCache(Long blockNumber, List<Queue<Object>> co) {
+		this.cachedBlockNumber = blockNumber;
+		this.cachedBlock = co;
+		
+	}
+	private Queue<Object> getFromCache(Address<Long, Short> direccion) {
+		return this.cachedBlock.get(direccion.getObjectNumber());
+	}
+	protected Boolean isInCache(Address<Long, Short> direccion) {
+		return direccion.getBlockNumber().equals(this.cachedBlockNumber);
+	}
 	@Override
 	public void release(OutputBuffer ob) {
 		// TODO Auto-generated method stub
@@ -104,7 +123,7 @@ public class VariableLengthFileManager implements DynamicAccesor, BufferRealease
 		return getLastBlockBuffer();
 	}
 	/**
-	 * 
+	 * Carga el input buffer con los datos del bloque o bloques
 	 * @param blockNumber 
 	 * @param bloque
 	 * @return
@@ -123,7 +142,7 @@ public class VariableLengthFileManager implements DynamicAccesor, BufferRealease
 		return ib.fill(miArr.getLeftSubArray(bloque.length - 1));
 	}
 	/**
-	 * 
+	 * Carga el inputBuffer recibido con las partes restantes de un registro de multiples bloques 
 	 * @param buffer 
 	 * @param blockNumber 
 	 * @param bloque
