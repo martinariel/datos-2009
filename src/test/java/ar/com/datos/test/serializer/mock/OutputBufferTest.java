@@ -57,4 +57,10 @@ public class OutputBufferTest implements OutputBuffer {
 		// No usado.
 		return null;
 	}
+
+	@Override
+	public Short getEntitiesCount() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

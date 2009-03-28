@@ -46,5 +46,11 @@ public interface OutputBuffer {
 	 * Devuelve todos los byte[] que fueron escritos pertenecientes a la última entidad que se cerró
 	 */
 	public Collection<ArrayByte> extractLast();
+
+	/**
+	 * Devuelve la cantidad de Entidades que fueron agregadas (cantidad de closeEntity)
+	 * @return
+	 */
+	public Short getEntitiesCount();
 	
 }

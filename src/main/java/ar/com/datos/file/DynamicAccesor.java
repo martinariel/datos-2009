@@ -5,5 +5,5 @@ import java.util.Collection;
 
 public interface DynamicAccesor extends SequentialAccesor {
 
-	public Collection<Object> get(Address direccion);
+	public Collection<Object> get(Address<Long, Short> direccion);
 }

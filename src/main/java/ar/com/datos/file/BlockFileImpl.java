@@ -96,12 +96,12 @@ public class BlockFileImpl implements BlockFile {
 		return this.getFile().getTotalSpace() / this.getBlockSize();
 	}
 	@Override
-	public void appendBlock(byte[] block) {
+	public void writeBlock(Long blockNumber, byte[] block) {
 		if (!this.getBlockSize().equals(block.length)) {
 			throw new InvalidBlockException("Se esperaba un bloque de tamaño " + getBlockSize());
 		}
 		try {
-			getFileAccessor().seek(getFile().length());
+			seekBlock(blockNumber);
 			getFileAccessor().write(block);
 		} catch (IOException e) {
 			// TODO Ver en que caso podría tirar esta excepción y hacer
@@ -109,10 +109,17 @@ public class BlockFileImpl implements BlockFile {
 			throw new RuntimeException(e);
 		}
 	}
+	private void seekBlock(Long blockNumber) throws IOException {
+		getFileAccessor().seek(blockNumber * getBlockSize());
+	}
+	@Override
+	public void appendBlock(byte[] block) {
+		this.writeBlock(getTotalBlocks(), block);
+	}
 	@Override
 	public byte[] readBlock(Long blockNumber) {
 		try {
-			getFileAccessor().seek(blockNumber);
+			seekBlock(blockNumber);
 			byte[] leido = new byte[getBlockSize()];
 			if (getFileAccessor().read(leido) == -1) throw new OutOfBoundsException(); 
 			return leido;

@@ -19,7 +19,7 @@ import ar.com.datos.buffer.OutputBuffer;
  * 
  * @author fvalido
  */
-public class DynamicSerializer implements Serializer<Queue<Object>> {
+public class DynamicSerializer implements Serializer<Queue<Object>>, QueueSerializer {
 	/**
 	 * Atributo para alojar el serializador a usar para para el siguiente
 	 * elemento (luego del primero) de la cola.
