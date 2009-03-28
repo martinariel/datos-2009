@@ -1,13 +1,24 @@
 package ar.com.datos.file;
-
+/**
+ * Abstracción de archivo por bloques
+ * La numeración de los bloques va de cero a n-1 siendo n la cantidad total de bloques
+ * @author dev
+ *
+ */
 public interface BlockFile {
 
 	/**
-	 * Intenta leer el bloque cuyo con número blockNumber 
+	 * Intenta leer el bloque con número blockNumber 
 	 * @param blockNumber
 	 * @return
 	 */
 	public byte[] readBlock(Long blockNumber);
+	/**
+	 * Intenta escribir el bloque con número blockNumber 
+	 * @param blockNumber
+	 * @return
+	 */
+	public void writeBlock(Long blockNumber, byte[] block);
 	/**
 	 * Agrega al final el nuevo bloque recibido. La cantidad total de bloques
 	 * aumenta en una unidad
