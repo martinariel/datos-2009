@@ -13,6 +13,7 @@ import ar.com.datos.buffer.OutputBuffer;
 import ar.com.datos.file.Address;
 import ar.com.datos.file.BlockFile;
 import ar.com.datos.file.DynamicAccesor;
+import ar.com.datos.file.variableLength.VariableLengthAddress;
 import ar.com.datos.file.variableLength.VariableLengthFileManager;
 import ar.com.datos.serializer.QueueSerializer;
 /**
@@ -105,14 +106,42 @@ public class TestVariableLength extends MockObjectTestCase {
 		checking(new Expectations(){{
 			one(fileMock).readBlock(cantidadDeBloquesInicial - 1);
 			will(returnValue(bloque));
-			allowing(serializerMock).hydrate(with(any(InputBuffer.class)));
-			will(returnValue(campos));
-			allowing(serializerMock).dehydrate(with(any(OutputBuffer.class)), with(campos));
+			// Deserialización del registro que agrego 
+			one(serializerMock).dehydrate(with(any(OutputBuffer.class)), with(campos));
 		}});
 		DynamicAccesor unDynamicAccesor = crearArchivo();
 		Address<Long, Short> direccion = unDynamicAccesor.addEntity(campos);
 		assertEquals(cantidadDeBloquesInicial, direccion.getBlockNumber());
 		assertEquals(cantidadDeObjetos.shortValue(), direccion.getObjectNumber().shortValue());
+	}
+	/**
+	 * Voy a pedirle que hidrate un objeto X que no se encuentra en el último bloque
+	 * y que su número de objeto es 0 (es decir el primero de dicho bloque)
+	 * En el bloque existe únicamente dicho registro
+	 * Espero que, primero le pida el último bloque (porque  
+	 * @throws Exception
+	 */
+	public void testLecturaAntesDelUltimoBloque() throws Exception {
+		this.cantidadDeBloquesInicial = 3L;
+		final Queue<Object> campos = new LinkedList<Object>();
+		final byte[] bloqueFinal = new byte[blockSize];
+		final byte[] bloqueDatos = new byte[blockSize];
+		final Long numeroDeBloqueBuscado = 0L;
+		Byte cantidadDeObjetos = 0;
+		bloqueFinal[blockSize-1] = cantidadDeObjetos;
+		cantidadDeObjetos = 1;
+		bloqueDatos[blockSize-1] = cantidadDeObjetos;
+		checking(new Expectations(){{
+			one(fileMock).readBlock(cantidadDeBloquesInicial - 1);
+			will(returnValue(bloqueFinal));
+			one(fileMock).readBlock(numeroDeBloqueBuscado);
+			will(returnValue(bloqueDatos));
+			allowing(serializerMock).hydrate(with(any(InputBuffer.class)));
+			will(returnValue(campos));
+		}});
+		DynamicAccesor unDynamicAccesor = crearArchivo();
+		Address<Long, Short> direccion = new VariableLengthAddress(numeroDeBloqueBuscado, (short)0);
+		assertEquals(campos, unDynamicAccesor.get(direccion));
 	}
 	private DynamicAccesor crearArchivo() {
 		checking(new Expectations(){{
