@@ -1,5 +1,6 @@
 package ar.com.datos.test.file.variableLength;
 
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -47,29 +48,36 @@ public class TestVariableLength extends MockObjectTestCase {
 	 * Voy a agregar un primer registro con el archivo vacío, espero que 
 	 * deshidrate cada objeto que le doy, que cierre la entidad en el buffer
 	 * y que utilice la cantidad de entidades para el creado de la dirección
+	 * Verifico también que pueda recuperar dicho objeto 
 	 * @throws Exception
 	 */
 	public void testCreacion() throws Exception {
 		this.cantidadDeBloquesInicial = 0L;
-		final Queue<Object> campos = new LinkedList<Object>();
+		final Queue<Object> campos1 = new LinkedList<Object>();
+		campos1.add(1);
+		final Queue<Object> campos2 = new LinkedList<Object>();
+		campos2.add(2);
 		checking(new Expectations(){{
-			one(serializerMock).dehydrate(with(any(OutputBuffer.class)), with(campos));
-			one(serializerMock).dehydrate(with(any(OutputBuffer.class)), with(campos));
+			one(serializerMock).dehydrate(with(any(OutputBuffer.class)), with(campos1));
+			one(serializerMock).dehydrate(with(any(OutputBuffer.class)), with(campos2));
 		}});
 		DynamicAccesor unDynamicAccesor = crearArchivo();
-		Address<Long, Short> direccion = unDynamicAccesor.addEntity(campos);
-		assertEquals(0, direccion.getBlockNumber().intValue());
-		assertEquals(0, direccion.getObjectNumber().intValue());
-		Address<Long, Short> direccion2 = unDynamicAccesor.addEntity(campos);
+		Address<Long, Short> direccion1 = unDynamicAccesor.addEntity(campos1);
+		assertEquals(0, direccion1.getBlockNumber().intValue());
+		assertEquals(0, direccion1.getObjectNumber().intValue());
+		Address<Long, Short> direccion2 = unDynamicAccesor.addEntity(campos2);
 		assertEquals(0, direccion2.getBlockNumber().intValue());
 		assertEquals(1, direccion2.getObjectNumber().intValue());
+		assertEquals(campos2, unDynamicAccesor.get(direccion2));
+		assertEquals(campos1, unDynamicAccesor.get(direccion1));
 	}
 	/**
 	 * Dado un archivo que tiene el último bloque con varios registros, espero que cargue el buffer
 	 * con esos datos y que me permita agregar otro registro. La direccion del nuevo
 	 * registro tiene que ser la dirección del último bloque (cantidad de bloques -1)
 	 * y el número de objeto del objeto agregado tiene que ser la cantidad de objetos que había 
-	 * inicialmente en dicho bloque
+	 * inicialmente en dicho bloque 
+	 * Verifico también que pueda recuperar dicho objeto 
 	 * @throws Exception
 	 */
 	public void testAgregadoAUnBloqueExistenteEnElArchivo() throws Exception {
@@ -89,6 +97,7 @@ public class TestVariableLength extends MockObjectTestCase {
 		Address<Long, Short> direccion = unDynamicAccesor.addEntity(campos);
 		assertEquals(this.cantidadDeBloquesInicial - 1L, direccion.getBlockNumber().longValue());
 		assertEquals(cantidadDeObjetos.shortValue(), direccion.getObjectNumber().shortValue());
+		assertEquals(campos, unDynamicAccesor.get(direccion));
 	}
 	/**
 	 * Dado un archivo que su último bloque es la cola de un registro que ocupa varios bloques
@@ -117,7 +126,7 @@ public class TestVariableLength extends MockObjectTestCase {
 	/**
 	 * Voy a pedirle que hidrate dos objetos que no se encuentra en el último bloque
 	 * y que su número de objeto son 0 y 1 (es decir son los dos primeros de dicho bloque)
-	 * En el bloque existe únicamente dicho registro
+	 * En el bloque existe únicamente dichos registro
 	 * Espero que, primero le pida el último bloque (porque tiene que prepararse para recibir datos)
 	 * Luego espero que lea el bloque correspondiente a ambos registros
 	 * Que hidrate ambos y que me devuelva el segundo.
@@ -130,7 +139,7 @@ public class TestVariableLength extends MockObjectTestCase {
 		final Queue<Object> campos1 = new LinkedList<Object>();
 		campos1.add(1);
 		final Queue<Object> campos2 = new LinkedList<Object>();
-		campos2.add(1);
+		campos2.add(2);
 		final byte[] bloqueFinal = new byte[blockSize];
 		final byte[] bloqueDatos = new byte[blockSize];
 		Byte cantidadDeObjetos = 0;
@@ -164,6 +173,8 @@ public class TestVariableLength extends MockObjectTestCase {
 		final Queue<Object> campos1 = new LinkedList<Object>();
 		campos1.add(1);
 		final byte[] bloqueFinal = new byte[blockSize];
+		Byte cantidadDeObjetos = 0;
+		bloqueFinal[blockSize-1] = cantidadDeObjetos;
 		// Está serializado a mano, esperemos no haberle pifiado
 		bloqueFinal[blockSize-2] = 2;
 		bloqueFinal[blockSize-3] = 0;
@@ -174,7 +185,7 @@ public class TestVariableLength extends MockObjectTestCase {
 		bloqueFinal[blockSize-8] = 0;
 		bloqueFinal[blockSize-9] = 0;
 		final byte[] bloqueDatos = new byte[blockSize];
-		Byte cantidadDeObjetos = 0;
+		cantidadDeObjetos = 0;
 		bloqueFinal[blockSize-1] = cantidadDeObjetos;
 		final Long numeroDeBloqueBuscado = 1L;
 		cantidadDeObjetos = 0;
@@ -201,6 +212,84 @@ public class TestVariableLength extends MockObjectTestCase {
 		}});
 		DynamicAccesor unDynamicAccesor = crearArchivo();
 		assertEquals(campos1, unDynamicAccesor.get(new VariableLengthAddress(numeroDeBloqueBuscado, (short)0)));
+	}
+	/**
+	 * Voy a pedirle el iterador. El archivo va a estar cargado con 4 bloques
+	 * El bloque 0 con 2 registros. El 1 y 2 con un único registro. El último con un registro.
+	 * Espero que las lecturas sean a medida que solicito y que no haya varias lecturas del mismo bloque.
+	 * @throws Exception
+	 */
+	public void testIteracion() throws Exception {
+		this.cantidadDeBloquesInicial = 4L;
+		final byte[] bloque0 = new byte[blockSize];
+		final byte[] bloque1 = new byte[blockSize];
+		final byte[] bloque2 = new byte[blockSize];
+		final byte[] bloque3 = new byte[blockSize];
+		bloque0[blockSize-1] = 2;
+		bloque1[blockSize-1] = 0;
+		bloque2[blockSize-1] = 0;
+		bloque3[blockSize-1] = 1;
+		// puntero al siguiente bloque
+		bloque1[blockSize-2] = 2;
+		bloque1[blockSize-3] = 0;
+		bloque1[blockSize-4] = 0;
+		bloque1[blockSize-5] = 0;
+		bloque1[blockSize-6] = 0;
+		bloque1[blockSize-7] = 0;
+		bloque1[blockSize-8] = 0;
+		bloque1[blockSize-9] = 0;
+		// puntero al mismo bloque
+		bloque2[blockSize-2] = 2;
+		bloque2[blockSize-3] = 0;
+		bloque2[blockSize-4] = 0;
+		bloque2[blockSize-5] = 0;
+		bloque2[blockSize-6] = 0;
+		bloque2[blockSize-7] = 0;
+		bloque2[blockSize-8] = 0;
+		bloque2[blockSize-9] = 0;
+		final Queue<Object> campos0 = new LinkedList<Object>();
+		campos0.add(0);
+		final Queue<Object> campos1 = new LinkedList<Object>();
+		campos1.add(1);
+		final Queue<Object> campos2 = new LinkedList<Object>();
+		campos2.add(2);
+		final Queue<Object> campos3 = new LinkedList<Object>();
+		campos3.add(3);
+		checking(new Expectations(){{
+			// Carga del bloque final. Esta es la única lectura que no se hace en orden
+			one(fileMock).readBlock(cantidadDeBloquesInicial - 1);
+			will(returnValue(bloque3));
+			one(serializerMock).hydrate(with(any(InputBuffer.class)));
+			will(returnValue(campos3));
+			allowing(serializerMock).dehydrate(with(any(OutputBuffer.class)),with(campos3));
+		}});
+		DynamicAccesor unDynamicAccesor = crearArchivo();
+		Iterator<Queue<Object>> iterador = unDynamicAccesor.iterator();
+		checking(new Expectations(){{
+			one(fileMock).readBlock(0L);
+			will(returnValue(bloque0));
+			one(serializerMock).hydrate(with(any(InputBuffer.class)));
+			will(returnValue(campos0));
+			one(serializerMock).hydrate(with(any(InputBuffer.class)));
+			will(returnValue(campos1));
+		}});
+		assertTrue(iterador.hasNext());
+		assertEquals(campos0, iterador.next());
+		assertTrue(iterador.hasNext());
+		assertEquals(campos1, iterador.next());
+		assertTrue(iterador.hasNext());
+		checking(new Expectations(){{
+			one(fileMock).readBlock(1L);
+			will(returnValue(bloque1));
+			one(fileMock).readBlock(2L);
+			will(returnValue(bloque2));
+			one(serializerMock).hydrate(with(any(InputBuffer.class)));
+			will(returnValue(campos2));
+		}});
+		assertEquals(campos2, iterador.next());
+		assertTrue(iterador.hasNext());
+		assertEquals(campos3, iterador.next());
+		assertFalse(iterador.hasNext());
 	}
 	private DynamicAccesor crearArchivo() {
 		checking(new Expectations(){{
