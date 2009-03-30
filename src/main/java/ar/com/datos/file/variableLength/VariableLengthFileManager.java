@@ -9,6 +9,7 @@ import java.util.Queue;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import ar.com.datos.buffer.InputBuffer;
 import ar.com.datos.buffer.OutputBuffer;
+import ar.com.datos.buffer.SimpleInputBuffer;
 import ar.com.datos.buffer.variableLength.ArrayByte;
 import ar.com.datos.file.Address;
 import ar.com.datos.file.BlockFile;
@@ -64,7 +65,7 @@ public class VariableLengthFileManager implements DynamicAccesor, BufferRealease
 		Byte cantidadRegistrosHidratar = block[block.length-1] == 0? 1 : block[block.length-1];
 
 		List<Queue<Object>> co = new ArrayList<Queue<Object>>(cantidadRegistrosHidratar);
-		InputBufferImpl data = constructEmptyIBuffer();
+		SimpleInputBuffer data = constructEmptyIBuffer();
 		Long ultimoBloqueLeido = createInputBuffer(blockNumber, block, data);
 		for (Short i = 0; i < cantidadRegistrosHidratar; i++) {
 			Queue<Object> hidratado = this.getSerializador().hydrate(data); 
@@ -108,7 +109,7 @@ public class VariableLengthFileManager implements DynamicAccesor, BufferRealease
 		// En caso que sean varios registros en el bloque ese es el último bloque ya que podría entrar un nuevo registro
 		// Caso contrario el último bloque _SIEMPRE_ va a ser un buffer nuevo 
 		if (cantidadRegistros > 0) {
-			InputBufferImpl ib = constructEmptyIBuffer();
+			SimpleInputBuffer ib = constructEmptyIBuffer();
 			createInputBuffer(getRealFile().getTotalBlocks() - 1, bloque, ib);
 			return fillLastBlockBufferWith(ib, getRealFile().getTotalBlocks() - 1, cantidadRegistros);
 		}
@@ -140,7 +141,7 @@ public class VariableLengthFileManager implements DynamicAccesor, BufferRealease
 	 * @param bloque
 	 * @return último bloque leido
 	 */
-	private Long createInputBuffer(Long blockNumber, byte[] bloque, InputBufferImpl ib) {
+	private Long createInputBuffer(Long blockNumber, byte[] bloque, SimpleInputBuffer ib) {
 		ArrayByte miArr = new ArrayByte(bloque);
 		if (bloque[bloque.length-1] == 0) {
 			// Cargo en el input buffer los datos (es decir, saco el puntero al siguiente bloque, porque es un registro de varios
@@ -154,20 +155,20 @@ public class VariableLengthFileManager implements DynamicAccesor, BufferRealease
 	}
 	/**
 	 * Carga el inputBuffer recibido con las partes restantes de un registro de multiples bloques 
-	 * @param buffer 
+	 * @param ib 
 	 * @param blockNumber 
 	 * @param bloque
 	 * @param direccionSiguiente 
 	 * @return último bloque leido
 	 */
-	private Long createInputBufferMultipleBlocks(InputBufferImpl buffer, Long direccionActual) {
+	private Long createInputBufferMultipleBlocks(SimpleInputBuffer ib, Long direccionActual) {
 		byte[] bloque = getRealFile().readBlock(direccionActual);
 		ArrayByte miArr = new ArrayByte(bloque);
-		buffer.fill(miArr.getLeftSubArray(bloque.length - 1 - POINTER_SIZE));
+		ib.fill(miArr.getLeftSubArray(bloque.length - 1 - POINTER_SIZE));
 		
 		Long proximaDireccion = extraerDireccionDeBloqueCompleto(bloque, miArr);
 		
-		if (proximaDireccion != direccionActual) return createInputBufferMultipleBlocks(buffer, proximaDireccion);
+		if (proximaDireccion != direccionActual) return createInputBufferMultipleBlocks(ib, proximaDireccion);
 		
 		return direccionActual;
 	}
@@ -188,8 +189,8 @@ public class VariableLengthFileManager implements DynamicAccesor, BufferRealease
 		// TODO Auto-generated method stub
 		return null;
 	}
-	protected InputBufferImpl constructEmptyIBuffer() {
-		return new InputBufferImpl();
+	protected SimpleInputBuffer constructEmptyIBuffer() {
+		return new SimpleInputBuffer();
 	}
 	public BlockFile getRealFile() {
 		return realFile;
