@@ -68,6 +68,7 @@ public class SimpleAudioRecorder extends Thread{
 	public void stopRecording()
 	{
 		m_line.stop();
+		m_line.flush();
 		m_line.close();
 	}
 
@@ -84,7 +85,7 @@ public class SimpleAudioRecorder extends Thread{
 	}
 
 	public OutputStream getOutput(){
-		if(!isAlive())
+		if(!m_line.isActive())
 			return m_output;
 		else
 			return null;
