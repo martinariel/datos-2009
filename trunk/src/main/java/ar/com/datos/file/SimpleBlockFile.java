@@ -15,13 +15,13 @@ import ar.com.datos.file.exception.ValidacionIncorrectaException;
  * @author dev
  *
  */
-public class BlockFileImpl implements BlockFile {
+public class SimpleBlockFile implements BlockFile {
 
 	private File file;
 	private Integer blockSize;
 	private RandomAccessFile fileAccessor;
 	
-	public BlockFileImpl(String string, Integer blockSize) {
+	public SimpleBlockFile(String string, Integer blockSize) {
 		setBlockSize(blockSize);
 		setFile(constructFile(string));
 		verifyFile();
@@ -93,7 +93,7 @@ public class BlockFileImpl implements BlockFile {
 	}
 	@Override
 	public Long getTotalBlocks() {
-		return this.getFile().getTotalSpace() / this.getBlockSize();
+		return this.getFile().length() / this.getBlockSize();
 	}
 	@Override
 	public void writeBlock(Long blockNumber, byte[] block) {

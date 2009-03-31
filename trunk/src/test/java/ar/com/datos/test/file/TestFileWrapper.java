@@ -11,7 +11,7 @@ import org.jmock.Mockery;
 import org.jmock.lib.legacy.ClassImposteriser;
 
 import ar.com.datos.file.BlockFile;
-import ar.com.datos.file.BlockFileImpl;
+import ar.com.datos.file.SimpleBlockFile;
 import ar.com.datos.file.exception.InvalidBlockException;
 
 public class TestFileWrapper extends TestCase {
@@ -44,9 +44,10 @@ public class TestFileWrapper extends TestCase {
 	 * @throws Exception
 	 */
 	public void testAgregadoBloque() throws Exception {
-		fileSize = blockSize * new Random().nextLong();
+		Long cantidadDeBloques = Math.abs(new Random().nextLong());
+		fileSize = blockSize * cantidadDeBloques;
 		context.checking(new Expectations() {{
-			one(fileMock).length();
+			allowing(fileMock).length();
 			will(returnValue(fileSize));
 			one(accessMock).seek(fileSize);
 			one(accessMock).write(with(any(byte[].class)));
@@ -66,9 +67,10 @@ public class TestFileWrapper extends TestCase {
 		Long otroNum = Math.abs(new Random().nextLong());
 		final Long bloqueALeer = otroNum > cantidadDeBloques? cantidadDeBloques : otroNum;
 		context.checking(new Expectations() {{
-			one(accessMock).seek(bloqueALeer);
+			allowing(fileMock).length();
+			will(returnValue(fileSize));
+			one(accessMock).seek(bloqueALeer * blockSize);
 			one(accessMock).read(with(any(byte[].class)));
-			will(returnValue(blockSize));
 		}});
 		BlockFile bf = getNewBlockFile();
 		byte[] bloqueLeido = bf.readBlock(bloqueALeer);
@@ -87,11 +89,9 @@ public class TestFileWrapper extends TestCase {
 			will(returnValue(readEnabled));
 			one(fileMock).canWrite();
 			will(returnValue(writeEnabled));
-			one(fileMock).length();
-			will(returnValue(fileSize));
 			
 		}});
-		return new BlockFileImpl("direccion",blockSize){ 
+		return new SimpleBlockFile("direccion",blockSize){ 
 			@Override
 			protected File constructFile(String string) {
 				return fileMock;

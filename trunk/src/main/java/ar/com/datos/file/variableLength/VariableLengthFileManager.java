@@ -13,7 +13,7 @@ import ar.com.datos.buffer.SimpleInputBuffer;
 import ar.com.datos.buffer.variableLength.ArrayByte;
 import ar.com.datos.file.Address;
 import ar.com.datos.file.BlockFile;
-import ar.com.datos.file.BlockFileImpl;
+import ar.com.datos.file.SimpleBlockFile;
 import ar.com.datos.file.DynamicAccesor;
 import ar.com.datos.serializer.PrimitiveTypeSerializer;
 import ar.com.datos.serializer.QueueSerializer;
@@ -91,7 +91,7 @@ public class VariableLengthFileManager implements DynamicAccesor, BufferRealease
 		
 	}
 	public BlockFile constructFile(String nombreArchivo, Integer blockSize) {
-		return new BlockFileImpl(nombreArchivo, blockSize);
+		return new SimpleBlockFile(nombreArchivo, blockSize);
 	}
 	/**
 	 * Recupera el último bloque, y lo hidrata en un buffer. En caso que el último bloque
