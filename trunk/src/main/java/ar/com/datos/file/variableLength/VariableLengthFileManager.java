@@ -10,6 +10,7 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import ar.com.datos.buffer.InputBuffer;
 import ar.com.datos.buffer.OutputBuffer;
 import ar.com.datos.buffer.SimpleInputBuffer;
+import ar.com.datos.buffer.SimpleOutputBuffer;
 import ar.com.datos.buffer.variableLength.ArrayByte;
 import ar.com.datos.file.Address;
 import ar.com.datos.file.BlockFile;
@@ -186,8 +187,7 @@ public class VariableLengthFileManager implements DynamicAccesor, BufferRealease
 	 * @return
 	 */
 	private OutputBuffer constructEmptyOBuffer() {
-		// TODO Auto-generated method stub
-		return null;
+		return new SimpleOutputBuffer();
 	}
 	protected SimpleInputBuffer constructEmptyIBuffer() {
 		return new SimpleInputBuffer();

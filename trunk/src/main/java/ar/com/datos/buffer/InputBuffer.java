@@ -8,8 +8,8 @@ import ar.com.datos.buffer.exception.BufferException;
  */
 public interface InputBuffer {
 	/**
-	 * Lee una cantidad n de datos del buffer, siendo n
-     * el size del array de data.
+	 * Lee una cantidad n de datos del buffer, siendo n el size del array de data.
+	 * 
 	 * @param data un array con el size que se quiera leer en el buffer
 	 * @return un array de bytes leidos del buffer
 	 * @throws BufferException si no hay suficientes datos para leer desde el buffer
