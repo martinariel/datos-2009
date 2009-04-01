@@ -1,4 +1,4 @@
-package ar.com.datos.wordandsoundservice.exception;
+package ar.com.datos.persistencia.exception;
 
 public class WordIsAlreadyRegisteredException extends Exception{
 
