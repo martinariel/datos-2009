@@ -28,7 +28,20 @@ public class RegistroOffsetWord implements Serializable<RegistroOffsetWord> {
 	String palabra;
 	
 	
+	//Ver bien el tema de los constructores *****
+
+	public RegistroOffsetWord( Address<Long, Short> offset, String unapalabra )
+	{
+		blocknumber = offset.getBlockNumber();
+		objectnumber = offset.getObjectNumber();
+		palabra = unapalabra;
+	}
+	
 	private RegistroOffsetWord(){}
+	
+	//********************************************
+	
+	
 	
 	public Address<Long,Short> getOffset() 
 	{
