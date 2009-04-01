@@ -1,23 +1,22 @@
 package ar.com.datos.file.variableLength;
 
 import java.util.List;
-import java.util.Queue;
 
-public class HydratedBlock {
-	private List<Queue<Object>> datos;
+public class HydratedBlock<T> {
+	private List<T> datos;
 	private Long blockNumber;
 	private Long nextBlockNumber;
-	public HydratedBlock(List<Queue<Object>> datos, Long blockNumber, Long nextBlockNumber) {
+	public HydratedBlock(List<T> datos, Long blockNumber, Long nextBlockNumber) {
 		super();
 		setDatos(datos);
 		setNextBlockNumber(nextBlockNumber);
 		setBlockNumber(blockNumber);
 		
 	}
-	public List<Queue<Object>> getDatos() {
+	public List<T> getDatos() {
 		return datos;
 	}
-	public void setDatos(List<Queue<Object>> datos) {
+	public void setDatos(List<T> datos) {
 		this.datos = datos;
 	}
 	public Long getBlockNumber() {

@@ -5,6 +5,11 @@ import java.util.Queue;
 import ar.com.datos.buffer.InputBuffer;
 import ar.com.datos.buffer.OutputBuffer;
 
+/**
+ * 
+ * @deprecated (No entendi por que esta clase estaba, pero por ahora la pongo como deprecated)
+ *
+ */
 public interface QueueSerializer {
 
 	/*
