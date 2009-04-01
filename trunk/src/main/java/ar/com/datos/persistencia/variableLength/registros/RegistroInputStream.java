@@ -19,9 +19,14 @@ public class RegistroInputStream implements Serializable<RegistroInputStream>{
 
 	InputStream stream;
 	
+	//Ver bien el tema de los constructores *****
+	
+	public RegistroInputStream( InputStream istream )
+	{ stream = istream; }
 	
 	private RegistroInputStream(){}
 	
+	//********************************************
 	
 	public InputStream getStream() 
 	{
