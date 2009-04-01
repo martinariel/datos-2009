@@ -18,6 +18,7 @@ import ar.com.datos.buffer.OutputBuffer;
  * serializador.
  * 
  * @author fvalido
+ * @deprecated Se reemplaza con la interface Serializable. En los proximos días la borro.
  */
 public class DynamicSerializer implements Serializer<Queue<Object>>, QueueSerializer {
 	/**

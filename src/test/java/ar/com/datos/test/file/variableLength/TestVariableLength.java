@@ -16,7 +16,7 @@ import ar.com.datos.file.BlockFile;
 import ar.com.datos.file.DynamicAccesor;
 import ar.com.datos.file.variableLength.VariableLengthAddress;
 import ar.com.datos.file.variableLength.VariableLengthFileManager;
-import ar.com.datos.serializer.QueueSerializer;
+import ar.com.datos.serializer.Serializer;
 /**
  * Pruebas con archivo inicial vacío
  * @author Juan Manuel Barreneche
@@ -24,7 +24,7 @@ import ar.com.datos.serializer.QueueSerializer;
  */
 public class TestVariableLength extends MockObjectTestCase {
 	private Integer blockSize = 512;
-	private QueueSerializer serializerMock;
+	private Serializer serializerMock;
 	private BlockFile fileMock;
 	private Integer cantidadDeVecesCreado;
 	private OutputBuffer bufferMock;
@@ -33,7 +33,7 @@ public class TestVariableLength extends MockObjectTestCase {
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
-		serializerMock = this.mock(QueueSerializer.class);
+		serializerMock = this.mock(Serializer.class);
 		fileMock = this.mock(BlockFile.class);
 		bufferMock = this.mock(OutputBuffer.class);
 		cantidadDeVecesCreado = 0;

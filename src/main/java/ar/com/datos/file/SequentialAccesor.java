@@ -1,9 +1,8 @@
 package ar.com.datos.file;
 
-import java.util.Queue;
 
-public interface SequentialAccesor extends Iterable<Queue<Object>>{
+public interface SequentialAccesor<T> extends Iterable<T>{
 
-	public Address<Long, Short> addEntity(Queue<Object> campos);
+	public Address<Long, Short> addEntity(T campos);
 	
 }

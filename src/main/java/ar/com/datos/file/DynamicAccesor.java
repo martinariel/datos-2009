@@ -1,9 +1,8 @@
 package ar.com.datos.file;
 
-import java.util.Collection;
 
 
-public interface DynamicAccesor extends SequentialAccesor {
+public interface DynamicAccesor<T> extends SequentialAccesor<T> {
 
-	public Collection<Object> get(Address<Long, Short> direccion);
+	public T get(Address<Long, Short> direccion);
 }

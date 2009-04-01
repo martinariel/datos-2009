@@ -294,6 +294,8 @@ public class TestSerializer extends ExtendedTestCase {
 	
 	/**
 	 * Test para la clase {@link DynamicSerializer}
+	 * @deprecated
+	 * Como {@link DynamicSerializer} quedo deprecada este test esta deprecado
 	 */
 	public void testDynamicSerializer() {
 		// Creo los objetos para la cola.
