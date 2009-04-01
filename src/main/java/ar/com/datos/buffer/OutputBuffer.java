@@ -52,5 +52,4 @@ public interface OutputBuffer {
 	 * @return
 	 */
 	public Short getEntitiesCount();
-	
 }

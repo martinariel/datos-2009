@@ -9,8 +9,8 @@ import ar.com.datos.buffer.exception.BufferException;
 import ar.com.datos.buffer.variableLength.ArrayByte;
 
 /**
+ * Una implementacion simple (pero no por eso menos util) de InputBuffer. 
  * @author marcos
- *
  */
 public class SimpleInputBuffer implements InputBuffer {
 	
@@ -56,12 +56,15 @@ public class SimpleInputBuffer implements InputBuffer {
 		if (this.pos == this.buffer.length) {
 			throw new BufferException("Not enough data to read");
 		}
-		this.pos++;
-		return this.buffer[this.pos - 1];
-	}
-	public void fill(ArrayByte leftSubArray) {
-		// TODO Auto-generated method stub
-		
+		return this.buffer[this.pos++ - 1];
 	}
 	
+	/** @see ar.com.datos.buffer.InputBuffer#fill()*/
+	public void fill(ArrayByte array) {
+		if (array.getLength() > this.getBufferSize()){
+			throw new BufferException("Cannot fill input buffer: array size " +
+					"greater than input buffer size.");
+		}
+		//System.arraycopy(array, 0, this.buffer, 0, this.getBufferSize());
+	}
 }
