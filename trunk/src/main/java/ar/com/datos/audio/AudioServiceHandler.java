@@ -13,116 +13,128 @@ import ar.com.datos.reproduccionaudio.exception.SimpleAudioPlayerException;
 /**
  * Componente encapuslador de acciones de audio
  *
+ * Singleton
  * @author mfernandez
  *
  */
 
 public class AudioServiceHandler {
 
-	private boolean recording;
-	private boolean playing;
-	private SimpleAudioPlayer reproductor;
-	private SimpleAudioRecorder grabador;
+    private boolean recording;
+    private boolean playing;
+    private SimpleAudioPlayer reproductor;
+    private SimpleAudioRecorder grabador;
 
-	public AudioServiceHandler(){
-		recording = false;
-		playing = false;
-	}
+    private static AudioServiceHandler instance = null;
 
+    private AudioServiceHandler(){
+        recording = false;
+        playing = false;
+    }
 
-	public boolean isRecording() {
-		return recording;
-	}
+    /**
+     *
+     * @return Instancia singleton
+     */
+    public static AudioServiceHandler getInstance(){
+        if (instance == null) instance = new AudioServiceHandler();
+        return instance;
+    }
 
-	public boolean isPlaying(){
-		return playing;
-	}
+    public boolean isRecording() {
+        return recording;
+    }
 
-	/**
-	 * Inicia un grabador de audio en el outputstream
-	 *
-	 * @param output
-	 * @throws AudioServiceHandlerException
-	 */
-	public void record(OutputStream output) throws AudioServiceHandlerException{
-		if (!recording && !playing){
+    public boolean isPlaying(){
+        return playing;
+    }
 
-			grabador = new SimpleAudioRecorder(AudioFileFormat.Type.AU,output);
+    /**
+     * Inicia un grabador de audio en el outputstream
+     *
+     * @param output
+     * @throws AudioServiceHandlerException
+     */
+    public void record(OutputStream output) throws AudioServiceHandlerException{
+        if (!recording && !playing){
 
-			try{
-				grabador.init();
-				grabador.startRecording();
-				recording = true;
-			}
-			catch (SimpleAudioRecorderException e){
-				throw new AudioServiceHandlerException();
-			}
+            grabador = new SimpleAudioRecorder(AudioFileFormat.Type.AU,output);
 
-
-		}
-		else {
-			throw new AudioServiceHandlerException();
-		}
-	}
-
-	/**
-	 * Inicia la reproduccion de audio en el inputstream
-	 *
-	 * @param input
-	 * @throws AudioServiceHandlerException
-	 */
-	public void play(InputStream input) throws AudioServiceHandlerException{
-		if (!recording && !playing){
-
-			reproductor = new SimpleAudioPlayer(input);
-
-			try {
-				reproductor.init();
-				reproductor.startPlaying();
-			}
-			catch (SimpleAudioPlayerException e){
-				throw new AudioServiceHandlerException();
-			}
-
-		}
-		else {
-			throw new AudioServiceHandlerException();
-		}
-
-	}
+            try{
+                grabador.init();
+                grabador.startRecording();
+                recording = true;
+            }
+            catch (SimpleAudioRecorderException e){
+                throw new AudioServiceHandlerException();
+            }
 
 
-	/**
-	 * Detiene la grabacion de audio
-	 *
-	 */
-	public void stopRecording(){
-		if (recording){
-			try {
-				grabador.stopRecording();
-				recording = false;
-			}
-			catch(Exception e){
-				//Que hago aca?
-			}
-		}
+        }
+        else {
+            throw new AudioServiceHandlerException();
+        }
+    }
 
-	}
+    /**
+     * Inicia la reproduccion de audio en el inputstream
+     *
+     * @param input
+     * @throws AudioServiceHandlerException
+     */
+    public Thread play(InputStream input) throws AudioServiceHandlerException{
+        if (!recording && !playing){
 
-	/**
-	 * Detiene la reproduccion de audio
-	 *
-	 */
-	public void stopPlaying(){
-		if (playing){
-			try {
-				reproductor.stopPlaying();
-				playing = false;
-			}
-			catch (Exception e){
-					//Que hago aca?
-			}
-		}
+            reproductor = new SimpleAudioPlayer(input);
 
-	}
+            try {
+                reproductor.init();
+                reproductor.startPlaying();
+            }
+            catch (SimpleAudioPlayerException e){
+                throw new AudioServiceHandlerException();
+            }
+
+        }
+        else {
+            throw new AudioServiceHandlerException();
+        }
+
+        return reproductor;
+    }
+
+
+    /**
+     * Detiene la grabacion de audio
+     *
+     */
+    public void stopRecording(){
+        if (recording){
+            try {
+                grabador.stopRecording();
+                recording = false;
+            }
+            catch(Exception e){
+                //Que hago aca?
+            }
+        }
+
+    }
+
+    /**
+     * Detiene la reproduccion de audio
+     *
+     */
+    public void stopPlaying(){
+        if (playing){
+            try {
+                reproductor.stopPlaying();
+                playing = false;
+            }
+            catch (Exception e){
+                    //Que hago aca?
+            }
+        }
+
+    }
 }
