@@ -16,7 +16,6 @@ public class FictFile<T extends Serializable<T>> implements DynamicAccesor<T>{
 	
 	@Override
 	public T get(Address<Long, Short> direccion) {
-		
 		return lista.get( direccion.getBlockNumber().intValue() );
 	}
 
@@ -33,6 +32,11 @@ public class FictFile<T extends Serializable<T>> implements DynamicAccesor<T>{
 	@Override
 	public Iterator<T> iterator() {
 		return lista.iterator();
+	}
+
+	@Override
+	public Boolean isEmpty() {
+		return lista.isEmpty();
 	}
 
 }
