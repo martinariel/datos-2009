@@ -27,11 +27,11 @@ public class TestSoundPersistenceService extends TestCase {
 		String palabradeprueba = "palabra";
 		InputStream streamoriginal = new ByteArrayInputStream( palabradeprueba.getBytes() );
 		
-		//Test verificar que la palabra no está.
+		//Test verificar que la palabra no estï¿½.
 		
 		assertFalse( sps.isRegistered( palabradeprueba ));
 		
-		//Test agregar palabra que no está.
+		//Test agregar palabra que no estï¿½.
 		try
 		{
 			sps.addWord( palabradeprueba , streamoriginal );
@@ -40,7 +40,7 @@ public class TestSoundPersistenceService extends TestCase {
 		catch ( WordIsAlreadyRegisteredException ex ) { assertTrue(false); }
 		
 		
-		//Test verificar que la palabra está.
+		//Test verificar que la palabra estï¿½.
 		assertTrue( sps.isRegistered( palabradeprueba ));
 		
 		
@@ -68,7 +68,7 @@ public class TestSoundPersistenceService extends TestCase {
 		
 		
 		//Test verificar que el stream de la palabra original no 
-		//se modificó.
+		//se modificï¿½.
 		try
 		{
 			InputStream streamrecuperado = sps.readWord( palabradeprueba );
@@ -102,7 +102,7 @@ public class TestSoundPersistenceService extends TestCase {
 		}
 		catch ( WordIsAlreadyRegisteredException ex ) { assertTrue(false); }
 		
-		//pido la palabra de prueba que no está.
+		//pido la palabra de prueba que no estï¿½.
 		
 		try
 		{
@@ -111,7 +111,7 @@ public class TestSoundPersistenceService extends TestCase {
 		}
 		catch ( UnregisteredWordException ex ){ assertTrue( true ); }
 		
-		//Agrego la palabra dos veces, la seguna debería tirar la excepcion
+		//Agrego la palabra dos veces, la seguna deberï¿½a tirar la excepcion
 		
 		try
 		{ sps.addWord(palabradeprueba,streamdeprueba); }
@@ -122,7 +122,7 @@ public class TestSoundPersistenceService extends TestCase {
 		catch ( WordIsAlreadyRegisteredException ex ){ assertTrue(true); }
 	}
 	
-	public void testMúltiplesPalabras()
+	public void testMultiplesPalabras()
 	{
 		limpiarSPS();
 		
@@ -147,13 +147,13 @@ public class TestSoundPersistenceService extends TestCase {
 			sps.addWord( "" , streamfalso );
 			sps.addWord( "!!!" , streamfalso );
 			sps.addWord( "perro" , streamfalso );
-			sps.addWord( "¿?" , streamfalso );
+			sps.addWord( "ï¿½?" , streamfalso );
 			
 			assertTrue( true );
 		}
 		catch ( WordIsAlreadyRegisteredException ex ) { assertTrue(false); }
 		
-		//pregunto si está la palabra de prueba.
+		//pregunto si estï¿½ la palabra de prueba.
 		assertTrue( sps.isRegistered( palabradeprueba ));
 		
 		//Verifico que el stream sea el correcto
