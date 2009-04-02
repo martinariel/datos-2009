@@ -16,15 +16,15 @@ import ar.com.datos.persistencia.variableLength.SoundPersistenceServiceVariableL
  * @author mfernandez
  *
  */
-public class GrabadorPalabras {
+public class WordsRecorder {
 
     private AudioServiceHandler servicioAudio;
     private SoundPersistenceService servicioArchivos;
-    private IConectorUsuarioGrabadorPalabras interfazUsuario;
+    private IWordsRecorderConector interfazUsuario;
     private ByteArrayOutputStream audio;
     private String palabraActual;
 
-    public GrabadorPalabras(IConectorUsuarioGrabadorPalabras interfazUsuario) {
+    public WordsRecorder(IWordsRecorderConector interfazUsuario) {
         servicioAudio = AudioServiceHandler.getInstance();
         servicioArchivos = new SoundPersistenceServiceVariableLengthImpl();
         this.interfazUsuario = interfazUsuario;
@@ -37,11 +37,11 @@ public class GrabadorPalabras {
      */
     private void grabarPalabra(){
 
-        if (interfazUsuario.iniciarGrabacion()){
+        if (interfazUsuario.canStartRecording()){
             //Grabo en memoria!!
             audio = new ByteArrayOutputStream();
             servicioAudio.record(audio);
-            interfazUsuario.grabacionIniciada();
+            interfazUsuario.recordingStarted();
         }
     }
 
@@ -65,12 +65,12 @@ public class GrabadorPalabras {
                 System.out.println("Thread principal interrumpido");
             }
 
-            if (interfazUsuario.palabraGrabadaCorrectamente()) {
+            if (interfazUsuario.wordRecordedOk()) {
                 try {
                     servicioArchivos.addWord(palabraActual, inputAudio);
                 }
                 catch (WordIsAlreadyRegisteredException e) {
-                    interfazUsuario.notificarErrorGrabacion();
+                    interfazUsuario.notifyRecordingError();
                 }
             }
         }
@@ -83,7 +83,7 @@ public class GrabadorPalabras {
      *
      * @param palabras
      */
-    public void guardarPalabras(Collection<String> palabras){
+    public void recordWords(Collection<String> palabras){
 
         for (String palabra : palabras){
 
@@ -92,7 +92,7 @@ public class GrabadorPalabras {
             }
             catch (UnregisteredWordException e){
                 palabraActual = palabra;
-                interfazUsuario.notificarPalabra(palabraActual);
+                interfazUsuario.notifyWord(palabraActual);
                 grabarPalabra();
             }
 

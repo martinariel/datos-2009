@@ -1,8 +1,8 @@
 package ar.com.datos;
 
-import ar.com.datos.audio.IConectorUsuarioGrabadorPalabras;
-import ar.com.datos.audio.ReproductorPalabras;
-import ar.com.datos.audio.GrabadorPalabras;
+import ar.com.datos.audio.IWordsRecorderConector;
+import ar.com.datos.audio.WordsPlayer;
+import ar.com.datos.audio.WordsRecorder;
 
 import ar.com.datos.parser.IParser;
 import ar.com.datos.parser.SimpleTextParser;
@@ -15,19 +15,19 @@ import java.util.Collection;
  *
  */
 
-public class Main implements IConectorUsuarioGrabadorPalabras{
+public class Main implements IWordsRecorderConector{
 
     private IParser parser;
     private BufferedReader bufferReaderTeclado;
-    private ReproductorPalabras reproductor;
-    private GrabadorPalabras grabador;
+    private WordsPlayer reproductor;
+    private WordsRecorder grabador;
 
     public Main() {
 
         parser				= new SimpleTextParser();
         bufferReaderTeclado = new BufferedReader(new InputStreamReader(System.in));
-        reproductor 		= new ReproductorPalabras();
-        grabador			= new GrabadorPalabras(this);
+        reproductor 		= new WordsPlayer();
+        grabador			= new WordsRecorder(this);
 
     }
 
@@ -37,38 +37,38 @@ public class Main implements IConectorUsuarioGrabadorPalabras{
 
 
     @Override
-    public void notificarPalabra(String palabra){
+    public void notifyWord(String palabra){
         System.out.println("Se ha encontrado la palabra " + palabra);
     }
 
     @Override
-    public boolean iniciarGrabacion(){
-        String opcion = leerStringTeclado();
+    public boolean canStartRecording(){
+        String opcion = readKeyboardString();
         return opcion == "i";
     }
 
     @Override
-    public boolean palabraGrabadaCorrectamente(){
+    public boolean wordRecordedOk(){
         System.out.println("Opciones:");
         System.out.println("s: Guardar la palabra.");
         System.out.println("Grabar nuevamente (cualquier otra tecla).");
-        String opcion = leerStringTeclado();
+        String opcion = readKeyboardString();
         return opcion == "s";
     }
 
     @Override
-    public void notificarErrorGrabacion(){
+    public void notifyRecordingError(){
 
     }
 
-    public void grabacionIniciada(){
-        String opcion = leerStringTeclado();
+    public void recordingStarted(){
+        String opcion = readKeyboardString();
 
         if (opcion == "f"){
             grabador.stopRecording();
         }
         else {
-            grabacionIniciada();
+            recordingStarted();
         }
     }
 
@@ -76,7 +76,7 @@ public class Main implements IConectorUsuarioGrabadorPalabras{
     /**
      * @return String leido por teclado
      */
-    private String leerStringTeclado(){
+    private String readKeyboardString(){
         String linea = "";
         try{
             linea = bufferReaderTeclado.readLine();
@@ -97,11 +97,11 @@ public class Main implements IConectorUsuarioGrabadorPalabras{
         System.out.println("2 - Reproducción de palabras");
         System.out.println("Seleccione una opcion:");
 
-        String tecla = leerStringTeclado();
+        String tecla = readKeyboardString();
 
         switch(tecla.charAt(0)){
-        case '1': cargarDocumento();break;
-        case '2': reproducirDocumento();break;
+        case '1': loadDocument();break;
+        case '2': playDocument();break;
         }
     }
 
@@ -110,19 +110,19 @@ public class Main implements IConectorUsuarioGrabadorPalabras{
      * Solicita al usuario la ruta del documento e intenta parsearlo,
      * y luego guarda las palabras no existentes
      */
-    private void cargarDocumento(){
+    private void loadDocument(){
 
         System.out.println("Ingrese una ruta valida:");
 
-        String ruta = leerStringTeclado();
+        String ruta = readKeyboardString();
         Collection<String> palabras = null;
 
         try {
             palabras = parser.parseTextFile(ruta);
-            grabador.guardarPalabras(palabras);
+            grabador.recordWords(palabras);
         }
         catch(Exception e){
-            cargarDocumento();
+            loadDocument();
         }
 
     }
@@ -132,18 +132,18 @@ public class Main implements IConectorUsuarioGrabadorPalabras{
      * cada una de las palabras.
      *
      */
-    private void reproducirDocumento(){
+    private void playDocument(){
         System.out.println("Ingrese una ruta valida:");
 
-        String ruta = leerStringTeclado();
+        String ruta = readKeyboardString();
         Collection<String> palabras = null;
 
         try {
             palabras = parser.parseTextFile(ruta);
-            reproductor.reproducirPalabras(palabras);
+            reproductor.playWords(palabras);
         }
         catch(Exception e){
-            reproducirDocumento();
+            playDocument();
         }
     }
 
