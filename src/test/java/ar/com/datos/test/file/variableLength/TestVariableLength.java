@@ -1,5 +1,7 @@
 package ar.com.datos.test.file.variableLength;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -11,6 +13,7 @@ import org.jmock.lib.action.CustomAction;
 
 import ar.com.datos.buffer.InputBuffer;
 import ar.com.datos.buffer.OutputBuffer;
+import ar.com.datos.buffer.variableLength.ArrayByte;
 import ar.com.datos.file.Address;
 import ar.com.datos.file.BlockFile;
 import ar.com.datos.file.DynamicAccesor;
@@ -23,21 +26,19 @@ import ar.com.datos.serializer.Serializer;
  *
  */
 public class TestVariableLength extends MockObjectTestCase {
-	private Integer blockSize = 512;
+	private Integer blockSize;
+	@SuppressWarnings("unchecked")
 	private Serializer serializerMock;
 	private BlockFile fileMock;
 	private Integer cantidadDeVecesCreado;
-	private OutputBuffer bufferMock;
 	private Long cantidadDeBloquesInicial;
-	private Short cantidadDeObjetosEnOutputBuffer;
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
 		serializerMock = this.mock(Serializer.class);
 		fileMock = this.mock(BlockFile.class);
-		bufferMock = this.mock(OutputBuffer.class);
 		cantidadDeVecesCreado = 0;
-		cantidadDeObjetosEnOutputBuffer = 0;
+		blockSize = 512;
 	}
 	@Override
 	protected void tearDown() throws Exception {
@@ -51,6 +52,7 @@ public class TestVariableLength extends MockObjectTestCase {
 	 * Verifico también que pueda recuperar dicho objeto 
 	 * @throws Exception
 	 */
+	@SuppressWarnings("unchecked")
 	public void testCreacion() throws Exception {
 		this.cantidadDeBloquesInicial = 0L;
 		final Queue<Object> campos1 = new LinkedList<Object>();
@@ -80,12 +82,13 @@ public class TestVariableLength extends MockObjectTestCase {
 	 * Verifico también que pueda recuperar dicho objeto 
 	 * @throws Exception
 	 */
+	@SuppressWarnings("unchecked")
 	public void testAgregadoAUnBloqueExistenteEnElArchivo() throws Exception {
 		this.cantidadDeBloquesInicial = 2L;
 		final Queue<Object> campos = new LinkedList<Object>();
 		final byte[] bloque = new byte[blockSize];
 		Byte cantidadDeObjetos = 5;
-		bloque[blockSize-1] = cantidadDeObjetos;
+		setCantidadDeObjetos(bloque, cantidadDeObjetos);
 		checking(new Expectations(){{
 			one(fileMock).readBlock(cantidadDeBloquesInicial - 1);
 			will(returnValue(bloque));
@@ -106,12 +109,13 @@ public class TestVariableLength extends MockObjectTestCase {
 	 * El número de objeto del objeto agregado tiene que ser 0, ya que es el primero
 	 * @throws Exception
 	 */
+	@SuppressWarnings("unchecked")
 	public void testAgregadoAUnBloqueNuevoConArchivoNoVacio() throws Exception {
 		this.cantidadDeBloquesInicial = 2L;
 		final Queue<Object> campos = new LinkedList<Object>();
 		final byte[] bloque = new byte[blockSize];
 		Byte cantidadDeObjetos = 0;
-		bloque[blockSize-1] = cantidadDeObjetos;
+		setCantidadDeObjetos(bloque, cantidadDeObjetos);
 		checking(new Expectations(){{
 			one(fileMock).readBlock(cantidadDeBloquesInicial - 1);
 			will(returnValue(bloque));
@@ -134,6 +138,7 @@ public class TestVariableLength extends MockObjectTestCase {
 	 * el primero hidratado (que hidrató anteriormente)  
 	 * @throws Exception
 	 */
+	@SuppressWarnings("unchecked")
 	public void testLecturaAntesDelUltimoBloque() throws Exception {
 		this.cantidadDeBloquesInicial = 3L;
 		final Queue<Object> campos1 = new LinkedList<Object>();
@@ -143,10 +148,10 @@ public class TestVariableLength extends MockObjectTestCase {
 		final byte[] bloqueFinal = new byte[blockSize];
 		final byte[] bloqueDatos = new byte[blockSize];
 		Byte cantidadDeObjetos = 0;
-		bloqueFinal[blockSize-1] = cantidadDeObjetos;
+		setCantidadDeObjetos(bloqueFinal, cantidadDeObjetos);
 		final Long numeroDeBloqueBuscado = 0L;
 		cantidadDeObjetos = 2;
-		bloqueDatos[blockSize-1] = cantidadDeObjetos;
+		setCantidadDeObjetos(bloqueDatos, cantidadDeObjetos);
 		checking(new Expectations(){{
 			one(fileMock).readBlock(cantidadDeBloquesInicial - 1);
 			will(returnValue(bloqueFinal));
@@ -165,40 +170,27 @@ public class TestVariableLength extends MockObjectTestCase {
 	 * Voy a pedirle que hidrate un objeto X que se encuentra en varios bloques
 	 * por ende su número de objeto es 0
 	 * En el bloque existe únicamente dicho registro
-	 * Espero que, primero le pida el último bloque (porque  
+	 * Espero que, primero le pida el último bloque (porque de esa manera es como se inicia el archivo)
+	 * Luego espero que lea el numero de bloque 
 	 * @throws Exception
 	 */
+	@SuppressWarnings("unchecked")
 	public void testLecturaRegistroEnVariosBloques() throws Exception {
 		this.cantidadDeBloquesInicial = 3L;
 		final Queue<Object> campos1 = new LinkedList<Object>();
 		campos1.add(1);
+		final byte[] bloqueDatos = new byte[blockSize];
 		final byte[] bloqueFinal = new byte[blockSize];
 		Byte cantidadDeObjetos = 0;
-		bloqueFinal[blockSize-1] = cantidadDeObjetos;
-		// Está serializado a mano, esperemos no haberle pifiado
-		bloqueFinal[blockSize-2] = 2;
-		bloqueFinal[blockSize-3] = 0;
-		bloqueFinal[blockSize-4] = 0;
-		bloqueFinal[blockSize-5] = 0;
-		bloqueFinal[blockSize-6] = 0;
-		bloqueFinal[blockSize-7] = 0;
-		bloqueFinal[blockSize-8] = 0;
-		bloqueFinal[blockSize-9] = 0;
-		final byte[] bloqueDatos = new byte[blockSize];
+		setCantidadDeObjetos(bloqueFinal, cantidadDeObjetos);
+		setearSiguientePuntero(bloqueFinal,(byte)2);
+
 		cantidadDeObjetos = 0;
-		bloqueFinal[blockSize-1] = cantidadDeObjetos;
+		setCantidadDeObjetos(bloqueFinal, cantidadDeObjetos);
 		final Long numeroDeBloqueBuscado = 1L;
 		cantidadDeObjetos = 0;
-		bloqueDatos[blockSize-1] = cantidadDeObjetos;
-		// Está serializado a mano, esperemos no haberle pifiado
-		bloqueDatos[blockSize-2] = 2;
-		bloqueDatos[blockSize-3] = 0;
-		bloqueDatos[blockSize-4] = 0;
-		bloqueDatos[blockSize-5] = 0;
-		bloqueDatos[blockSize-6] = 0;
-		bloqueDatos[blockSize-7] = 0;
-		bloqueDatos[blockSize-8] = 0;
-		bloqueDatos[blockSize-9] = 0;
+		setCantidadDeObjetos(bloqueDatos, cantidadDeObjetos);
+		setearSiguientePuntero(bloqueDatos,(byte)2);
 		final Long numeroDeSegundoBloque = 2L;
 		checking(new Expectations(){{
 			one(fileMock).readBlock(cantidadDeBloquesInicial - 1);
@@ -219,6 +211,7 @@ public class TestVariableLength extends MockObjectTestCase {
 	 * Espero que las lecturas sean a medida que solicito y que no haya varias lecturas del mismo bloque.
 	 * @throws Exception
 	 */
+	@SuppressWarnings("unchecked")
 	public void testIteracion() throws Exception {
 		this.cantidadDeBloquesInicial = 4L;
 		final byte[] bloque0 = new byte[blockSize];
@@ -230,23 +223,8 @@ public class TestVariableLength extends MockObjectTestCase {
 		bloque2[blockSize-1] = 0;
 		bloque3[blockSize-1] = 1;
 		// puntero al siguiente bloque
-		bloque1[blockSize-2] = 2;
-		bloque1[blockSize-3] = 0;
-		bloque1[blockSize-4] = 0;
-		bloque1[blockSize-5] = 0;
-		bloque1[blockSize-6] = 0;
-		bloque1[blockSize-7] = 0;
-		bloque1[blockSize-8] = 0;
-		bloque1[blockSize-9] = 0;
-		// puntero al mismo bloque
-		bloque2[blockSize-2] = 2;
-		bloque2[blockSize-3] = 0;
-		bloque2[blockSize-4] = 0;
-		bloque2[blockSize-5] = 0;
-		bloque2[blockSize-6] = 0;
-		bloque2[blockSize-7] = 0;
-		bloque2[blockSize-8] = 0;
-		bloque2[blockSize-9] = 0;
+		setearSiguientePuntero(bloque1,(byte)2);
+		setearSiguientePuntero(bloque2,(byte)2);
 		final Queue<Object> campos0 = new LinkedList<Object>();
 		campos0.add(0);
 		final Queue<Object> campos1 = new LinkedList<Object>();
@@ -291,6 +269,125 @@ public class TestVariableLength extends MockObjectTestCase {
 		assertEquals(campos3, iterador.next());
 		assertFalse(iterador.hasNext());
 	}
+	/**
+	 * 
+	 * Voy a agregar 2 entidades al archivo estando vacio. La primera de tamaño menor al tamaño
+	 * permitido por el buffer y la segunda de tamaño mayor.
+	 * Esto debería generar 3 escrituras a disco. La primera escritura con los datos de deserializar
+	 * el primer registro y con cantidad de registros igual a uno.
+	 * La segunda con la primera parte de la serialización, el numero de bloque del siguiente bloque y 
+	 * con la marca de que hay cero registros.
+	 * La tercera y última, con lo restante de la serializacion, el número de bloque del mismo bloque (por ser el último)
+	 * y la marca de que hay cero registros.
+	 * @throws Exception
+	 */
+	@SuppressWarnings("unchecked")
+	public void testVaciadoDeOutputBuffer() throws Exception {
+		final byte[] serializacion1 = new byte[blockSize - 2];
+		for (Integer i = 0; i < serializacion1.length; i++) 
+			serializacion1[i] = 1; 
+		byte[] cantidadRegistrosB1 = new byte[] { (byte)0, (byte)1 };
+		final Collection<ArrayByte> bloque1 = new ArrayList<ArrayByte>();
+		bloque1.add(new ArrayByte(serializacion1));
+		bloque1.add(new ArrayByte(cantidadRegistrosB1));
+		
+		final byte[] serializacion2 = new byte[2 *(blockSize - 10)];
+		byte[] datosBloque2 = new byte[blockSize - 10];
+		byte[] datosBloque3 = new byte[blockSize - 10];
+		for (Integer i = 0; i < serializacion2.length / 2; i++) {
+			serializacion2[i] = 2; 
+			datosBloque2[i] = 2;
+		}
+		for (Integer i = serializacion2.length / 2; i < serializacion2.length; i++) {
+			serializacion2[i] = 3; 
+			datosBloque3[i-datosBloque2.length] = 3;
+		}
+		
+		byte[] siguienteRegistroB2 = new byte[] { (byte)0, (byte)0, (byte)0, (byte)0, (byte)0, (byte)0, (byte)0, (byte)2};
+		byte[] cantidadRegistrosB2 = new byte[] { (byte)0, (byte)0 };
+		final Collection<ArrayByte> bloque2 = new ArrayList<ArrayByte>();
+		bloque2.add(new ArrayByte(datosBloque2));
+		bloque2.add(new ArrayByte(siguienteRegistroB2));
+		bloque2.add(new ArrayByte(cantidadRegistrosB2));
+
+		byte[] siguienteRegistroB3 = new byte[] { (byte)0, (byte)0, (byte)0, (byte)0, (byte)0, (byte)0, (byte)0, (byte)2};
+		byte[] cantidadRegistrosB3 = new byte[] { (byte)0, (byte)0 };
+		final Collection<ArrayByte> bloque3 = new ArrayList<ArrayByte>();
+		bloque3.add(new ArrayByte(datosBloque3));
+		bloque3.add(new ArrayByte(siguienteRegistroB3));
+		bloque3.add(new ArrayByte(cantidadRegistrosB3));
+
+		final Queue<Object> campos = new LinkedList<Object>();
+		campos.add(0);
+		checking(new Expectations(){{
+			one(serializerMock).dehydrate(with(any(OutputBuffer.class)), with(campos));
+			will(new CustomAction("deshidratar") {
+				@Override
+				public Object invoke(Invocation invocation) throws Throwable {
+					OutputBuffer outputBuffer = (OutputBuffer) invocation.getParameter(0);
+					outputBuffer.write(serializacion1);
+					return null;
+				}
+			});
+			one(fileMock).writeBlock(with(0L), with(equal(bloque1)));
+			will(new CustomAction("writeBlock0") {
+				@Override
+				public Object invoke(Invocation invocation) throws Throwable {
+					cantidadDeBloquesInicial += 1;
+					return null;
+				}
+			});
+			one(serializerMock).dehydrate(with(any(OutputBuffer.class)), with(campos));
+			will(new CustomAction("deshidratar") {
+				@Override
+				public Object invoke(Invocation invocation) throws Throwable {
+					OutputBuffer outputBuffer = (OutputBuffer) invocation.getParameter(0);
+					outputBuffer.write(serializacion2);
+					return null;
+				}
+			});
+			one(fileMock).writeBlock(with(1L), with(equal(bloque2)));
+			will(new CustomAction("writeBlock1") {
+				@Override
+				public Object invoke(Invocation invocation) throws Throwable {
+					cantidadDeBloquesInicial += 1;
+					return null;
+				}
+			});
+			one(fileMock).writeBlock(with(2L), with(equal(bloque3)));
+			will(new CustomAction("writeBlock2") {
+				@Override
+				public Object invoke(Invocation invocation) throws Throwable {
+					cantidadDeBloquesInicial += 1;
+					return null;
+				}
+			});
+		}});
+		this.cantidadDeBloquesInicial = 0L;
+		DynamicAccesor unDynamicAccesor = crearArchivo();
+		Address direccionr1 = unDynamicAccesor.addEntity(campos);
+		Address direccionr2 = unDynamicAccesor.addEntity(campos);
+		assertEquals(0L, direccionr1.getBlockNumber());
+		assertEquals(0, direccionr1.getObjectNumber().intValue());
+		assertEquals(1L, direccionr2.getBlockNumber());
+		assertEquals(0, direccionr2.getObjectNumber().intValue());
+		
+	}
+	private void setCantidadDeObjetos(final byte[] bloque, Byte cantidadDeObjetos) {
+		bloque[blockSize-1] = cantidadDeObjetos;
+		bloque[blockSize-2] = 0;
+	}
+	private void setearSiguientePuntero(final byte[] bloque1, Byte siguiente) {
+		bloque1[blockSize-3] = siguiente;
+		bloque1[blockSize-4] = 0;
+		bloque1[blockSize-5] = 0;
+		bloque1[blockSize-6] = 0;
+		bloque1[blockSize-7] = 0;
+		bloque1[blockSize-8] = 0;
+		bloque1[blockSize-9] = 0;
+		bloque1[blockSize-10] = 0;
+	}
+	@SuppressWarnings("unchecked")
 	private DynamicAccesor crearArchivo() {
 		checking(new Expectations(){{
 			atLeast(1).of(fileMock).getTotalBlocks();
@@ -300,22 +397,12 @@ public class TestVariableLength extends MockObjectTestCase {
 					return cantidadDeBloquesInicial;
 				}
 			});
-			allowing(bufferMock).closeEntity();
-			will(new CustomAction("closeEntity") {
+			allowing(fileMock).getBlockSize();
+			will(new CustomAction("blockSize") {
 				@Override
 				public Object invoke(Invocation invocation) throws Throwable {
-					cantidadDeObjetosEnOutputBuffer += 1;
-					return null;
+					return blockSize;
 				}
-				
-			});
-			allowing(bufferMock).getEntitiesCount();
-			will(new CustomAction("entitiesCount") {
-				@Override
-				public Object invoke(Invocation invocation) throws Throwable {
-					return cantidadDeObjetosEnOutputBuffer;
-				}
-				
 			});
 		}});
 		return new VariableLengthFileManager("nombreArchivo",blockSize, serializerMock) {
@@ -323,10 +410,6 @@ public class TestVariableLength extends MockObjectTestCase {
 			public BlockFile constructFile(String nombreArchivo, Integer blockSize) {
 				cantidadDeVecesCreado++;
 				return fileMock;
-			}
-			@Override
-			public OutputBuffer getLastBlockBuffer() {
-				return bufferMock;
 			}
 		};
 	}

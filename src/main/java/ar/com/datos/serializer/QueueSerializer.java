@@ -16,7 +16,6 @@ public interface QueueSerializer {
 	 * (non-Javadoc)
 	 * @see ar.com.datos.serializer.Serializer#dehydrate(ar.com.datos.buffer.OutputBuffer, java.lang.Object)
 	 */
-	@SuppressWarnings("unchecked")
 	public void dehydrate(OutputBuffer output, Queue<Object> object);
 
 	/*
@@ -29,7 +28,6 @@ public interface QueueSerializer {
 	 * (non-Javadoc)
 	 * @see ar.com.datos.serializer.Serializer#getDehydrateSize(java.lang.Object)
 	 */
-	@SuppressWarnings("unchecked")
 	public long getDehydrateSize(Queue<Object> object);
 
 }

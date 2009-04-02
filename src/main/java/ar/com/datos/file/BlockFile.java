@@ -1,4 +1,9 @@
 package ar.com.datos.file;
+
+import java.util.Collection;
+
+import ar.com.datos.buffer.variableLength.ArrayByte;
+
 /**
  * Abstracción de archivo por bloques
  * La numeración de los bloques va de cero a n-1 siendo n la cantidad total de bloques
@@ -19,6 +24,12 @@ public interface BlockFile {
 	 * @return
 	 */
 	public void writeBlock(Long blockNumber, byte[] block);
+	/**
+	 * Intenta escribir el bloque formado por las partes con número blockNumber 
+	 * @param blockNumber
+	 * @return
+	 */
+	public void writeBlock(Long blockNumber, Collection<ArrayByte> partes);
 	/**
 	 * Agrega al final el nuevo bloque recibido. La cantidad total de bloques
 	 * aumenta en una unidad
