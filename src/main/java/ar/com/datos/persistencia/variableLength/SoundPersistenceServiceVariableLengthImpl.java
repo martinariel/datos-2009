@@ -49,8 +49,8 @@ public class SoundPersistenceServiceVariableLengthImpl implements SoundPersisten
 	 * Constructor sin argumentos.Configura nombres de archivos por default.
 	 * */
 	
-	public SoundPersistenceServiceVariableLengthImpl()
-	{
+	public SoundPersistenceServiceVariableLengthImpl(){
+		
 		nombrearchivodepalabras = DEFAULT_NAME_FILE_WORDS;
 		nombrearchivodesonidos = DEFAULT_NAME_FILE_STREAM;
 		
@@ -58,13 +58,14 @@ public class SoundPersistenceServiceVariableLengthImpl implements SoundPersisten
 	}
 	
 	
+	
 	/**
 	 * Constructor con argumentos.Permite definir el path de los archivos
 	 * en donde se guardan, y de los cuales se obtienen, palabras y sonidos.
 	 * */
 	
-	public SoundPersistenceServiceVariableLengthImpl( String pathwords, String pathsounds )
-	{
+	public SoundPersistenceServiceVariableLengthImpl( String pathwords, String pathsounds ){
+		
 		nombrearchivodepalabras = pathwords;
 		nombrearchivodesonidos = pathsounds;
 		
@@ -76,8 +77,8 @@ public class SoundPersistenceServiceVariableLengthImpl implements SoundPersisten
 	 * Instanciación y configuración de archivos.
 	 * Los deja listos para trabajar.
 	 * */
-	private void init()
-	{
+	
+	private void init() {
 		accesoapalabras = new VariableLengthFileManager<RegistroOffsetWord>(nombrearchivodepalabras,BLOCK_SIZE_WORDS);
 		accesoasonidos = new VariableLengthFileManager<RegistroInputStream>(nombrearchivodesonidos,BLOCK_SIZE_INPUTSTREAM);
 	}
@@ -138,7 +139,7 @@ public class SoundPersistenceServiceVariableLengthImpl implements SoundPersisten
 		while ( it.hasNext() )
 		{
 			RegistroOffsetWord reg = it.next();
-			if (reg.getPalabra() == word) return reg.getOffset();
+			if (reg.getPalabra().equals(word)) return reg.getOffset();
 		}
 		return null;
 	}
