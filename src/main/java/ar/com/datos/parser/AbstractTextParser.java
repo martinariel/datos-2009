@@ -46,21 +46,21 @@ public abstract class AbstractTextParser implements IParser {
 	}
 
 	/**
-	 *
 	 * @param linea
 	 * @return Linea normalizada, en minuscula, solo con las palabras y delimitador
 	 * " "
-	 *
 	 **/
 	private String normalizarLinea(String linea){
 
+		//TODO mejorar esto
 		linea = linea.toLowerCase();
-
-		//TODO: pasar a vector
-		linea = linea.replace('.', ' ');
-		linea = linea.replace(',', ' ');
-		linea = linea.replace(';', ' ');
-		linea = linea.replace('?', ' ');
+		linea = linea.replaceAll("á", "a");
+		linea = linea.replaceAll("é", "e");
+		linea = linea.replaceAll("í", "i");
+		linea = linea.replaceAll("ó", "o");
+		linea = linea.replaceAll("í", "u");
+		linea = linea.replaceAll("[^a-zA-Z]", " ");
+		linea = linea.replaceAll("  ", " ");
 
 		return linea;
 	}
