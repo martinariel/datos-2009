@@ -5,7 +5,6 @@ import ar.com.datos.persistencia.exception.WordIsAlreadyRegisteredException;
 import ar.com.datos.persistencia.exception.UnregisteredWordException;
 
 
-
 /**
  * Words and Sound Service
  * Permite guardar y recuperar palabras con sus respectivos InputStream.
