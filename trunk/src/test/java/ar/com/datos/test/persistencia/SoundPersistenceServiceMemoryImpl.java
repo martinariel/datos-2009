@@ -49,8 +49,8 @@ public class SoundPersistenceServiceMemoryImpl implements SoundPersistenceServic
 	 * Constructor sin argumentos.Configura nombres de archivos por default.
 	 * */
 	
-	public SoundPersistenceServiceMemoryImpl()
-	{
+	public SoundPersistenceServiceMemoryImpl(){
+		
 		nombrearchivodepalabras = DEFAULT_NAME_FILE_WORDS;
 		nombrearchivodesonidos = DEFAULT_NAME_FILE_STREAM;
 		
@@ -58,13 +58,14 @@ public class SoundPersistenceServiceMemoryImpl implements SoundPersistenceServic
 	}
 	
 	
+	
 	/**
 	 * Constructor con argumentos.Permite definir el path de los archivos
 	 * en donde se guardan, y de los cuales se obtienen, palabras y sonidos.
 	 * */
 	
-	public SoundPersistenceServiceMemoryImpl( String pathwords, String pathsounds )
-	{
+	public SoundPersistenceServiceMemoryImpl( String pathwords, String pathsounds ){
+		
 		nombrearchivodepalabras = pathwords;
 		nombrearchivodesonidos = pathsounds;
 		
@@ -76,8 +77,8 @@ public class SoundPersistenceServiceMemoryImpl implements SoundPersistenceServic
 	 * Instanciación y configuración de archivos.
 	 * Los deja listos para trabajar.
 	 * */
-	private void init()
-	{
+	
+	private void init() {
 		accesoapalabras = new FictFile<RegistroOffsetWord>();
 		accesoasonidos = new FictFile<RegistroInputStream>();
 	}
@@ -138,7 +139,7 @@ public class SoundPersistenceServiceMemoryImpl implements SoundPersistenceServic
 		while ( it.hasNext() )
 		{
 			RegistroOffsetWord reg = it.next();
-			if (reg.getPalabra() == word) return reg.getOffset();
+			if (reg.getPalabra().equals(word)) return reg.getOffset();
 		}
 		return null;
 	}

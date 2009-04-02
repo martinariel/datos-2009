@@ -8,6 +8,7 @@ import ar.com.datos.file.variableLength.VariableLengthAddress;
 import ar.com.datos.serializer.Serializable;
 import ar.com.datos.serializer.Serializer;
 import ar.com.datos.serializer.common.LongSerializer;
+import ar.com.datos.serializer.common.SerializerCache;
 import ar.com.datos.serializer.common.ShortSerializer;
 import ar.com.datos.serializer.common.StringSerializerDelimiter;
 
@@ -28,7 +29,6 @@ public class RegistroOffsetWord implements Serializable<RegistroOffsetWord> {
 	String palabra;
 	
 	
-	//Ver bien el tema de los constructores *****
 
 	public RegistroOffsetWord( Address<Long, Short> offset, String unapalabra )
 	{
@@ -39,7 +39,7 @@ public class RegistroOffsetWord implements Serializable<RegistroOffsetWord> {
 	
 	private RegistroOffsetWord(){}
 	
-	//********************************************
+	
 	
 	
 	
@@ -68,6 +68,7 @@ public class RegistroOffsetWord implements Serializable<RegistroOffsetWord> {
 	}
 	
 	
+	
 	@Override
 	public Serializer<RegistroOffsetWord> getSerializer() {
 		
@@ -77,6 +78,12 @@ public class RegistroOffsetWord implements Serializable<RegistroOffsetWord> {
 			private StringSerializerDelimiter stringSerializer = new StringSerializerDelimiter( new byte[] {(byte)0, (byte)(0)});
 			private LongSerializer longserializer = new LongSerializer();
 			private ShortSerializer shortserializer = new ShortSerializer();
+			
+			
+			/**
+			 * Deshidrata el registro en el siguiente órden:
+			 * blocknumber(Long)-objectnumber(Short)-palabra(String)
+			 * */
 			
 			@Override
 			public void dehydrate(OutputBuffer output, RegistroOffsetWord object) {
@@ -91,6 +98,10 @@ public class RegistroOffsetWord implements Serializable<RegistroOffsetWord> {
 				return ( 10 + object.getPalabra().length() );
 			}
 
+			/**
+			 * Hidrata el registro en el siguiente órden:
+			 * blocknumber(Long)-objectnumber(Short)-palabra(String)
+			 * */
 			@Override
 			public RegistroOffsetWord hydrate(InputBuffer input) {
 				
