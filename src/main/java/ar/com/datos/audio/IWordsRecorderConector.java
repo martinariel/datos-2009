@@ -10,7 +10,7 @@ public interface IWordsRecorderConector {
      * Notifica la grabacion de una palabra
      * @param palabra
      */
-    void notifyWord(String palabra);
+    void notifyNextWord(String palabra);
 
     /**
      * Determina si puede empezar a grabar
@@ -22,17 +22,22 @@ public interface IWordsRecorderConector {
      * Determina si la grabacion es correcta
      * @return
      */
-    boolean wordRecordedOk();
+    boolean recordingWordOK();
 
     /**
      * Notifica un error de grabacion
      *
      */
-    void notifyRecordingError();
+    void recordingWordError();
 
     /**
      * Notifica que se inicio la grabacion de audio
      *
      */
-    void recordingStarted();
+    void recordingWordStarted();
+
+    /**
+     * Notifica la finalizacion de grabacion de todas las palabras
+     */
+    void recordingAllWordsEnd();
 }

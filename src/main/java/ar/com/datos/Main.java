@@ -3,6 +3,9 @@ package ar.com.datos;
 import ar.com.datos.audio.IWordsRecorderConector;
 import ar.com.datos.audio.WordsPlayer;
 import ar.com.datos.audio.WordsRecorder;
+import ar.com.datos.persistencia.SoundPersistenceService;
+import ar.com.datos.test.persistencia.SoundPersistenceServiceMemoryImpl;
+import ar.com.datos.persistencia.variableLength.SoundPersistenceServiceVariableLengthImpl;
 
 import ar.com.datos.parser.IParser;
 import ar.com.datos.parser.SimpleTextParser;
@@ -24,10 +27,16 @@ public class Main implements IWordsRecorderConector{
 
     public Main() {
 
+    	/**
+    	 * TODO: cambiar por persistencia en archivos
+    	 */
+    	//SoundPersistenceService servicioArchivos = new SoundPersistenceServiceVariableLengthImpl();
+    	SoundPersistenceService servicioArchivos = new SoundPersistenceServiceMemoryImpl();
+
         parser				= new SimpleTextParser();
         bufferReaderTeclado = new BufferedReader(new InputStreamReader(System.in));
-        reproductor 		= new WordsPlayer();
-        grabador			= new WordsRecorder(this);
+        reproductor 		= new WordsPlayer(servicioArchivos);
+        grabador			= new WordsRecorder(this,servicioArchivos);
 
     }
 
@@ -37,39 +46,46 @@ public class Main implements IWordsRecorderConector{
 
 
     @Override
-    public void notifyWord(String palabra){
-        System.out.println("Se ha encontrado la palabra " + palabra);
+    public void notifyNextWord(String palabra){
+        System.out.println("Se ha encontrado la palabra: " + palabra);
     }
 
     @Override
     public boolean canStartRecording(){
-        String opcion = readKeyboardString();
-        return opcion == "i";
+    	System.out.println("Ingrese 'i' si quiere grabar la palabra.");
+        return readKeyBoardChar() == 'i';
     }
 
     @Override
-    public boolean wordRecordedOk(){
+    public boolean recordingWordOK(){
         System.out.println("Opciones:");
         System.out.println("s: Guardar la palabra.");
         System.out.println("Grabar nuevamente (cualquier otra tecla).");
-        String opcion = readKeyboardString();
-        return opcion == "s";
+
+        return readKeyBoardChar() == 's';
     }
 
     @Override
-    public void notifyRecordingError(){
+    public void recordingWordError(){
 
     }
 
-    public void recordingStarted(){
-        String opcion = readKeyboardString();
+    @Override
+    public void recordingWordStarted(){
+    	System.out.println("Grabando!!!!, ingrese 'f' para finalizar la grabacion.");
 
-        if (opcion == "f"){
+        if (readKeyBoardChar() == 'f'){
             grabador.stopRecording();
         }
         else {
-            recordingStarted();
+            recordingWordStarted();
         }
+    }
+
+    @Override
+    public void recordingAllWordsEnd(){
+    	System.out.println("Grabacion de palabras finalizada!!!");
+    	showMenu();
     }
 
 
@@ -87,6 +103,15 @@ public class Main implements IWordsRecorderConector{
         return linea;
     }
 
+    private char readKeyBoardChar(){
+    	String opcion;
+    	do
+    		opcion = readKeyboardString();
+    	while (opcion.length() == 0 || opcion.length() > 1);
+
+    	return opcion.trim().toLowerCase().charAt(0);
+    }
+
     /**
      * Menu Inicial
      *
@@ -95,11 +120,10 @@ public class Main implements IWordsRecorderConector{
         System.out.println("Opciones:");
         System.out.println("1 - Carga de documentos");
         System.out.println("2 - Reproducción de palabras");
+        System.out.println("Cualquier otra tecla: Salir");
         System.out.println("Seleccione una opcion:");
 
-        String tecla = readKeyboardString();
-
-        switch(tecla.charAt(0)){
+        switch(readKeyBoardChar()){
         case '1': loadDocument();break;
         case '2': playDocument();break;
         }
@@ -141,6 +165,7 @@ public class Main implements IWordsRecorderConector{
         try {
             palabras = parser.parseTextFile(ruta);
             reproductor.playWords(palabras);
+            showMenu();
         }
         catch(Exception e){
             playDocument();
