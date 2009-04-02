@@ -85,8 +85,8 @@ public class VariableLengthFileManager<T extends Serializable<T>> implements Dyn
      * @param blockSize
 	 */
     public VariableLengthFileManager(String nombreArchivo, Integer blockSize, Serializer<T> serializador) {
-    	// Si no puedo almacenar al menos un byte por registro en los casos que el registro excede el tamaÃ±o del bloque
-    	// nunca podrÃ­a almacenar dicho registro. AsÃ­ que no tiene sentido un archivo de ese tamaÃ±o de blocksize
+    	// Si no puedo almacenar al menos un byte por registro en los casos que el registro excede el tamaño del bloque
+    	// nunca podrÃ­a almacenar dicho registro. AsÃ­ que no tiene sentido un archivo de ese tamaño de blocksize
 		if (blockSize < (INNER_BLOCK_POINTER_SIZE + CANTIDAD_REGISTROS_SIZE + 1)) throw new InvalidParameterException("block Size Invalido, debe ser mayor a 10");
 		setRealFile(constructFile(nombreArchivo, blockSize));
 		if (serializador == null) {
@@ -208,7 +208,7 @@ public class VariableLengthFileManager<T extends Serializable<T>> implements Dyn
 		Collection<Collection<ArrayByte>> segmentos = partirEnSegmentos(extractLast);
 		Short cero = 0;
 		Iterator<Collection<ArrayByte>> it = segmentos.iterator();
-		// Agrego a los datos la informaciÃ³n de control
+		// Agrego a los datos la información de control
 		while(it.hasNext()) {
 			Collection<ArrayByte> segmento = it.next();
 			Long proximoBloque = getRealFile().getTotalBlocks();
@@ -221,8 +221,8 @@ public class VariableLengthFileManager<T extends Serializable<T>> implements Dyn
 	}
 
 	/**
-	 * Corta en pedazos de igual tamaÃ±o igual al tamaÃ±o de datos para registros que se encuentran en varios bloques
-	 * rellenando con bytes vacÃ­os el ultimo segmento
+	 * Corta en pedazos de igual tamaño igual al tamaño de datos para registros que se encuentran en varios bloques
+	 * rellenando con bytes vací­os el ultimo segmento
 	 * @param extractLast
 	 * @return
 	 */
@@ -262,7 +262,13 @@ public class VariableLengthFileManager<T extends Serializable<T>> implements Dyn
 		return pedacitos;
 	}
 
-	public BlockFile constructFile(String nombreArchivo, Integer blockSize) {
+	/**
+	 * Construye el archivo de bloques que a utilizar para la persistencia 
+	 * @param nombreArchivo
+	 * @param blockSize
+	 * @return
+	 */
+	protected BlockFile constructFile(String nombreArchivo, Integer blockSize) {
 		return new SimpleBlockFile(nombreArchivo, blockSize);
 	}
 	/**
@@ -371,36 +377,41 @@ public class VariableLengthFileManager<T extends Serializable<T>> implements Dyn
 	protected SimpleInputBuffer constructEmptyIBuffer() {
 		return new SimpleInputBuffer();
 	}
-	public BlockFile getRealFile() {
+	protected BlockFile getRealFile() {
 		return realFile;
 	}
-	public void setRealFile(BlockFile realFile) {
+	protected void setRealFile(BlockFile realFile) {
 		this.realFile = realFile;
 	}
-	public Serializer<T> getSerializador() {
+	protected Serializer<T> getSerializador() {
 		return serializador;
 	}
-	public void setSerializador(Serializer<T> serializador) {
+	protected void setSerializador(Serializer<T> serializador) {
 		this.serializador = serializador;
 	}
-	public OutputBuffer getLastBlockBuffer() {
+	protected OutputBuffer getLastBlockBuffer() {
 		return lastBlockBuffer;
 	}
-	public OutputBuffer setLastBlockBuffer(OutputBuffer lastBlockBuffer) {
+	protected OutputBuffer setLastBlockBuffer(OutputBuffer lastBlockBuffer) {
 		return this.lastBlockBuffer = lastBlockBuffer;
 	}
-	public Long getLastBlockBufferBlockNumber() {
+	protected Long getLastBlockBufferBlockNumber() {
 		return getCachedLastBlock().getBlockNumber();
 	}
-	public HydratedBlock<T> getCachedLastBlock() {
+	protected HydratedBlock<T> getCachedLastBlock() {
 		return cachedLastBlock;
 	}
-	public void setCachedLastBlock(HydratedBlock<T> cachedLastBlock) {
+	protected void setCachedLastBlock(HydratedBlock<T> cachedLastBlock) {
 		this.cachedLastBlock = cachedLastBlock;
 	}
+	@Override
 	public Boolean isEmpty() {
 		return this.getLastBlockBufferBlockNumber() == 0 && getCachedLastBlock().getData().isEmpty();
 	}
+	/**
+	 * Actualiza la información del iterador que itera sobre este archivo
+	 * @param iterator
+	 */
 	protected void updateInformation(VLFMIterator iterator) {
 		if (iterator.getNextBlock() == END_BLOCK) return;
 		HydratedBlock<T> hb = this.getBlock(iterator.getNextBlock());
@@ -408,15 +419,25 @@ public class VariableLengthFileManager<T extends Serializable<T>> implements Dyn
 		iterator.setNextBlock(hb.getNextBlockNumber());
 		
 	}
-	public void setLastMultipleBlockAddress(Address<Long, Short> lastMultipleBlockAddress) {
+	protected void setLastMultipleBlockAddress(Address<Long, Short> lastMultipleBlockAddress) {
 		this.lastMultipleBlockAddress = lastMultipleBlockAddress;
 	}
 
-	public Address<Long, Short> getLastMultipleBlockAddress() {
+	/**
+	 * Propiedad donde se almacena la dirección en caso de que un registro agregado
+	 * ocupe múltiples bloques
+	 * @return
+	 */
+	protected Address<Long, Short> getLastMultipleBlockAddress() {
 		return lastMultipleBlockAddress;
 	}
 	/**
 	 * Inner class para iterar a este archivo
+	 * La clase cada vez que no tiene objetos en su caché interna le pide
+	 * al VLFM que lo actualice.
+	 * Por cada actualización el VLFM le deja a este iterador una cierta cantidad de entidades
+	 * sobre las cuales puede iterarar. y el próximo bloque (que necesita el VLFM para poder
+	 * actualizar la caché en la próxima iteración) 
 	 */
 	protected class VLFMIterator implements Iterator<T> {
 		private VariableLengthFileManager<T> vlfm;

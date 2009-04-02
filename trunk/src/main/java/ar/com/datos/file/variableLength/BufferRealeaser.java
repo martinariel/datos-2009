@@ -4,7 +4,7 @@ import ar.com.datos.buffer.OutputBuffer;
 
 /**
  * Las clases que implementan esta interfaz, son las encargadas de
- * liberar desagotar un buffer que excediÃ³ su capacidad.
+ * liberar desagotar un buffer que excedió su capacidad.
  * @author dev
  *
  */
