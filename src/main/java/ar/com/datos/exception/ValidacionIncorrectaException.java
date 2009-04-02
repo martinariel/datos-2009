@@ -1,4 +1,4 @@
-package ar.com.datos.file.exception;
+package ar.com.datos.exception;
 
 public class ValidacionIncorrectaException extends RuntimeException {
 
