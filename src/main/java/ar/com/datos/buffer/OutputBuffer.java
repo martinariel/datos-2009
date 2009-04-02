@@ -13,9 +13,9 @@ import ar.com.datos.buffer.variableLength.ArrayByte;
 public interface OutputBuffer {
 
 	/**
-	 * indica si el tamaño almacenado por el buffer es mayor
-	 * a la capacidad para la cual fue definida
-	 * @return
+	 * Indica si el tamaño almacenado por el buffer es mayor a la capacidad para
+	 * la cual fue definida
+	 * @return true si el tamaño almacenado es mayor. false en otro caso.  
 	 */
 	public Boolean isOverloaded();
 	
