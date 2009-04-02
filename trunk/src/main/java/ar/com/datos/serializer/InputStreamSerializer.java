@@ -11,6 +11,7 @@ import java.util.LinkedList;
 
 import ar.com.datos.buffer.InputBuffer;
 import ar.com.datos.buffer.OutputBuffer;
+import ar.com.datos.exception.ValidacionIncorrectaException;
 import ar.com.datos.serializer.common.IntegerSerializer;
 import ar.com.datos.serializer.common.LongSerializer;
 import ar.com.datos.serializer.common.NumberSerializer;
@@ -50,20 +51,26 @@ public class InputStreamSerializer implements Serializer<InputStream> {
 	 * 
 	 * @param cardinalitySerializer
 	 * {@link Serializer} para la cantidad de bytes.
+	 * 
+	 * @throws ValidacionIncorrectaException
+	 * Si se pasa un Serializador no adecuado.
 	 */
-	public InputStreamSerializer(NumberSerializer cardinalitySerializer) {
+	public InputStreamSerializer(NumberSerializer cardinalitySerializer) throws ValidacionIncorrectaException {
 		if (LongSerializer.class.isAssignableFrom(cardinalitySerializer.getClass())) {
-			throw new UnsupportedOperationException();
+			throw new ValidacionIncorrectaException();
 		}
 		this.cardinalitySerializer = cardinalitySerializer;
 	}
 	
 	/**
 	 * Permite cambiar el {@link Serializer} para la cantidad de bytes.
+	 * 
+	 * @throws ValidacionIncorrectaException
+	 * Si se pasa un Serializador no adecuado.
 	 */
-	public void setCardinalitySerializer(NumberSerializer cardinalitySerializer) {
+	public void setCardinalitySerializer(NumberSerializer cardinalitySerializer) throws ValidacionIncorrectaException {
 		if (LongSerializer.class.isAssignableFrom(cardinalitySerializer.getClass())) {
-			throw new UnsupportedOperationException();
+			throw new ValidacionIncorrectaException();
 		}
 		this.cardinalitySerializer = cardinalitySerializer;
 	}

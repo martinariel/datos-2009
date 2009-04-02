@@ -8,9 +8,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import ar.com.datos.buffer.variableLength.ArrayByte;
+import ar.com.datos.exception.ValidacionIncorrectaException;
 import ar.com.datos.file.exception.InvalidBlockException;
 import ar.com.datos.file.exception.OutOfBoundsException;
-import ar.com.datos.file.exception.ValidacionIncorrectaException;
 
 
 /**
