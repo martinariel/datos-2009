@@ -95,7 +95,7 @@ public class CollectionSerializer<T> implements Serializer<Collection<T>> {
 		Collection<T> value = object;
 
 		// Obtengo la cantidad de elementos de la coleccion como Unsigned.
-		long maxNumber = (int)Math.pow(2, this.cardinalitySerializer.getDehydrateSize(null) * 8);
+		long maxNumber = (long)Math.pow(2, this.cardinalitySerializer.getDehydrateSize(null) * 8);
 		// Dejo el maximo posible
 		long size = (maxNumber - 1 > value.size()) ? value.size() : maxNumber - 1;
 		// lo hago unsigned.
@@ -116,7 +116,7 @@ public class CollectionSerializer<T> implements Serializer<Collection<T>> {
 		
 		// A continuacion deshidrato cada elemento
 		Iterator<T> it = value.iterator();
-		int i = 1;
+		long i = 1;
 		while (it.hasNext() && i < maxNumber) {
 			this.baseSerializer.dehydrate(output, it.next());
 			i++;
@@ -135,7 +135,7 @@ public class CollectionSerializer<T> implements Serializer<Collection<T>> {
 		Number cardinality = (Number)this.cardinalitySerializer.hydrate(input);
 
 		// Obtengo la cantidad de elementos como Unsigned.
-		long maxNumber = (int)Math.pow(2, this.cardinalitySerializer.getDehydrateSize(null) * 8);
+		long maxNumber = (long)Math.pow(2, this.cardinalitySerializer.getDehydrateSize(null) * 8);
 		long size = cardinality.longValue() + maxNumber / 2;
 		
 		// Y ahora hidrato cada objeto.
