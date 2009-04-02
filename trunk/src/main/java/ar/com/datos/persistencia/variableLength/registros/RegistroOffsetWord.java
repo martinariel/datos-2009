@@ -2,13 +2,11 @@ package ar.com.datos.persistencia.variableLength.registros;
 
 import ar.com.datos.buffer.InputBuffer;
 import ar.com.datos.buffer.OutputBuffer;
-import  ar.com.datos.file.Address;
+import ar.com.datos.file.Address;
 import ar.com.datos.file.variableLength.VariableLengthAddress;
-
 import ar.com.datos.serializer.Serializable;
 import ar.com.datos.serializer.Serializer;
 import ar.com.datos.serializer.common.LongSerializer;
-import ar.com.datos.serializer.common.SerializerCache;
 import ar.com.datos.serializer.common.ShortSerializer;
 import ar.com.datos.serializer.common.StringSerializerDelimiter;
 
@@ -67,10 +65,12 @@ public class RegistroOffsetWord implements Serializable<RegistroOffsetWord> {
 		this.palabra = palabra;
 	}
 	
-	
-	
 	@Override
 	public Serializer<RegistroOffsetWord> getSerializer() {
+		return getSerializerStatic();
+	}
+	
+	public static Serializer<RegistroOffsetWord> getSerializerStatic() {
 		
 		return new Serializer<RegistroOffsetWord>()
 		{

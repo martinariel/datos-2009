@@ -4,6 +4,7 @@ import java.io.*;
 
 import junit.framework.TestCase;
 
+import ar.com.datos.audio.AnotherInputStream;
 import ar.com.datos.persistencia.SoundPersistenceService;
 import ar.com.datos.persistencia.exception.UnregisteredWordException;
 import ar.com.datos.persistencia.exception.WordIsAlreadyRegisteredException;
@@ -25,7 +26,7 @@ public class TestSoundPersistenceService extends TestCase {
 		
 		//Inicializo palabras y Strings
 		String palabradeprueba = "palabra";
-		InputStream streamoriginal = new ByteArrayInputStream( palabradeprueba.getBytes() );
+		AnotherInputStream streamoriginal = new AnotherInputStream( palabradeprueba.getBytes() );
 		
 		//Test verificar que la palabra no est�.
 		
@@ -56,7 +57,7 @@ public class TestSoundPersistenceService extends TestCase {
 		
 		//Test agregar la misma palabra otra vez.
 		String palabrasimilar = palabradeprueba.toString();
-		InputStream streamdistinto = new ByteArrayInputStream( new String("streamfalso").getBytes());
+		AnotherInputStream streamdistinto = new AnotherInputStream( new String("streamfalso").getBytes());
 		try
 		{
 			sps.addWord( palabrasimilar , streamdistinto );
@@ -86,9 +87,9 @@ public class TestSoundPersistenceService extends TestCase {
 	{
 		limpiarSPS();
 		String palabradeprueba = "palabra";
-		InputStream streamdeprueba = new ByteArrayInputStream( palabradeprueba.toString().getBytes() );
+		AnotherInputStream streamdeprueba = new AnotherInputStream( palabradeprueba.toString().getBytes() );
 		
-		InputStream streamfalso = new ByteArrayInputStream( new String("otracadena").getBytes() );
+		AnotherInputStream streamfalso = new AnotherInputStream( new String("otracadena").getBytes() );
 		
 		//Agrego 3 palabras nuevas distintas a la de prueba.
 		try
@@ -127,9 +128,9 @@ public class TestSoundPersistenceService extends TestCase {
 		limpiarSPS();
 		
 		String palabradeprueba = "palabra";
-		InputStream streamdeprueba = new ByteArrayInputStream( palabradeprueba.toString().getBytes() );
+		AnotherInputStream streamdeprueba = new AnotherInputStream( palabradeprueba.toString().getBytes() );
 		
-		InputStream streamfalso = new ByteArrayInputStream( new String("otracadena").getBytes() );
+		AnotherInputStream streamfalso = new AnotherInputStream( new String("otracadena").getBytes() );
 		
 		//Agrego la palabra de prueba en el medio de otras.
 		try
@@ -167,7 +168,7 @@ public class TestSoundPersistenceService extends TestCase {
 		//Intento agregarla de vuelta
 		
 		String palabrasimilar = palabradeprueba.toString();
-		InputStream streamdistinto = new ByteArrayInputStream( new String("streamfalso").getBytes());
+		AnotherInputStream streamdistinto = new AnotherInputStream( new String("streamfalso").getBytes());
 		try
 		{
 			sps.addWord( palabrasimilar , streamdistinto );

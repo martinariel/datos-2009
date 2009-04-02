@@ -1,6 +1,5 @@
 package ar.com.datos.file.variableLength;
 
-import java.lang.reflect.ParameterizedType;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -13,7 +12,6 @@ import ar.com.datos.buffer.OutputBuffer;
 import ar.com.datos.buffer.SimpleInputBuffer;
 import ar.com.datos.buffer.SimpleOutputBuffer;
 import ar.com.datos.buffer.variableLength.ArrayByte;
-import ar.com.datos.exception.ValidacionIncorrectaException;
 import ar.com.datos.file.Address;
 import ar.com.datos.file.BlockFile;
 import ar.com.datos.file.DynamicAccesor;
@@ -52,30 +50,6 @@ public class VariableLengthFileManager<T extends Serializable<T>> implements Dyn
 	private HydratedBlock<T> cachedBlock;
 	private Address<Long, Short> lastMultipleBlockAddress = null;
 	
-	/**
-	 * Permite obtener el tipo parametrizado de este objeto. 
-	 */
-	@SuppressWarnings("unchecked")
-	private Class<T> getReturnClass(){
-		ParameterizedType parameterizedType = (ParameterizedType) getClass().getGenericSuperclass();
-		return (Class<T>)parameterizedType.getActualTypeArguments()[0];
-	}
-
-	/**
-	 * Permite obtener el Serializer de manera automatica desde el ParameterizedType.
-	 * (Esto es posible porque el ParameterizedType es un Serializable).
-	 */
-	private Serializer<T> getSerializerFromParameterizedType() {
-		try {
-			Serializable<T> instance = getReturnClass().newInstance();
-			return instance.getSerializer();
-		} catch (IllegalAccessException e) {
-			throw new ValidacionIncorrectaException("No se encontr� acceso al constructor o la clase no existe");
-		} catch (InstantiationException e) {
-			throw new ValidacionIncorrectaException("Debe parametrizarse con una clase concreta con un constructor sin parametros que implemente Serializable o usar el otro constructor");
-		}
-    }
-    
 
 	/**
 	 * Permite crear una instancia indicando cual es el serializador a usar en lugar de usar el nativo de los objetos de tipo T
@@ -89,28 +63,10 @@ public class VariableLengthFileManager<T extends Serializable<T>> implements Dyn
     	// nunca podría almacenar dicho registro. Así que no tiene sentido un archivo de ese tama�o de blocksize
 		if (blockSize < (INNER_BLOCK_POINTER_SIZE + CANTIDAD_REGISTROS_SIZE + 1)) throw new InvalidParameterException("block Size Invalido, debe ser mayor a 10");
 		setRealFile(constructFile(nombreArchivo, blockSize));
-		if (serializador == null) {
-			serializador = getSerializerFromParameterizedType();
-		}
 		setSerializador(serializador);
 		setLastBlockBuffer(retrieveLastBlock());
 	}
 
-    /**
-	/**
-	 * Permite crear una instancia cuyo serializador sera obtenido a partir del 
-	 * {@link Serializable#getSerializer()} de la clase parametrizada. Por tanto,
-	 * para poder usar este constructor la clase parametrizada debe implementar
-	 * {@link Serializable} y poseer un constructor sin parametros.
-	 *
-     * @param fileName nombre del archivo donde se realiza la persistencia
-     * @param blockSize tama�o de bloque de dicho archivo
-     */
-    public VariableLengthFileManager(String fileName, Integer blockSize) {
-    	this(fileName, blockSize, null);
-		setSerializador(getSerializerFromParameterizedType());
-	}
-    
 	@Override
 	public Address<Long, Short> addEntity(T dato) {
 		getSerializador().dehydrate(getLastBlockBuffer(), dato);
