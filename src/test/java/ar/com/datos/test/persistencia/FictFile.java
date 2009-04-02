@@ -5,11 +5,12 @@ import java.util.Iterator;
 import ar.com.datos.file.Address;
 import ar.com.datos.file.DynamicAccesor;
 import ar.com.datos.file.variableLength.VariableLengthAddress;
+import ar.com.datos.serializer.Serializable;
 
 
 import java.util.LinkedList;
 
-public class FictFile<T> implements DynamicAccesor<T>{
+public class FictFile<T extends Serializable<T>> implements DynamicAccesor<T>{
 	
 	private LinkedList<T> lista = new LinkedList<T>();
 	

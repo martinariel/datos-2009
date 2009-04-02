@@ -3,8 +3,6 @@
  */
 package ar.com.datos.buffer;
 
-import java.io.BufferedOutputStream;
-
 import ar.com.datos.buffer.exception.BufferException;
 import ar.com.datos.buffer.variableLength.ArrayByte;
 
@@ -63,10 +61,10 @@ public class SimpleInputBuffer implements InputBuffer {
 	 * Carga el buffer con un ArrayByte
 	 */
 	public void fill(ArrayByte array) {
-		if (array.getLength() > this.getBufferSize()){
-			throw new BufferException("Cannot fill input buffer: array size " +
-					"greater than input buffer size.");
-		}
+//		if (array.getLength() > this.getBufferSize()){
+//			throw new BufferException("Cannot fill input buffer: array size " +
+//					"greater than input buffer size.");
+//		}
 		this.buffer = array.getArray();
 	}
 }
