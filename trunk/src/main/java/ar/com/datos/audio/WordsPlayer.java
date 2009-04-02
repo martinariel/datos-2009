@@ -5,7 +5,6 @@ import java.util.Collection;
 
 import ar.com.datos.persistencia.SoundPersistenceService;
 import ar.com.datos.persistencia.exception.UnregisteredWordException;
-import ar.com.datos.persistencia.variableLength.SoundPersistenceServiceVariableLengthImpl;
 
 /**
  * Reproductor de palabras
@@ -19,9 +18,9 @@ public class WordsPlayer {
      private SoundPersistenceService servicioArchivos;
      private boolean reproduciendo;
 
-     public WordsPlayer(){
+     public WordsPlayer(SoundPersistenceService servicioArchivos){
          servicioAudio = AudioServiceHandler.getInstance();
-         servicioArchivos = new SoundPersistenceServiceVariableLengthImpl();
+         this.servicioArchivos = servicioArchivos;
          reproduciendo = false;
      }
 

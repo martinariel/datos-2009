@@ -5,10 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.Collection;
 import ar.com.datos.persistencia.SoundPersistenceService;
-import ar.com.datos.persistencia.exception.UnregisteredWordException;
 import ar.com.datos.persistencia.exception.WordIsAlreadyRegisteredException;
-
-import ar.com.datos.persistencia.variableLength.SoundPersistenceServiceVariableLengthImpl;
 
 /**
  * Grabador de palabras
@@ -24,9 +21,9 @@ public class WordsRecorder {
     private ByteArrayOutputStream audio;
     private String palabraActual;
 
-    public WordsRecorder(IWordsRecorderConector interfazUsuario) {
+    public WordsRecorder(IWordsRecorderConector interfazUsuario, SoundPersistenceService servicioArchivos) {
         servicioAudio = AudioServiceHandler.getInstance();
-        servicioArchivos = new SoundPersistenceServiceVariableLengthImpl();
+        this.servicioArchivos = servicioArchivos;
         this.interfazUsuario = interfazUsuario;
     }
 
@@ -41,7 +38,7 @@ public class WordsRecorder {
             //Grabo en memoria!!
             audio = new ByteArrayOutputStream();
             servicioAudio.record(audio);
-            interfazUsuario.recordingStarted();
+            interfazUsuario.recordingWordStarted();
         }
     }
 
@@ -65,13 +62,16 @@ public class WordsRecorder {
                 System.out.println("Thread principal interrumpido");
             }
 
-            if (interfazUsuario.wordRecordedOk()) {
+            if (interfazUsuario.recordingWordOK()) {
                 try {
                     servicioArchivos.addWord(palabraActual, inputAudio);
                 }
                 catch (WordIsAlreadyRegisteredException e) {
-                    interfazUsuario.notifyRecordingError();
+                    interfazUsuario.recordingWordError();
                 }
+            }
+            else {
+            	grabarPalabra();
             }
         }
     }
@@ -87,15 +87,14 @@ public class WordsRecorder {
 
         for (String palabra : palabras){
 
-            try {
-                servicioArchivos.readWord(palabra);
-            }
-            catch (UnregisteredWordException e){
-                palabraActual = palabra;
-                interfazUsuario.notifyWord(palabraActual);
+        	if (!servicioArchivos.isRegistered(palabra)){
+        		palabraActual = palabra;
+                interfazUsuario.notifyNextWord(palabraActual);
                 grabarPalabra();
-            }
+        	}
 
         }
+
+        interfazUsuario.recordingAllWordsEnd();
     }
 }
