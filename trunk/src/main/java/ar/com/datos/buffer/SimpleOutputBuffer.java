@@ -67,8 +67,9 @@ public class SimpleOutputBuffer implements OutputBuffer {
 	public Collection<ArrayByte> extractAllButLast() {
 		ArrayList<ArrayByte> retorno = new ArrayList<ArrayByte>(this.bufferedEntities);
 		for (ArrayByte ab : this.bufferedEntities)
-			this.bufferSize -= ab.getLength();
+			this.currentSize -= ab.getLength();
 		this.bufferedEntities.clear();
+		this.nEntities = 0;
 		return retorno;
 	}
 
@@ -79,8 +80,9 @@ public class SimpleOutputBuffer implements OutputBuffer {
 	public Collection<ArrayByte> extractLast() {
 		ArrayList<ArrayByte> retorno = new ArrayList<ArrayByte>(this.lastEntity);
 		for (ArrayByte ab : this.lastEntity)
-			this.bufferSize -= ab.getLength();
+			this.currentSize -= ab.getLength();
 		this.lastEntity.clear();
+		this.nEntities = -1;
 		return retorno;
 	}
 

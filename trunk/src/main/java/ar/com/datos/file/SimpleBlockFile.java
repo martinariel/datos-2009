@@ -4,7 +4,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.ArrayList;
+import java.util.Collection;
 
+import ar.com.datos.buffer.variableLength.ArrayByte;
 import ar.com.datos.file.exception.InvalidBlockException;
 import ar.com.datos.file.exception.OutOfBoundsException;
 import ar.com.datos.file.exception.ValidacionIncorrectaException;
@@ -97,12 +100,20 @@ public class SimpleBlockFile implements BlockFile {
 	}
 	@Override
 	public void writeBlock(Long blockNumber, byte[] block) {
-		if (!this.getBlockSize().equals(block.length)) {
+		ArrayList<ArrayByte> blockAsCollection = new ArrayList<ArrayByte>(1);
+		blockAsCollection.add(new ArrayByte(block));
+		this.writeBlock(blockNumber, blockAsCollection);
+	}
+	@Override
+	public void writeBlock(Long blockNumber, Collection<ArrayByte> partes) {
+		Integer sumaDeLasPartes = 0;
+		for (ArrayByte ab : partes) sumaDeLasPartes += ab.getLength();
+		if (!this.getBlockSize().equals(sumaDeLasPartes)) {
 			throw new InvalidBlockException("Se esperaba un bloque de tamaño " + getBlockSize());
 		}
 		try {
 			seekBlock(blockNumber);
-			getFileAccessor().write(block);
+			for (ArrayByte ab : partes) getFileAccessor().write(ab.getArray());
 		} catch (IOException e) {
 			// TODO Ver en que caso podría tirar esta excepción y hacer
 			// un manejo apropiado de la misma
