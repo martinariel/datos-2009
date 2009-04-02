@@ -3,12 +3,9 @@
  */
 package ar.com.datos.buffer;
 
-import java.io.BufferedOutputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 
 import ar.com.datos.buffer.variableLength.ArrayByte;
 import ar.com.datos.file.variableLength.BufferRealeaser;
@@ -21,16 +18,16 @@ public class SimpleOutputBuffer implements OutputBuffer {
 
 	private Collection<ArrayByte> bufferedEntities;
 	private Collection<ArrayByte> lastEntity;
-	private int bufferSize;
+	private Long bufferSize;
 	private int currentSize;
 	private short nEntities;
 	private BufferRealeaser releaser;
-	private static int defaultBufferSize = 1024;
+	private static Long defaultBufferSize = 1024L;
 	
 	public SimpleOutputBuffer(BufferRealeaser releaser){
 		this(defaultBufferSize, releaser);
 	}
-	public SimpleOutputBuffer(int bufferSize, BufferRealeaser releaser){
+	public SimpleOutputBuffer(Long bufferSize, BufferRealeaser releaser){
 		this.currentSize = 0;
 		this.bufferSize = bufferSize;
 		this.bufferedEntities = new ArrayList<ArrayByte>();
@@ -43,15 +40,14 @@ public class SimpleOutputBuffer implements OutputBuffer {
 	 */
 	@Override
 	public void closeEntity() {
+		while (this.isOverloaded()) this.releaser.release(this);
+		
 		Iterator<ArrayByte> it = this.lastEntity.iterator();
 		while(it.hasNext()){
 			this.bufferedEntities.add(it.next());
 		}
 		this.lastEntity.clear();
 		this.nEntities++;
-		if (this.isOverloaded()){
-			this.releaser.release(this);
-		}
 	}
 	
 	/**
@@ -59,7 +55,11 @@ public class SimpleOutputBuffer implements OutputBuffer {
 	 */
 	@Override
 	public Collection<ArrayByte> extractAllButLast() {
-		return new ArrayList<ArrayByte>(this.bufferedEntities);
+		ArrayList<ArrayByte> retorno = new ArrayList<ArrayByte>(this.bufferedEntities);
+		for (ArrayByte ab : this.bufferedEntities)
+			this.bufferSize -= ab.getLength();
+		this.bufferedEntities.clear();
+		return retorno;
 	}
 
 	/**
@@ -67,7 +67,11 @@ public class SimpleOutputBuffer implements OutputBuffer {
 	 */
 	@Override
 	public Collection<ArrayByte> extractLast() {
-		return new ArrayList<ArrayByte>(this.lastEntity);
+		ArrayList<ArrayByte> retorno = new ArrayList<ArrayByte>(this.lastEntity);
+		for (ArrayByte ab : this.lastEntity)
+			this.bufferSize -= ab.getLength();
+		this.lastEntity.clear();
+		return retorno;
 	}
 
 	/**
