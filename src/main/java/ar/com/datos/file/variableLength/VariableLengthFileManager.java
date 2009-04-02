@@ -23,7 +23,7 @@ import ar.com.datos.serializer.Serializable;
 import ar.com.datos.serializer.Serializer;
 /**
  * Esta entidad permite manejar la persistencia de objetos Serializables en un archivo de longitud variable.
- * Al momento de almacenar dicho objeto se devolverá un Address para poder recuperar al mismo
+ * Al momento de almacenar dicho objeto se devolverï¿½ un Address para poder recuperar al mismo
  * @author jbarreneche
  *
  * @param <T> tipo de objetos a persistir y o recuperar
@@ -44,7 +44,7 @@ public class VariableLengthFileManager<T extends Serializable<T>> implements Dyn
 
 	// Buffers
 	
-	// Buffer de salida que contiene el último bloque del archivo o el nuevo a persistir 
+	// Buffer de salida que contiene el ï¿½ltimo bloque del archivo o el nuevo a persistir 
 	private OutputBuffer lastBlockBuffer;
 	// Se maneja este cache por separado para poder contemplar de manera mas simple los casos en que, al agregar, se debe generar el nuevo bloque
 	private HydratedBlock<T> cachedLastBlock = null;
@@ -70,7 +70,7 @@ public class VariableLengthFileManager<T extends Serializable<T>> implements Dyn
 			Serializable<T> instance = getReturnClass().newInstance();
 			return instance.getSerializer();
 		} catch (IllegalAccessException e) {
-			throw new ValidacionIncorrectaException("No se encontró acceso al constructor o la clase no existe");
+			throw new ValidacionIncorrectaException("No se encontrï¿½ acceso al constructor o la clase no existe");
 		} catch (InstantiationException e) {
 			throw new ValidacionIncorrectaException("Debe parametrizarse con una clase concreta con un constructor sin parametros que implemente Serializable o usar el otro constructor");
 		}
@@ -104,7 +104,7 @@ public class VariableLengthFileManager<T extends Serializable<T>> implements Dyn
 	 * {@link Serializable} y poseer un constructor sin parametros.
 	 *
      * @param fileName nombre del archivo donde se realiza la persistencia
-     * @param blockSize tamaño de bloque de dicho archivo
+     * @param blockSize tamaï¿½o de bloque de dicho archivo
      */
     public VariableLengthFileManager(String fileName, Integer blockSize) {
     	this(fileName, blockSize, null);
@@ -136,7 +136,7 @@ public class VariableLengthFileManager<T extends Serializable<T>> implements Dyn
 	}
 
 	/**
-	 * recupera un bloque hidratado con objetos. Puede obtenerlos de la caché {@link}
+	 * recupera un bloque hidratado con objetos. Puede obtenerlos de la cachï¿½ {@link}
 	 * @param blockNumber
 	 * @return
 	 */
@@ -161,7 +161,7 @@ public class VariableLengthFileManager<T extends Serializable<T>> implements Dyn
 		return hb;
 	}
 	/**
-	 * Manejo básico de caché
+	 * Manejo bï¿½sico de cachï¿½
 	 * @param hb
 	 */
 	protected void addToCache(HydratedBlock<T> hb) {
@@ -175,7 +175,7 @@ public class VariableLengthFileManager<T extends Serializable<T>> implements Dyn
 		return this.getLastBlockBufferBlockNumber().equals(blockNumber) || (this.cachedBlock != null && blockNumber.equals(this.cachedBlock.getBlockNumber()));
 	}
 	/**
-	 * Libera al OutputBuffer cuando el tamaño de los datos que está manejando exceden el tamaño del bloque
+	 * Libera al OutputBuffer cuando el tamaï¿½o de los datos que estï¿½ manejando exceden el tamaï¿½o del bloque
 	 */
 	@Override
 	public void release(OutputBuffer ob) {
@@ -197,7 +197,7 @@ public class VariableLengthFileManager<T extends Serializable<T>> implements Dyn
 	 */
 	protected void writeEntitiesInOneBlock(Collection<ArrayByte> partes, Short cantidadObjetos) {
 		Integer resto = getRealFile().getBlockSize() - CANTIDAD_REGISTROS_SIZE;
-		// Reduzco el resto para ver cuanto espacio sin utilizar quedó en la entidad
+		// Reduzco el resto para ver cuanto espacio sin utilizar quedï¿½ en la entidad
 		for (ArrayByte ab : partes) resto -= ab.getLength();
 		if (resto > 0) partes.add(new ArrayByte(new byte[resto]));
 		partes.add(new ArrayByte(PrimitiveTypeSerializer.toByte(cantidadObjetos)));
@@ -332,11 +332,11 @@ public class VariableLengthFileManager<T extends Serializable<T>> implements Dyn
 		if (bloque[bloque.length-1] == 0) {
 			// Cargo en el input buffer los datos (es decir, saco el puntero al siguiente bloque, porque es un registro de varios
 			// Bloques y el ultimo byte que indica que el bloque es del tipo mencionado
-			ib.fill(miArr.getLeftSubArray(bloque.length - CANTIDAD_REGISTROS_SIZE - INNER_BLOCK_POINTER_SIZE));
+			ib.append(miArr.getLeftSubArray(bloque.length - CANTIDAD_REGISTROS_SIZE - INNER_BLOCK_POINTER_SIZE));
 			Long proximaDireccion = extraerDireccionDeBloqueCompleto(bloque, miArr);
 			return createInputBufferMultipleBlocks(ib, proximaDireccion);
 		}
-		ib.fill(miArr.getLeftSubArray(bloque.length - CANTIDAD_REGISTROS_SIZE));
+		ib.append(miArr.getLeftSubArray(bloque.length - CANTIDAD_REGISTROS_SIZE));
 		return blockNumber;
 	}
 	/**
@@ -350,7 +350,7 @@ public class VariableLengthFileManager<T extends Serializable<T>> implements Dyn
 	private Long createInputBufferMultipleBlocks(SimpleInputBuffer ib, Long direccionActual) {
 		byte[] bloque = getRealFile().readBlock(direccionActual);
 		ArrayByte miArr = new ArrayByte(bloque);
-		ib.fill(miArr.getLeftSubArray(bloque.length - CANTIDAD_REGISTROS_SIZE - INNER_BLOCK_POINTER_SIZE));
+		ib.append(miArr.getLeftSubArray(bloque.length - CANTIDAD_REGISTROS_SIZE - INNER_BLOCK_POINTER_SIZE));
 		
 		Long proximaDireccion = extraerDireccionDeBloqueCompleto(bloque, miArr);
 		

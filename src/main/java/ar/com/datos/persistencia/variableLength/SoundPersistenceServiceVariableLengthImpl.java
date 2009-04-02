@@ -8,6 +8,7 @@ import ar.com.datos.persistencia.SoundPersistenceService;
 import ar.com.datos.persistencia.exception.*;
 import ar.com.datos.persistencia.variableLength.registros.*;
 
+import ar.com.datos.audio.AnotherInputStream;
 import ar.com.datos.file.variableLength.VariableLengthFileManager;
 import ar.com.datos.file.Address;
 import ar.com.datos.file.DynamicAccesor;
@@ -32,7 +33,7 @@ public class SoundPersistenceServiceVariableLengthImpl implements SoundPersisten
 	
 	
 	
-	//tamaño de bloques por default
+	//tamaï¿½o de bloques por default
 	public static  Integer BLOCK_SIZE_WORDS = 1000;
 	public static  Integer BLOCK_SIZE_INPUTSTREAM = 1000;
 	
@@ -74,7 +75,7 @@ public class SoundPersistenceServiceVariableLengthImpl implements SoundPersisten
 	
 	
 	/**
-	 * Instanciación y configuración de archivos.
+	 * Instanciaciï¿½n y configuraciï¿½n de archivos.
 	 * Los deja listos para trabajar.
 	 * */
 	
@@ -86,7 +87,7 @@ public class SoundPersistenceServiceVariableLengthImpl implements SoundPersisten
 
 
 	@Override
-	public void addWord(String word, InputStream stream)
+	public void addWord(String word, AnotherInputStream stream)
 			throws WordIsAlreadyRegisteredException {
 		
 		Address<Long, Short> offset = getOffsetOfWord( word );
@@ -128,7 +129,7 @@ public class SoundPersistenceServiceVariableLengthImpl implements SoundPersisten
 	
 	/**
 	 * Devuelve el offset de una determinada palabra.
-	 * retorna null si la palabra no está en el archivo.
+	 * retorna null si la palabra no estï¿½ en el archivo.
 	 *  
 	 * */
 	

@@ -13,6 +13,7 @@ import ar.com.datos.buffer.variableLength.ArrayByte;
 public class SimpleInputBuffer implements InputBuffer {
 	
 	private int pos;
+	private int posAppend;
 	private byte[] buffer;
 	private static int defaultBufferSize = 1024;
 	
@@ -20,8 +21,9 @@ public class SimpleInputBuffer implements InputBuffer {
 		this(new byte[defaultBufferSize]);
 	}
 	public SimpleInputBuffer(byte [] data){
-		this.buffer = data;
 		this.pos = 0;
+		this.posAppend = 0;
+		this.buffer = data;
 	}
 	
 	/**
@@ -58,13 +60,16 @@ public class SimpleInputBuffer implements InputBuffer {
 	}
 	
 	/** 
-	 * Carga el buffer con un ArrayByte
+	 * Carga los datos de array en el buffer. Si se sobrepasa el tamaño del 
+	 * buffer, este se expande para que sea capaz de almacenar lo pasado.
 	 */
-	public void fill(ArrayByte array) {
-//		if (array.getLength() > this.getBufferSize()){
-//			throw new BufferException("Cannot fill input buffer: array size " +
-//					"greater than input buffer size.");
-//		}
-		this.buffer = array.getArray();
+	public void append(ArrayByte array) {
+		if (array.getLength() > (this.getBufferSize() - this.posAppend)){
+			byte[] newBuffer = new byte[this.getBufferSize()+array.getLength()];
+			System.arraycopy(this.buffer, 0, newBuffer, 0, this.posAppend);
+			this.buffer = newBuffer;
+		}
+		System.arraycopy(array.getArray(), 0, this.buffer, this.posAppend, array.getLength());
+		this.posAppend += array.getLength();
 	}
 }
