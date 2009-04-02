@@ -1,6 +1,8 @@
 package ar.com.datos.persistencia;
 
 import java.io.InputStream;
+
+import ar.com.datos.audio.AnotherInputStream;
 import ar.com.datos.persistencia.exception.WordIsAlreadyRegisteredException;
 import ar.com.datos.persistencia.exception.UnregisteredWordException;
 
@@ -16,16 +18,16 @@ public interface SoundPersistenceService {
 
 	/**
 	 * Permite agregar una palabra y su respectivo InputStream.
-	 * Si la Palabra ya fue cargada anteriormente entonces lanza una excepción.
+	 * Si la Palabra ya fue cargada anteriormente entonces lanza una excepciï¿½n.
 	 * 
 	 */
-	public void addWord( String word , InputStream stream )
+	public void addWord( String word , AnotherInputStream stream )
 		throws WordIsAlreadyRegisteredException;
 	
 	
 	/**
-	 * Devuelve el InputStream de la palabra pasada como parámetro.
-	 * Si la cadena no esta registrada anteriormente arroja una excepción.
+	 * Devuelve el InputStream de la palabra pasada como parï¿½metro.
+	 * Si la cadena no esta registrada anteriormente arroja una excepciï¿½n.
 	 * 
 	 */
 	public InputStream readWord( String word )

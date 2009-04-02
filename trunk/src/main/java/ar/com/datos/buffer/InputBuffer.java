@@ -11,7 +11,7 @@ public interface InputBuffer {
 	 * Lee una cantidad n de datos del buffer, siendo n el size del array de data.
 	 * 
 	 * @param data un array con el size que se quiera leer en el buffer
-	 * @return un array de bytes leidos del buffer
+	 * @return el array recibido por parametro ya modificado con los datos leidos
 	 * @throws BufferException si no hay suficientes datos para leer desde el buffer
 	 */
 	public byte[] read(byte[] data) throws BufferException;

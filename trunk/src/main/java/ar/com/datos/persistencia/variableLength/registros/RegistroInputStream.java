@@ -1,19 +1,18 @@
 package ar.com.datos.persistencia.variableLength.registros;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ByteArrayInputStream;
-import java.util.*;
+import java.util.ArrayList;
 
+import ar.com.datos.audio.AnotherInputStream;
 import ar.com.datos.buffer.InputBuffer;
 import ar.com.datos.buffer.OutputBuffer;
 import ar.com.datos.buffer.exception.BufferException;
-
-import ar.com.datos.file.variableLength.VariableLengthAddress;
-
 import ar.com.datos.serializer.Serializable;
 import ar.com.datos.serializer.Serializer;
-import ar.com.datos.serializer.common.*;
+import ar.com.datos.serializer.common.IntegerSerializer;
+import ar.com.datos.serializer.common.SerializerCache;
 
 /**
  * Registro que representa a un InputStream que puede ser serializado.
@@ -22,10 +21,10 @@ import ar.com.datos.serializer.common.*;
 
 public class RegistroInputStream implements Serializable<RegistroInputStream>{
 
-	InputStream stream;
+	private AnotherInputStream stream;
 	
 	
-	public RegistroInputStream( InputStream istream )
+	public RegistroInputStream( AnotherInputStream istream )
 	{ stream = istream; }
 	
 	
@@ -33,13 +32,13 @@ public class RegistroInputStream implements Serializable<RegistroInputStream>{
 	
 	
 	
-	public InputStream getStream() 
+	public AnotherInputStream getStream() 
 	{
 		return stream;
 	}
 	
 	
-	public void setStream( InputStream unstream) 
+	public void setStream( AnotherInputStream unstream) 
 	{
 		this.stream = unstream;
 	}
@@ -49,50 +48,39 @@ public class RegistroInputStream implements Serializable<RegistroInputStream>{
 	{
 		
 		return new Serializer<RegistroInputStream>(){
-
+			private IntegerSerializer cardinalitySerializer = SerializerCache.getInstance().getSerializer(IntegerSerializer.class); 
 			@Override
 			public void dehydrate( OutputBuffer output, 
 								   RegistroInputStream object) 
 			{
 				//Recorro cada byte de InputStream y lo copio en el output buffer
-				try
-				{
-					Integer byteactual = object.getStream().read();
-					if ( byteactual.intValue() != -1 )
-						output.write( byteactual.byteValue() );
-					
-				}catch ( IOException ex ){}
+				Integer size = object.getStream().getSize();
+				getCardinalitySerializer().dehydrate(output, size);
+				try {
+					byte[] datos = new byte[size];
+					object.getStream().read(datos);
+					output.write(datos);
+				} catch (IOException e) {
+					// TODO Esta excepcion no se deberia dar por tiempo de desarrollo se deja el catch
+					e.printStackTrace();
+				}
+			}
+
+			private IntegerSerializer getCardinalitySerializer() {
+				return this.cardinalitySerializer;
 			}
 
 			@Override
 			public long getDehydrateSize(RegistroInputStream object) {
-				return 5;
+				return object.getStream().getSize() + getCardinalitySerializer().getDehydrateSize(object.getStream().getSize());
 			}
 
 			@Override
 			public RegistroInputStream hydrate(InputBuffer input) 
 			{
-				ArrayList<Byte> array = new ArrayList<Byte>();
-				
-				//Cargo los Bytes del Input buffer en un ArrayList
-				try
-				{
-					Integer byteactual = new Integer (input.read());
-					if ( byteactual.intValue() != -1 )
-						array.add( byteactual.byteValue() );
-				}catch ( BufferException ex ){}
-				
-				//Ahora que tengo el tamaño del input buffer vuelvo a cargar los bytes en un byte[]
-				byte[] arraydebytes = new byte[ array.size() ];
-				
-				for( int i =0;i<array.size();i++)
-				{ arraydebytes[i] = array.get(i); }
-				
-				//con el byte[] armo el input Stream, y el registro hidratado.
-				InputStream stream = new ByteArrayInputStream( arraydebytes );
-				RegistroInputStream registro = new RegistroInputStream( stream );
-				
-				return registro;
+				Integer size = this.getCardinalitySerializer().hydrate(input);
+				byte[] data = new byte[size];
+				return new RegistroInputStream(new AnotherInputStream(input.read(data)));
 				
 			}	
 			

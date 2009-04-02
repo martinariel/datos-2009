@@ -1,9 +1,8 @@
 package ar.com.datos.audio;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.util.Collection;
+
 import ar.com.datos.persistencia.SoundPersistenceService;
 import ar.com.datos.persistencia.exception.WordIsAlreadyRegisteredException;
 
@@ -51,7 +50,7 @@ public class WordsRecorder {
             servicioAudio.stopRecording();
 
             //Supongo que tengo memoria suficiente!
-            InputStream inputAudio = new ByteArrayInputStream(audio.toByteArray());
+            AnotherInputStream inputAudio = new AnotherInputStream(audio.toByteArray());
 
             Thread reproduccion = servicioAudio.play(inputAudio);
 
