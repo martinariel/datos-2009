@@ -59,12 +59,14 @@ public class SimpleInputBuffer implements InputBuffer {
 		return this.buffer[this.pos++ - 1];
 	}
 	
-	/** @see ar.com.datos.buffer.InputBuffer#fill()*/
+	/** 
+	 * Carga el buffer con un ArrayByte
+	 */
 	public void fill(ArrayByte array) {
 		if (array.getLength() > this.getBufferSize()){
 			throw new BufferException("Cannot fill input buffer: array size " +
 					"greater than input buffer size.");
 		}
-		//System.arraycopy(array, 0, this.buffer, 0, this.getBufferSize());
+		this.buffer = array.getArray();
 	}
 }
