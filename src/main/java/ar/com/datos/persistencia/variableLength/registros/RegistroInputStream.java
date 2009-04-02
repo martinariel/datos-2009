@@ -1,14 +1,10 @@
 package ar.com.datos.persistencia.variableLength.registros;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
 
 import ar.com.datos.audio.AnotherInputStream;
 import ar.com.datos.buffer.InputBuffer;
 import ar.com.datos.buffer.OutputBuffer;
-import ar.com.datos.buffer.exception.BufferException;
 import ar.com.datos.serializer.Serializable;
 import ar.com.datos.serializer.Serializer;
 import ar.com.datos.serializer.common.IntegerSerializer;
@@ -42,9 +38,12 @@ public class RegistroInputStream implements Serializable<RegistroInputStream>{
 	{
 		this.stream = unstream;
 	}
-
 	@Override
-	public Serializer<RegistroInputStream> getSerializer() 
+	public Serializer<RegistroInputStream> getSerializer() {
+		return getSerializerStatic();
+	}
+
+	public static Serializer<RegistroInputStream> getSerializerStatic() 
 	{
 		
 		return new Serializer<RegistroInputStream>(){
@@ -87,11 +86,6 @@ public class RegistroInputStream implements Serializable<RegistroInputStream>{
 			
 		};
 	}
-	
-	
-	
-	
-	
 }
 
 

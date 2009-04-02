@@ -31,7 +31,8 @@ public class Main implements IWordsRecorderConector{
     	 * TODO: cambiar por persistencia en archivos
     	 */
     	//SoundPersistenceService servicioArchivos = new SoundPersistenceServiceVariableLengthImpl();
-    	SoundPersistenceService servicioArchivos = new SoundPersistenceServiceMemoryImpl();
+    	//SoundPersistenceService servicioArchivos = new SoundPersistenceServiceMemoryImpl();
+    	SoundPersistenceService servicioArchivos = new SoundPersistenceServiceVariableLengthImpl();
 
         parser				= new SimpleTextParser();
         bufferReaderTeclado = new BufferedReader(new InputStreamReader(System.in));
@@ -119,7 +120,7 @@ public class Main implements IWordsRecorderConector{
     private void showMenu() {
         System.out.println("Opciones:");
         System.out.println("1 - Carga de documentos");
-        System.out.println("2 - Reproducción de palabras");
+        System.out.println("2 - Reproducciï¿½n de palabras");
         System.out.println("Cualquier otra tecla: Salir");
         System.out.println("Seleccione una opcion:");
 

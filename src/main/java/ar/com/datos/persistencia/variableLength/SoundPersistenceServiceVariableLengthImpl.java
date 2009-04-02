@@ -2,16 +2,16 @@ package ar.com.datos.persistencia.variableLength;
 
 import java.io.InputStream;
 import java.util.Iterator;
-import java.util.Queue;
-
-import ar.com.datos.persistencia.SoundPersistenceService;
-import ar.com.datos.persistencia.exception.*;
-import ar.com.datos.persistencia.variableLength.registros.*;
 
 import ar.com.datos.audio.AnotherInputStream;
-import ar.com.datos.file.variableLength.VariableLengthFileManager;
 import ar.com.datos.file.Address;
 import ar.com.datos.file.DynamicAccesor;
+import ar.com.datos.file.variableLength.VariableLengthFileManager;
+import ar.com.datos.persistencia.SoundPersistenceService;
+import ar.com.datos.persistencia.exception.UnregisteredWordException;
+import ar.com.datos.persistencia.exception.WordIsAlreadyRegisteredException;
+import ar.com.datos.persistencia.variableLength.registros.RegistroInputStream;
+import ar.com.datos.persistencia.variableLength.registros.RegistroOffsetWord;
 
 
 /**
@@ -34,14 +34,14 @@ public class SoundPersistenceServiceVariableLengthImpl implements SoundPersisten
 	
 	
 	//tama�o de bloques por default
-	public static  Integer BLOCK_SIZE_WORDS = 1000;
-	public static  Integer BLOCK_SIZE_INPUTSTREAM = 1000;
+	public static  Integer BLOCK_SIZE_WORDS = 16;
+	public static  Integer BLOCK_SIZE_INPUTSTREAM = 1024;
 	
 	
 	
 	//path de archivos por default
-	private static  String DEFAULT_NAME_FILE_WORDS = "C:/palabras";
-	private static  String DEFAULT_NAME_FILE_STREAM = "C:/sonidos";
+	private static  String DEFAULT_NAME_FILE_WORDS = "./resources/temp/palabras";
+	private static  String DEFAULT_NAME_FILE_STREAM = "./resources/temp/sonidos";
 	
 	
 	
@@ -80,8 +80,8 @@ public class SoundPersistenceServiceVariableLengthImpl implements SoundPersisten
 	 * */
 	
 	private void init() {
-		accesoapalabras = new VariableLengthFileManager<RegistroOffsetWord>(nombrearchivodepalabras,BLOCK_SIZE_WORDS);
-		accesoasonidos = new VariableLengthFileManager<RegistroInputStream>(nombrearchivodesonidos,BLOCK_SIZE_INPUTSTREAM);
+		accesoapalabras = new VariableLengthFileManager<RegistroOffsetWord>(nombrearchivodepalabras,BLOCK_SIZE_WORDS, RegistroOffsetWord.getSerializerStatic());
+		accesoasonidos = new VariableLengthFileManager<RegistroInputStream>(nombrearchivodesonidos,BLOCK_SIZE_INPUTSTREAM, RegistroInputStream.getSerializerStatic());
 	}
 
 
