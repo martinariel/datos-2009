@@ -13,13 +13,13 @@ import ar.com.datos.persistencia.variableLength.SoundPersistenceServiceVariableL
  * @author mfernandez
  *
  */
-public class ReproductorPalabras {
+public class WordsPlayer {
 
      private AudioServiceHandler servicioAudio;
      private SoundPersistenceService servicioArchivos;
      private boolean reproduciendo;
 
-     public ReproductorPalabras(){
+     public WordsPlayer(){
          servicioAudio = AudioServiceHandler.getInstance();
          servicioArchivos = new SoundPersistenceServiceVariableLengthImpl();
          reproduciendo = false;
@@ -29,7 +29,7 @@ public class ReproductorPalabras {
      * Reproduce cada una de las palabras de la coleccion
      * @param palabras
      */
-    public void reproducirPalabras(Collection<String> palabras){
+    public void playWords(Collection<String> palabras){
 
         if (!reproduciendo){
 

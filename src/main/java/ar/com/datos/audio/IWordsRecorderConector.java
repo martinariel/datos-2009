@@ -5,34 +5,34 @@ package ar.com.datos.audio;
  * @author mfernandez
  *
  */
-public interface IConectorUsuarioGrabadorPalabras {
+public interface IWordsRecorderConector {
     /**
      * Notifica la grabacion de una palabra
      * @param palabra
      */
-    void notificarPalabra(String palabra);
+    void notifyWord(String palabra);
 
     /**
      * Determina si puede empezar a grabar
      * @return
      */
-    boolean iniciarGrabacion();
+    boolean canStartRecording();
 
     /**
      * Determina si la grabacion es correcta
      * @return
      */
-    boolean palabraGrabadaCorrectamente();
+    boolean wordRecordedOk();
 
     /**
      * Notifica un error de grabacion
      *
      */
-    void notificarErrorGrabacion();
+    void notifyRecordingError();
 
     /**
      * Notifica que se inicio la grabacion de audio
      *
      */
-    void grabacionIniciada();
+    void recordingStarted();
 }
