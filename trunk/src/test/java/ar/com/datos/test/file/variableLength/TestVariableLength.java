@@ -19,6 +19,7 @@ import ar.com.datos.file.BlockFile;
 import ar.com.datos.file.DynamicAccesor;
 import ar.com.datos.file.variableLength.VariableLengthAddress;
 import ar.com.datos.file.variableLength.VariableLengthFileManager;
+import ar.com.datos.serializer.Serializable;
 import ar.com.datos.serializer.Serializer;
 /**
  * Pruebas con archivo inicial vacío
@@ -55,9 +56,9 @@ public class TestVariableLength extends MockObjectTestCase {
 	@SuppressWarnings("unchecked")
 	public void testCreacion() throws Exception {
 		this.cantidadDeBloquesInicial = 0L;
-		final Queue<Object> campos1 = new LinkedList<Object>();
+		final MiLinkedList<Object> campos1 = new MiLinkedList<Object>();
 		campos1.add(1);
-		final Queue<Object> campos2 = new LinkedList<Object>();
+		final MiLinkedList<Object> campos2 = new MiLinkedList<Object>();
 		campos2.add(2);
 		checking(new Expectations(){{
 			one(serializerMock).dehydrate(with(any(OutputBuffer.class)), with(campos1));
@@ -85,7 +86,7 @@ public class TestVariableLength extends MockObjectTestCase {
 	@SuppressWarnings("unchecked")
 	public void testAgregadoAUnBloqueExistenteEnElArchivo() throws Exception {
 		this.cantidadDeBloquesInicial = 2L;
-		final Queue<Object> campos = new LinkedList<Object>();
+		final MiLinkedList<Object> campos = new MiLinkedList<Object>();
 		final byte[] bloque = new byte[blockSize];
 		Byte cantidadDeObjetos = 5;
 		setCantidadDeObjetos(bloque, cantidadDeObjetos);
@@ -112,7 +113,7 @@ public class TestVariableLength extends MockObjectTestCase {
 	@SuppressWarnings("unchecked")
 	public void testAgregadoAUnBloqueNuevoConArchivoNoVacio() throws Exception {
 		this.cantidadDeBloquesInicial = 2L;
-		final Queue<Object> campos = new LinkedList<Object>();
+		final MiLinkedList<Object> campos = new MiLinkedList<Object>();
 		final byte[] bloque = new byte[blockSize];
 		Byte cantidadDeObjetos = 0;
 		setCantidadDeObjetos(bloque, cantidadDeObjetos);
@@ -141,9 +142,9 @@ public class TestVariableLength extends MockObjectTestCase {
 	@SuppressWarnings("unchecked")
 	public void testLecturaAntesDelUltimoBloque() throws Exception {
 		this.cantidadDeBloquesInicial = 3L;
-		final Queue<Object> campos1 = new LinkedList<Object>();
+		final MiLinkedList<Object> campos1 = new MiLinkedList<Object>();
 		campos1.add(1);
-		final Queue<Object> campos2 = new LinkedList<Object>();
+		final MiLinkedList<Object> campos2 = new MiLinkedList<Object>();
 		campos2.add(2);
 		final byte[] bloqueFinal = new byte[blockSize];
 		final byte[] bloqueDatos = new byte[blockSize];
@@ -177,7 +178,7 @@ public class TestVariableLength extends MockObjectTestCase {
 	@SuppressWarnings("unchecked")
 	public void testLecturaRegistroEnVariosBloques() throws Exception {
 		this.cantidadDeBloquesInicial = 3L;
-		final Queue<Object> campos1 = new LinkedList<Object>();
+		final MiLinkedList<Object> campos1 = new MiLinkedList<Object>();
 		campos1.add(1);
 		final byte[] bloqueDatos = new byte[blockSize];
 		final byte[] bloqueFinal = new byte[blockSize];
@@ -225,13 +226,13 @@ public class TestVariableLength extends MockObjectTestCase {
 		// puntero al siguiente bloque
 		setearSiguientePuntero(bloque1,(byte)2);
 		setearSiguientePuntero(bloque2,(byte)2);
-		final Queue<Object> campos0 = new LinkedList<Object>();
+		final MiLinkedList<Object> campos0 = new MiLinkedList<Object>();
 		campos0.add(0);
-		final Queue<Object> campos1 = new LinkedList<Object>();
+		final MiLinkedList<Object> campos1 = new MiLinkedList<Object>();
 		campos1.add(1);
-		final Queue<Object> campos2 = new LinkedList<Object>();
+		final MiLinkedList<Object> campos2 = new MiLinkedList<Object>();
 		campos2.add(2);
-		final Queue<Object> campos3 = new LinkedList<Object>();
+		final MiLinkedList<Object> campos3 = new MiLinkedList<Object>();
 		campos3.add(3);
 		checking(new Expectations(){{
 			// Carga del bloque final. Esta es la única lectura que no se hace en orden
@@ -242,7 +243,7 @@ public class TestVariableLength extends MockObjectTestCase {
 			allowing(serializerMock).dehydrate(with(any(OutputBuffer.class)),with(campos3));
 		}});
 		DynamicAccesor unDynamicAccesor = crearArchivo();
-		Iterator<Queue<Object>> iterador = unDynamicAccesor.iterator();
+		Iterator<MiLinkedList<Object>> iterador = unDynamicAccesor.iterator();
 		checking(new Expectations(){{
 			one(fileMock).readBlock(0L);
 			will(returnValue(bloque0));
@@ -317,7 +318,7 @@ public class TestVariableLength extends MockObjectTestCase {
 		bloque3.add(new ArrayByte(siguienteRegistroB3));
 		bloque3.add(new ArrayByte(cantidadRegistrosB3));
 
-		final Queue<Object> campos = new LinkedList<Object>();
+		final MiLinkedList<Object> campos = new MiLinkedList<Object>();
 		campos.add(0);
 		checking(new Expectations(){{
 			one(serializerMock).dehydrate(with(any(OutputBuffer.class)), with(campos));
@@ -412,5 +413,15 @@ public class TestVariableLength extends MockObjectTestCase {
 				return fileMock;
 			}
 		};
+	}
+	public class MiLinkedList<T> extends LinkedList<T> implements Serializable<MiLinkedList<T>> {
+
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public Serializer<MiLinkedList<T>> getSerializer() {
+			return null;
+		}
+		
 	}
 }
