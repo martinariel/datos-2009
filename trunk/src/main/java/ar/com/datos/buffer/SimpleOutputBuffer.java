@@ -24,9 +24,19 @@ public class SimpleOutputBuffer implements OutputBuffer {
 	private BufferRealeaser releaser;
 	private static Long defaultBufferSize = 1024L;
 	
+	/**
+	 * Crea un SimpleOuputBuffer con un size de buffer predeterminado.
+	 * @param releaser un BufferReleaser para este buffer.
+	 */
 	public SimpleOutputBuffer(BufferRealeaser releaser){
 		this(defaultBufferSize, releaser);
 	}
+	
+	/**
+	 * Crea un SimpleOuputBuffer con un size de buffer recibido por parametro.
+	 * @param bufferSize size del buffer. 
+	 * @param releaser un BufferReleaser para este buffer.
+	 */
 	public SimpleOutputBuffer(Long bufferSize, BufferRealeaser releaser){
 		this.currentSize = 0;
 		this.bufferSize = bufferSize;
@@ -97,7 +107,6 @@ public class SimpleOutputBuffer implements OutputBuffer {
 	public void write(byte[] data) {
 		this.lastEntity.add(new ArrayByte(data));
 		this.currentSize += data.length;
-		
 	}
 
 	/**
@@ -105,7 +114,9 @@ public class SimpleOutputBuffer implements OutputBuffer {
 	 */
 	@Override
 	public void write(byte data) {
-		
+		byte[] aByte = new byte[1];
+		aByte[0] = data;
+		this.lastEntity.add(new ArrayByte(aByte));
+		this.currentSize += 1;
 	}
-
 }
