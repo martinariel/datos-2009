@@ -47,7 +47,7 @@ public class CollectionSerializer<T> implements Serializer<Collection<T>> {
 	 */
 	public CollectionSerializer(Serializer<T> baseSerializer) {
 		this.baseSerializer = baseSerializer;
-		this.cardinalitySerializer = (ShortSerializer)SerializerCache.getInstance().getSerializer(ShortSerializer.class);
+		this.cardinalitySerializer = SerializerCache.getInstance().getSerializer(ShortSerializer.class);
 	}
 
 	/**
@@ -90,6 +90,7 @@ public class CollectionSerializer<T> implements Serializer<Collection<T>> {
 	 * (non-Javadoc)
 	 * @see ar.com.datos.serializer.Serializer#dehydrate(ar.com.datos.buffer.OutputBuffer, java.lang.Object)
 	 */
+	@Override
 	@SuppressWarnings("unchecked")
 	public void dehydrate(OutputBuffer output, Collection<T> object) {
 		Collection<T> value = object;
@@ -127,6 +128,7 @@ public class CollectionSerializer<T> implements Serializer<Collection<T>> {
 	 * (non-Javadoc)
 	 * @see ar.com.datos.serializer.Serializer#hydrate(ar.com.datos.buffer.InputBuffer)
 	 */
+	@Override
 	@SuppressWarnings("unchecked")
 	public Collection<T> hydrate(InputBuffer input) {
 		Collection<T> returnValue = new LinkedList<T>();
@@ -150,6 +152,7 @@ public class CollectionSerializer<T> implements Serializer<Collection<T>> {
 	 * (non-Javadoc)
 	 * @see ar.com.datos.serializer.Serializer#getDehydrateSize(java.lang.Object)
 	 */
+	@Override
 	@SuppressWarnings("unchecked")
 	public long getDehydrateSize(Collection<T> object) {
 		Collection<T> value = object;

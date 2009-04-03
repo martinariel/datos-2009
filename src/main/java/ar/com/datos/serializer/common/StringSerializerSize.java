@@ -38,9 +38,9 @@ public class StringSerializerSize implements Serializer<String> {
 	 */
 	public StringSerializerSize() {
 		this.collectionSerializer = new CollectionSerializer<Character>(
-				(CharacterSerializer)SerializerCache.getInstance().getSerializer(CharacterSerializer.class),
-				(ByteSerializer)SerializerCache.getInstance().getSerializer(ByteSerializer.class));
-		this.cardinalitySize = ((ByteSerializer)SerializerCache.getInstance().getSerializer(ByteSerializer.class)).getDehydrateSize(null);
+				SerializerCache.getInstance().getSerializer(CharacterSerializer.class),
+				SerializerCache.getInstance().getSerializer(ByteSerializer.class));
+		this.cardinalitySize = (SerializerCache.getInstance().getSerializer(ByteSerializer.class)).getDehydrateSize(null);
 	}
 	
 	/**
@@ -51,7 +51,7 @@ public class StringSerializerSize implements Serializer<String> {
 	 */
 	public StringSerializerSize(NumberSerializer<? extends Number> cardinalitySerializer) {
 		this.collectionSerializer = new CollectionSerializer<Character>(
-				(CharacterSerializer)SerializerCache.getInstance().getSerializer(CharacterSerializer.class),
+				SerializerCache.getInstance().getSerializer(CharacterSerializer.class),
 				cardinalitySerializer);
 		this.cardinalitySize = cardinalitySerializer.getDehydrateSize(null);		
 	}
@@ -61,7 +61,7 @@ public class StringSerializerSize implements Serializer<String> {
 	 */
 	public void setCardinalitySerializer(NumberSerializer<? extends Number> cardinalitySerializer) {
 		this.collectionSerializer = new CollectionSerializer<Character>(
-				(CharacterSerializer)SerializerCache.getInstance().getSerializer(CharacterSerializer.class),
+				SerializerCache.getInstance().getSerializer(CharacterSerializer.class),
 				cardinalitySerializer);
 		this.cardinalitySize = cardinalitySerializer.getDehydrateSize(null);
 	}
@@ -70,13 +70,13 @@ public class StringSerializerSize implements Serializer<String> {
 	 * (non-Javadoc)
 	 * @see ar.com.datos.serializer.Serializer#dehydrate(ar.com.datos.buffer.OutputBuffer, java.lang.Object)
 	 */
+	@Override
 	public void dehydrate(OutputBuffer output, String object) {
 		String value = object;
 		
 		char[] charactersArray = new char[value.length()];
 		value.getChars(0, value.length(), charactersArray, 0);
 		Collection<Character> charactersCollection = new LinkedList<Character>();
-		// FIXME: Si agregamos Commons de apache cambiar esto por un CollectionUtils.addAll
 		for (int i = 0; i < charactersArray.length; i++) {
 			charactersCollection.add(charactersArray[i]);
 		}
@@ -88,6 +88,7 @@ public class StringSerializerSize implements Serializer<String> {
 	 * (non-Javadoc)
 	 * @see ar.com.datos.serializer.Serializer#hydrate(ar.com.datos.buffer.InputBuffer)
 	 */
+	@Override
 	public String hydrate(InputBuffer input) {
 		Collection<Character> charactersCollection = this.collectionSerializer.hydrate(input);
 		Iterator<Character> it = charactersCollection.iterator();
@@ -105,6 +106,7 @@ public class StringSerializerSize implements Serializer<String> {
 	 * (non-Javadoc)
 	 * @see ar.com.marotte.serializer.Serializer#getDehydrateSize(java.lang.Object)
 	 */
+	@Override
 	public long getDehydrateSize(String object) {
 		return object.length() * 2 + this.cardinalitySize;
 	}

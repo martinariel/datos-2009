@@ -2,11 +2,9 @@ package ar.com.datos.test.serializer;
 
 import java.util.Collection;
 import java.util.LinkedList;
-import java.util.Queue;
 
 import ar.com.datos.buffer.InputBuffer;
 import ar.com.datos.buffer.exception.BufferException;
-import ar.com.datos.serializer.DynamicSerializer;
 import ar.com.datos.serializer.PrimitiveTypeSerializer;
 import ar.com.datos.serializer.Serializer;
 import ar.com.datos.serializer.common.BooleanSerializer;
@@ -17,7 +15,6 @@ import ar.com.datos.serializer.common.DoubleSerializer;
 import ar.com.datos.serializer.common.FloatSerializer;
 import ar.com.datos.serializer.common.IntegerSerializer;
 import ar.com.datos.serializer.common.LongSerializer;
-import ar.com.datos.serializer.common.NumberSerializer;
 import ar.com.datos.serializer.common.SerializerCache;
 import ar.com.datos.serializer.common.ShortSerializer;
 import ar.com.datos.serializer.common.StringSerializerDelimiter;
@@ -139,7 +136,7 @@ public class TestSerializer extends ExtendedTestCase {
 	 * Test para la clase {@link BooleanSerializer}
 	 */
 	public void testBooleanSerializer() {
-		Serializer<Boolean> serializer = (BooleanSerializer)SerializerCache.getInstance().getSerializer(BooleanSerializer.class);
+		Serializer<Boolean> serializer = SerializerCache.getInstance().getSerializer(BooleanSerializer.class);
 		boolean first = true;
 		boolean second = false;
 		
@@ -150,7 +147,7 @@ public class TestSerializer extends ExtendedTestCase {
 	 * Test para la clase {@link ByteSerializer}
 	 */
 	public void testByteSerializer() {
-		Serializer<Byte> serializer = (ByteSerializer)SerializerCache.getInstance().getSerializer(ByteSerializer.class);
+		Serializer<Byte> serializer = SerializerCache.getInstance().getSerializer(ByteSerializer.class);
 		byte first = (byte)22;
 		byte second = (byte)45;
 
@@ -161,7 +158,7 @@ public class TestSerializer extends ExtendedTestCase {
 	 * Test para la clase {@link CharacterSerializer}
 	 */
 	public void testCharacterSerializer() {
-		Serializer<Character> serializer = (CharacterSerializer)SerializerCache.getInstance().getSerializer(CharacterSerializer.class);
+		Serializer<Character> serializer = SerializerCache.getInstance().getSerializer(CharacterSerializer.class);
 		char first = 'a';
 		char second = 'Z';
 
@@ -172,7 +169,7 @@ public class TestSerializer extends ExtendedTestCase {
 	 * Test para la clase {@link ShortSerializer}
 	 */
 	public void testShortSerializer() {
-		Serializer<Short> serializer = (ShortSerializer)SerializerCache.getInstance().getSerializer(ShortSerializer.class);
+		Serializer<Short> serializer = SerializerCache.getInstance().getSerializer(ShortSerializer.class);
 		short first = (short)22;
 		short second = (short)-45;
 
@@ -183,7 +180,7 @@ public class TestSerializer extends ExtendedTestCase {
 	 * Test para la clase {@link IntegerSerializer}
 	 */
 	public void testIntegerSerializer() {
-		Serializer<Integer> serializer = (IntegerSerializer)SerializerCache.getInstance().getSerializer(IntegerSerializer.class);
+		Serializer<Integer> serializer = SerializerCache.getInstance().getSerializer(IntegerSerializer.class);
 		int first = 22;
 		int second = -45;
 
@@ -194,7 +191,7 @@ public class TestSerializer extends ExtendedTestCase {
 	 * Test para la clase {@link LongSerializer}
 	 */
 	public void testLongSerializer() {
-		Serializer<Long> serializer = (LongSerializer)SerializerCache.getInstance().getSerializer(LongSerializer.class);
+		Serializer<Long> serializer = SerializerCache.getInstance().getSerializer(LongSerializer.class);
 		long first = (long)22;
 		long second = (long)-45;
 
@@ -205,7 +202,7 @@ public class TestSerializer extends ExtendedTestCase {
 	 * Test para la clase {@link FloatSerializer}
 	 */
 	public void testFloatSerializer() {
-		Serializer<Float> serializer = (FloatSerializer)SerializerCache.getInstance().getSerializer(FloatSerializer.class);
+		Serializer<Float> serializer = SerializerCache.getInstance().getSerializer(FloatSerializer.class);
 		float first = (float)22;
 		float second = (float)-45;
 
@@ -216,7 +213,7 @@ public class TestSerializer extends ExtendedTestCase {
 	 * Test para la clase {@link DoubleSerializer}
 	 */
 	public void testDoubleSerializer() {
-		Serializer<Double> serializer = (DoubleSerializer)SerializerCache.getInstance().getSerializer(DoubleSerializer.class);
+		Serializer<Double> serializer = SerializerCache.getInstance().getSerializer(DoubleSerializer.class);
 		double first = (double)22;
 		double second = (double)-45;
 
@@ -261,7 +258,7 @@ public class TestSerializer extends ExtendedTestCase {
 	 */
 	public void testStringSerializerSize() {
 		// Uso un delimitador originado a partir de un String.
-		Serializer<String> serializer = new StringSerializerSize((ShortSerializer)SerializerCache.getInstance().getSerializer(ShortSerializer.class));
+		Serializer<String> serializer = new StringSerializerSize(SerializerCache.getInstance().getSerializer(ShortSerializer.class));
 		String first = "La Ley, en su magnifica ecuanimidad, prohibe, tanto al rico como al pobre, dormir bajo los puentes, mendigar por las calles y robar pan";
 		String second = "Todos los pobres tienen la libertad de morirse de hambre bajo los puentes de Paris";
 
@@ -290,83 +287,5 @@ public class TestSerializer extends ExtendedTestCase {
 		} catch (BufferException e) {
 			assertTrue(true);
 		}
-	}
-	
-	/**
-	 * Test para la clase {@link DynamicSerializer}
-	 * @deprecated
-	 * Como {@link DynamicSerializer} quedo deprecada este test esta deprecado
-	 */
-	public void testDynamicSerializer() {
-		// Creo los objetos para la cola.
-		Integer first = 356;
-		Double second = 43.32;
-		String third = "Una tonteria sigue siendo una tonteria aunque sea dicha por cincuenta millones de personas";
-		Collection<String> fourth = new LinkedList<String>();
-		fourth.add("1");
-		fourth.add("22");
-		fourth.add("333");
-		fourth.add("4444");
-		String fifth = "5";
-		
-		// Agrego los objetos en la cola.
-		Queue<Object> queue = new LinkedList<Object>();
-		queue.add(first);
-		queue.add(second);
-		queue.add(third);
-		queue.add(fourth);
-		queue.add(fifth);
-		
-		// Genero los serializadores que conformaran el DynamicSerializer.
-		Serializer integerSerializer = SerializerCache.getInstance().getSerializer(IntegerSerializer.class);
-		Serializer doubleSerializer = SerializerCache.getInstance().getSerializer(DoubleSerializer.class);
-		Serializer<String> stringDelimiterSerializer = new StringSerializerDelimiter(new byte[] {(byte)0, (byte)0});
-		Serializer<String> stringSizeSerializer = new StringSerializerSize((NumberSerializer<Integer>)integerSerializer);
-		Serializer collectionSerializer = new CollectionSerializer<String>(stringSizeSerializer);
-		
-		// Creo el DynamicSerializer con el primer serializador a usar.
-		DynamicSerializer dynamicSerializer = new DynamicSerializer(integerSerializer);
-		// Agrego en orden los demas serializadores.
-		dynamicSerializer.setNextSerializer(doubleSerializer)
-						 .setNextSerializer(stringDelimiterSerializer)
-						 .setNextSerializer(collectionSerializer)
-						 .setNextSerializer(stringDelimiterSerializer);
-		
-		// Guardo el dehydrateSize
-		long dehydrateSize = dynamicSerializer.getDehydrateSize(queue);
-		
-		// Deshidrato.
-		OutputBufferTest oBuffer = new OutputBufferTest();
-		dynamicSerializer.dehydrate(oBuffer, queue);
-
-		// Rehidrato
-		Queue recoveredQueue;
-		InputBuffer iBuffer = oBuffer.getAsInputBuffer();
-		recoveredQueue = dynamicSerializer.hydrate(iBuffer);
-		
-		// Realizo las demas comparaciones.
-		assertEquals(first, recoveredQueue.poll());
-		assertEquals(second, recoveredQueue.poll());
-		assertEquals(third, recoveredQueue.poll());
-		assertEquals(fourth, recoveredQueue.poll());
-		assertEquals(fifth, recoveredQueue.poll());
-		try {
-			iBuffer.read();
-			assertFalse(true);
-		} catch (BufferException e) {
-			assertTrue(true);
-		}
-		
-		// Cuento el dehydrateSize para compararlo con el metodo correspondiente.
-		iBuffer = oBuffer.getAsInputBuffer();
-		int count = 0;
-		try {
-			while (true) {
-				iBuffer.read();
-				count++;
-			}
-		} catch (BufferException e) {
-		}
-		assertEquals(count, dehydrateSize);
 	}
 }

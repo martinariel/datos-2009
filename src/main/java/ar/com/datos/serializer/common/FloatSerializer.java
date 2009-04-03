@@ -16,6 +16,7 @@ public class FloatSerializer extends NumberSerializer<Float> {
 	 * (non-Javadoc)
 	 * @see ar.com.datos.serializer.Serializer#dehydrate(ar.com.datos.buffer.OutputBuffer, java.lang.Object)
 	 */
+	@Override
 	public void dehydrate(OutputBuffer output, Float object) {
 		output.write(PrimitiveTypeSerializer.toByte(object));		
 	}
@@ -24,6 +25,7 @@ public class FloatSerializer extends NumberSerializer<Float> {
 	 * (non-Javadoc)
 	 * @see ar.com.datos.serializer.Serializer#hydrate(ar.com.datos.buffer.InputBuffer)
 	 */
+	@Override
 	public Float hydrate(InputBuffer input) {
 		return PrimitiveTypeSerializer.toFloat(input.read(new byte[4]));
 	}
@@ -32,6 +34,7 @@ public class FloatSerializer extends NumberSerializer<Float> {
 	 * (non-Javadoc)
 	 * @see ar.com.marotte.serializer.Serializer#getDehydrateSize(java.lang.Object)
 	 */
+	@Override
 	public long getDehydrateSize(Float object) {
 		return 4;
 	}

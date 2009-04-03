@@ -16,6 +16,7 @@ public class ShortSerializer extends NumberSerializer<Short> {
 	 * (non-Javadoc)
 	 * @see ar.com.datos.serializer.Serializer#dehydrate(ar.com.datos.buffer.OutputBuffer, java.lang.Object)
 	 */
+	@Override
 	public void dehydrate(OutputBuffer output, Short object) {
 		output.write(PrimitiveTypeSerializer.toByte(object));		
 	}
@@ -24,6 +25,7 @@ public class ShortSerializer extends NumberSerializer<Short> {
 	 * (non-Javadoc)
 	 * @see ar.com.datos.serializer.Serializer#hydrate(ar.com.datos.buffer.InputBuffer)
 	 */
+	@Override
 	public Short hydrate(InputBuffer input) {
 		return PrimitiveTypeSerializer.toShort(input.read(new byte[2]));
 	}
@@ -32,6 +34,7 @@ public class ShortSerializer extends NumberSerializer<Short> {
 	 * (non-Javadoc)
 	 * @see ar.com.marotte.serializer.Serializer#getDehydrateSize(java.lang.Object)
 	 */
+	@Override
 	public long getDehydrateSize(Short object) {
 		return 2;
 	}
