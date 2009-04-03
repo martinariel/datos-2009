@@ -35,12 +35,6 @@ public class RegistroOffsetWord implements Serializable<RegistroOffsetWord> {
 		palabra = unapalabra;
 	}
 	
-	private RegistroOffsetWord(){}
-	
-	
-	
-	
-	
 	public Address<Long,Short> getOffset() 
 	{
 		return new VariableLengthAddress( blocknumber, objectnumber );
@@ -105,11 +99,11 @@ public class RegistroOffsetWord implements Serializable<RegistroOffsetWord> {
 			@Override
 			public RegistroOffsetWord hydrate(InputBuffer input) {
 				
-				Long objnumber = longserializer.hydrate( input );
-				Short bknumber = shortserializer.hydrate( input );
+				Long blockNumber = longserializer.hydrate( input );
+				Short objectNumber = shortserializer.hydrate( input );
 				String word = stringSerializer.hydrate( input );
 				
-				RegistroOffsetWord reg = new RegistroOffsetWord( new VariableLengthAddress(objnumber,bknumber),word );
+				RegistroOffsetWord reg = new RegistroOffsetWord( new VariableLengthAddress(blockNumber,objectNumber),word );
 				return reg;
 			}
 		};

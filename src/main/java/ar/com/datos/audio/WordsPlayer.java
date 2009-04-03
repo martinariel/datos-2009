@@ -57,9 +57,9 @@ public class WordsPlayer {
 
                     //Desbloqueo el servicio de audio
                     servicioAudio.stopPlaying();
-
                 }
                 catch (UnregisteredWordException e){
+                	System.out.println("ouch");
                     // Audio no encontrado, beep??
                 }
 

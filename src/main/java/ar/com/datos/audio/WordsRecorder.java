@@ -51,16 +51,18 @@ public class WordsRecorder {
 
             //Supongo que tengo memoria suficiente!
             AnotherInputStream inputAudio = new AnotherInputStream(audio.toByteArray());
-
+            inputAudio.mark(Integer.MAX_VALUE);
             Thread reproduccion = servicioAudio.play(inputAudio);
-
+            
             try {
                 reproduccion.join();
             }
             catch(InterruptedException e){
                 System.out.println("Thread principal interrumpido");
             }
-
+            
+            inputAudio.reset();
+            
             if (interfazUsuario.recordingWordOK()) {
                 try {
                     servicioArchivos.addWord(palabraActual, inputAudio);
