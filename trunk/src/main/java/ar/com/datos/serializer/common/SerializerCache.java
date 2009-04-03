@@ -49,6 +49,7 @@ public class SerializerCache {
 	 * Obtiene una instancia de la clase pasada desde el cache.
 	 * Si no se encuentra se devuelve null.
 	 */
+	@SuppressWarnings("unchecked")
 	public <T> T getSerializer(Class<T> clazz) {
 		return (T) this.cache.get(clazz);
 	}

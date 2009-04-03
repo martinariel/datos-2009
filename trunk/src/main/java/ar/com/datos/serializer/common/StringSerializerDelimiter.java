@@ -52,6 +52,7 @@ public class StringSerializerDelimiter implements Serializer<String> {
 	 * (non-Javadoc)
 	 * @see ar.com.datos.serializer.Serializer#dehydrate(ar.com.datos.buffer.OutputBuffer, java.lang.Object)
 	 */
+	@Override
 	public void dehydrate(OutputBuffer output, String object) {
 		byte[] bytes = new byte[object.length() * 2 + this.delimiter.length];
 
@@ -66,6 +67,7 @@ public class StringSerializerDelimiter implements Serializer<String> {
      * (non-Javadoc)
      * @see ar.com.datos.serializer.Serializer#hydrate(ar.com.datos.buffer.InputBuffer)
      */
+	@Override
 	public String hydrate(InputBuffer input) {
 		// Pido bytes hasta llegar al delimitador.
 		byte[] preObject = new byte[10];
@@ -110,6 +112,7 @@ public class StringSerializerDelimiter implements Serializer<String> {
 	 * (non-Javadoc)
 	 * @see ar.com.marotte.serializer.Serializer#getDehydrateSize(java.lang.Object)
 	 */
+	@Override
 	public long getDehydrateSize(String object) {
 		return object.length() * 2 + this.delimiter.length;
 	}

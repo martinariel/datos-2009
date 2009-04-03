@@ -7,6 +7,7 @@ import ar.com.datos.file.variableLength.VariableLengthAddress;
 import ar.com.datos.serializer.Serializable;
 import ar.com.datos.serializer.Serializer;
 import ar.com.datos.serializer.common.LongSerializer;
+import ar.com.datos.serializer.common.SerializerCache;
 import ar.com.datos.serializer.common.ShortSerializer;
 import ar.com.datos.serializer.common.StringSerializerDelimiter;
 
@@ -22,9 +23,9 @@ import ar.com.datos.serializer.common.StringSerializerDelimiter;
 
 public class RegistroOffsetWord implements Serializable<RegistroOffsetWord> {
 
-	Long blocknumber;
-	Short objectnumber;
-	String palabra;
+	private Long blocknumber;
+	private Short objectnumber;
+	private String palabra;
 	
 	
 
@@ -70,8 +71,8 @@ public class RegistroOffsetWord implements Serializable<RegistroOffsetWord> {
 		{
 
 			private StringSerializerDelimiter stringSerializer = new StringSerializerDelimiter( new byte[] {(byte)0, (byte)(0)});
-			private LongSerializer longserializer = new LongSerializer();
-			private ShortSerializer shortserializer = new ShortSerializer();
+			private LongSerializer longserializer = SerializerCache.getInstance().getSerializer(LongSerializer.class);
+			private ShortSerializer shortserializer = SerializerCache.getInstance().getSerializer(ShortSerializer.class);
 			
 			
 			/**
