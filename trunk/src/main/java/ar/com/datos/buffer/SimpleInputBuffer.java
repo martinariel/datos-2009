@@ -56,7 +56,8 @@ public class SimpleInputBuffer implements InputBuffer {
 		if (this.pos == this.buffer.length) {
 			throw new BufferException("Not enough data to read");
 		}
-		return this.buffer[this.pos++ - 1];
+		this.pos++;
+		return this.buffer[this.pos - 1];
 	}
 	
 	/** 

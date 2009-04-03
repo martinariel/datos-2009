@@ -285,7 +285,7 @@ public class VariableLengthFileManager<T extends Serializable<T>> implements Dyn
 	 */
 	private Long createInputBuffer(Long blockNumber, byte[] bloque, SimpleInputBuffer ib) {
 		ArrayByte miArr = new ArrayByte(bloque);
-		if (bloque[bloque.length-1] == 0) {
+		if (getCantidadRegistros(bloque) == 0) {
 			// Cargo en el input buffer los datos (es decir, saco el puntero al siguiente bloque, porque es un registro de varios
 			// Bloques y el ultimo byte que indica que el bloque es del tipo mencionado
 			ib.append(miArr.getLeftSubArray(bloque.length - CANTIDAD_REGISTROS_SIZE - INNER_BLOCK_POINTER_SIZE));
@@ -310,7 +310,7 @@ public class VariableLengthFileManager<T extends Serializable<T>> implements Dyn
 		
 		Long proximaDireccion = extraerDireccionDeBloqueCompleto(bloque, miArr);
 		
-		if (proximaDireccion != direccionActual) return createInputBufferMultipleBlocks(ib, proximaDireccion);
+		if (!proximaDireccion.equals(direccionActual)) return createInputBufferMultipleBlocks(ib, proximaDireccion);
 		
 		return direccionActual;
 	}
@@ -372,7 +372,12 @@ public class VariableLengthFileManager<T extends Serializable<T>> implements Dyn
 		if (iterator.getNextBlock() == END_BLOCK) return;
 		HydratedBlock<T> hb = this.getBlock(iterator.getNextBlock());
 		iterator.setCachedObjects(hb.getData().iterator());
-		iterator.setNextBlock(hb.getNextBlockNumber());
+		Long nextBlockNumber = hb.getNextBlockNumber();
+		if (nextBlockNumber.equals(this.getCachedLastBlock().getBlockNumber()) && this.getCachedLastBlock().getData().size() ==  0) {
+			iterator.setNextBlock(END_BLOCK);
+		} else {
+			iterator.setNextBlock(nextBlockNumber);
+		}
 		
 	}
 	protected void setLastMultipleBlockAddress(Address<Long, Short> lastMultipleBlockAddress) {

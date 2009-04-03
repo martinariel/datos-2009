@@ -91,16 +91,14 @@ public class SoundPersistenceServiceVariableLengthImpl implements SoundPersisten
 			throws WordIsAlreadyRegisteredException {
 		
 		Address<Long, Short> offset = getOffsetOfWord( word );
-		if ( offset != null ) throw new WordIsAlreadyRegisteredException();
-		else
-		{
-			RegistroInputStream regis = new RegistroInputStream( stream );
-			offset = accesoasonidos.addEntity( regis );
-			
-			RegistroOffsetWord registropalabra = new RegistroOffsetWord (offset,word);
-			accesoapalabras.addEntity( registropalabra );
+		if ( offset != null ){
+			throw new WordIsAlreadyRegisteredException();
 		}
+		RegistroInputStream regis = new RegistroInputStream( stream );
+		offset = accesoasonidos.addEntity( regis );
 		
+		RegistroOffsetWord registropalabra = new RegistroOffsetWord (offset,word);
+		accesoapalabras.addEntity( registropalabra );
 	}
 
 
@@ -133,12 +131,9 @@ public class SoundPersistenceServiceVariableLengthImpl implements SoundPersisten
 	 *  
 	 * */
 	
-	public Address<Long, Short> getOffsetOfWord( String word )
-	{
+	public Address<Long, Short> getOffsetOfWord( String word ){
 		Iterator<RegistroOffsetWord> it = accesoapalabras.iterator();
-		
-		while ( it.hasNext() )
-		{
+		while ( it.hasNext() ){
 			RegistroOffsetWord reg = it.next();
 			if (reg.getPalabra().equals(word)) return reg.getOffset();
 		}

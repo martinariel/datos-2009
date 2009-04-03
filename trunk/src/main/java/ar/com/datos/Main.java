@@ -68,7 +68,7 @@ public class Main implements IWordsRecorderConector{
 
     @Override
     public void recordingWordError(){
-
+    	
     }
 
     @Override
@@ -147,6 +147,7 @@ public class Main implements IWordsRecorderConector{
             grabador.recordWords(palabras);
         }
         catch(Exception e){
+        	e.printStackTrace();
             loadDocument();
         }
 
