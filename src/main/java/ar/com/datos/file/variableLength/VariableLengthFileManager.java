@@ -137,7 +137,7 @@ public class VariableLengthFileManager<T extends Serializable<T>> implements Dyn
 	public void release(OutputBuffer ob) {
 		Short cantidadObjetos = ob.getEntitiesCount();
 		List<T> c = new ArrayList<T>();
-		if (ob.getEntitiesCount() > 0) {
+		if (ob.getEntitiesCount() > 1) {
 			c.add(getCachedLastBlock().getData().get(getCachedLastBlock().getData().size() - 1));
 			writeEntitiesInOneBlock(ob.extractAllButLast(), cantidadObjetos);
 		} else { 

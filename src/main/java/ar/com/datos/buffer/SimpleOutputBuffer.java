@@ -50,6 +50,7 @@ public class SimpleOutputBuffer implements OutputBuffer {
 	 */
 	@Override
 	public void closeEntity() {
+		this.nEntities++;
 		while (this.isOverloaded()) this.releaser.release(this);
 		
 		Iterator<ArrayByte> it = this.lastEntity.iterator();
@@ -57,7 +58,6 @@ public class SimpleOutputBuffer implements OutputBuffer {
 			this.bufferedEntities.add(it.next());
 		}
 		this.lastEntity.clear();
-		this.nEntities++;
 	}
 	
 	/**
@@ -69,7 +69,7 @@ public class SimpleOutputBuffer implements OutputBuffer {
 		for (ArrayByte ab : this.bufferedEntities)
 			this.currentSize -= ab.getLength();
 		this.bufferedEntities.clear();
-		this.nEntities = 0;
+		this.nEntities = 1;
 		return retorno;
 	}
 
@@ -82,7 +82,7 @@ public class SimpleOutputBuffer implements OutputBuffer {
 		for (ArrayByte ab : this.lastEntity)
 			this.currentSize -= ab.getLength();
 		this.lastEntity.clear();
-		this.nEntities = -1;
+		this.nEntities = 0;
 		return retorno;
 	}
 

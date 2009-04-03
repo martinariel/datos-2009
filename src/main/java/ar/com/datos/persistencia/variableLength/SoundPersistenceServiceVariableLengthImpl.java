@@ -35,7 +35,7 @@ public class SoundPersistenceServiceVariableLengthImpl implements SoundPersisten
 	
 	//tama�o de bloques por default
 	public static  Integer BLOCK_SIZE_WORDS = 16;
-	public static  Integer BLOCK_SIZE_INPUTSTREAM = 1024;
+	public static  Integer BLOCK_SIZE_INPUTSTREAM = 128 * 1024;
 	
 	
 	
