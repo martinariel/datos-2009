@@ -55,15 +55,20 @@ public class WordsPlayer {
                         System.out.println("Thread principal interrumpido");
                     }
 
+
+                }
+                catch (UnregisteredWordException e){
+
+                    // Audio no encontrado, beep??
+                }
+                finally{
                     //Desbloqueo el servicio de audio
                     servicioAudio.stopPlaying();
                 }
-                catch (UnregisteredWordException e){
-                	System.out.println("ouch");
-                    // Audio no encontrado, beep??
-                }
 
             }
+
+            reproduciendo = false;
         }
     }
 }

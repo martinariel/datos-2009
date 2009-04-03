@@ -4,7 +4,6 @@ import ar.com.datos.audio.IWordsRecorderConector;
 import ar.com.datos.audio.WordsPlayer;
 import ar.com.datos.audio.WordsRecorder;
 import ar.com.datos.persistencia.SoundPersistenceService;
-import ar.com.datos.test.persistencia.SoundPersistenceServiceMemoryImpl;
 import ar.com.datos.persistencia.variableLength.SoundPersistenceServiceVariableLengthImpl;
 
 import ar.com.datos.parser.IParser;
@@ -27,12 +26,8 @@ public class Main implements IWordsRecorderConector{
 
     public Main() {
 
-    	/**
-    	 * TODO: cambiar por persistencia en archivos
-    	 */
-    	//SoundPersistenceService servicioArchivos = new SoundPersistenceServiceVariableLengthImpl();
-    	//SoundPersistenceService servicioArchivos = new SoundPersistenceServiceMemoryImpl();
-    	SoundPersistenceService servicioArchivos = new SoundPersistenceServiceVariableLengthImpl();
+        SoundPersistenceService servicioArchivos =
+            new SoundPersistenceServiceVariableLengthImpl();
 
         parser				= new SimpleTextParser();
         bufferReaderTeclado = new BufferedReader(new InputStreamReader(System.in));
@@ -53,7 +48,7 @@ public class Main implements IWordsRecorderConector{
 
     @Override
     public boolean canStartRecording(){
-    	System.out.println("Ingrese 'i' si quiere grabar la palabra.");
+        System.out.println("Ingrese 'i' si quiere grabar la palabra.");
         return readKeyBoardChar() == 'i';
     }
 
@@ -68,12 +63,12 @@ public class Main implements IWordsRecorderConector{
 
     @Override
     public void recordingWordError(){
-    	
+
     }
 
     @Override
     public void recordingWordStarted(){
-    	System.out.println("Grabando!!!!, ingrese 'f' para finalizar la grabacion.");
+        System.out.println("Grabando!!!!, ingrese 'f' para finalizar la grabacion.");
 
         if (readKeyBoardChar() == 'f'){
             grabador.stopRecording();
@@ -85,8 +80,8 @@ public class Main implements IWordsRecorderConector{
 
     @Override
     public void recordingAllWordsEnd(){
-    	System.out.println("Grabacion de palabras finalizada!!!");
-    	showMenu();
+        System.out.println("Grabacion de palabras finalizada!!!");
+        showMenu();
     }
 
 
@@ -105,12 +100,12 @@ public class Main implements IWordsRecorderConector{
     }
 
     private char readKeyBoardChar(){
-    	String opcion;
-    	do
-    		opcion = readKeyboardString();
-    	while (opcion.length() == 0 || opcion.length() > 1);
+        String opcion;
+        do
+            opcion = readKeyboardString();
+        while (opcion.length() == 0 || opcion.length() > 1);
 
-    	return opcion.trim().toLowerCase().charAt(0);
+        return opcion.trim().toLowerCase().charAt(0);
     }
 
     /**
@@ -120,7 +115,7 @@ public class Main implements IWordsRecorderConector{
     private void showMenu() {
         System.out.println("Opciones:");
         System.out.println("1 - Carga de documentos");
-        System.out.println("2 - Reproducciï¿½n de palabras");
+        System.out.println("2 - Reproducción de palabras");
         System.out.println("Cualquier otra tecla: Salir");
         System.out.println("Seleccione una opcion:");
 
@@ -144,10 +139,15 @@ public class Main implements IWordsRecorderConector{
 
         try {
             palabras = parser.parseTextFile(ruta);
-            grabador.recordWords(palabras);
+
+            try {
+                grabador.recordWords(palabras);
+            }
+            catch(Exception e){
+                e.printStackTrace();
+            }
         }
         catch(Exception e){
-        	e.printStackTrace();
             loadDocument();
         }
 
@@ -166,7 +166,13 @@ public class Main implements IWordsRecorderConector{
 
         try {
             palabras = parser.parseTextFile(ruta);
-            reproductor.playWords(palabras);
+
+            try {
+                reproductor.playWords(palabras);
+            }
+            catch(Exception e){
+                e.printStackTrace();
+            }
             showMenu();
         }
         catch(Exception e){
