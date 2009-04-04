@@ -1,0 +1,74 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Definición del tipo de documento.                                           %
+% Posibles tipos de papel: a4paper, letterpaper, legalpapper                  %
+% Posibles tamaños de letra: 10pt, 11pt, 12pt                                 %
+% Posibles clases de documentos: article, report, book, slides                %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[11pt, spanish, a4paper]{article}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Los paquetes permiten ampliar las capacidades de LaTeX.                     %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage[spanish]{babel}     % Paquete para definir el idioma usado.
+\usepackage[latin1]{inputenc}   % Define la codificación de caracteres 
+                                % (latin1 es ISO 8859-1)
+%\usepackage[T1]{fontenc}        % Agrega caracteres extendidos al font
+\usepackage{t1enc}
+\usepackage{palatino}           % Cambia el font por omision a Palatino
+\usepackage{graphicx}           % Paquete para inclusión de gráficos.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Título principal del documento.
+\title{\textbf{The Speaker (Trabajo Práctico Nro. 1)}}
+
+% Información sobre los autores.
+\author{    
+            Juan Manuel Barrenche, \textit{Padrón Nro. 86.152}               \\
+            \texttt{ snipperme@gmail.com }                                   \\
+            Martín Fernández, \textit{Padrón Nro. 88.171}                    \\
+            \texttt{ tinchof@gmail.com }                                     \\
+            Rúl Lopez, \textit{Padrón Nro. 88.430}                           \\
+            \texttt{ rau\_carpo@hotmail.com }                                \\
+            Marcos J. Medrano, \textit{Padrón Nro. 86.729}                   \\
+            \texttt{ marcosmedrano0@gmail.com }                              \\
+            Federico Valido, \textit{Padrón Nro. 82.490}                     \\
+            \texttt{ fvalido@gmail.com }                                     \\ 
+                                                                             \\
+            \normalsize{Grupo Nro. 11 (YES) - 1er. Cuatrimestre de 2009}     \\
+            \normalsize{75.06 Organización de Datos}                         \\
+            \normalsize{Facultad de Ingeniería, Universidad de Buenos Aires} \\
+       }
+\date{DIA de MES de 2009}
+
+
+% define que archivos seran realmente incluidos
+%\includeonly{intro,arch,file,buffer,serializer,persistence}
+
+% Comienzo del documento
+\begin{document}
+
+\maketitle                % Inserta el título.
+%\thispagestyle{empty}     % Quita el número en la primer página.
+
+% Resumen que aparece en la primera página (antes de la tabla de contenidos)
+\begin{abstract}
+Este parrafo debería contener una breve descripción del trabajo practico. No 
+debería contener mas de 100 palabras.
+En una introducción posterior se podrá describir con más detalle los contenidos
+de este trabajo.
+Documento desarrollado en LATEX.
+\end{abstract}
+
+\tableofcontents        % Comentar si no se desea la Table Of Content.
+
+
+% Inclusión de archivos externos
+\input{a}
+%\include{intro}         % Introducción
+%\include{arch}          % Descripción general de la Arquitectura e introducción de cada Modulo
+%\include{file}          % Manejadores de Archivos
+%\include{buffer}        % Buffers de Entrada y Salida
+%\include{serializer}    % Serializadores
+%\include{persistence}   % Servicios de Persistencia
+
+\end{document}
