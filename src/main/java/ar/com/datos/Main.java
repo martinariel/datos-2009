@@ -23,11 +23,11 @@ public class Main implements IWordsRecorderConector{
     private BufferedReader bufferReaderTeclado;
     private WordsPlayer reproductor;
     private WordsRecorder grabador;
+	private SoundPersistenceService servicioArchivos;
 
     public Main() {
 
-        SoundPersistenceService servicioArchivos =
-            new SoundPersistenceServiceVariableLengthImpl();
+        servicioArchivos = new SoundPersistenceServiceVariableLengthImpl();
 
         parser				= new SimpleTextParser();
         bufferReaderTeclado = new BufferedReader(new InputStreamReader(System.in));
@@ -123,6 +123,11 @@ public class Main implements IWordsRecorderConector{
         case '1': loadDocument();break;
         case '2': playDocument();break;
         }
+        try {
+			servicioArchivos.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
     }
 
 

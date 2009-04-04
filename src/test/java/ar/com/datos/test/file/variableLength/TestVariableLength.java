@@ -378,6 +378,53 @@ public class TestVariableLength extends MockObjectTestCase {
 		assertEquals(0, direccionr2.getObjectNumber().intValue());
 		
 	}
+	/**
+	 * Voy a crear el VLFM con el archivo vacío. Luego voy a cerrarlo y verificar
+	 * que no grabe (ya que no tiene registros en el último caché)
+	 * Luego, voy a agregar uno y cerrarlo nuevamente. Esta vez si tiene que grabar 
+	 * @throws Exception
+	 */
+	@SuppressWarnings("unchecked")
+	public void testCerrado() throws Exception {
+		this.cantidadDeBloquesEnFileMock = 0L;
+		final byte[] serializacion = new byte[blockSize / 2];
+		for (Integer i = 0; i < serializacion.length; i++) {
+			serializacion[i] = 2;
+		}
+		final byte[] relleno = new byte[blockSize - serializacion.length - 2];
+		final byte[] cantRegistros = new byte[] {(byte)0, (byte)1};
+		final MiLinkedList<Object> campos = new MiLinkedList<Object>();
+		campos.add(1);
+		final Collection<ArrayByte> bloque = new ArrayList<ArrayByte>();
+		bloque.add(new ArrayByte(serializacion));
+		bloque.add(new ArrayByte(relleno));
+		bloque.add(new ArrayByte(cantRegistros));
+		checking(new Expectations(){{
+			one(serializerMock).dehydrate(with(any(OutputBuffer.class)), with(campos));
+			will(new CustomAction("deshidratar") {
+				@Override
+				public Object invoke(Invocation invocation) throws Throwable {
+					OutputBuffer outputBuffer = (OutputBuffer) invocation.getParameter(0);
+					outputBuffer.write(serializacion);
+					return null;
+				}
+			});
+		}});
+		VariableLengthFileManager unVLFM = crearArchivo();
+		unVLFM.close();
+		unVLFM.addEntity(campos);
+		checking(new Expectations(){{
+			one(fileMock).writeBlock(with(0L), with(equal(bloque)));
+			will(new CustomAction("writeBlock") {
+				@Override
+				public Object invoke(Invocation invocation) throws Throwable {
+					cantidadDeBloquesEnFileMock += 1;
+					return null;
+				}
+			});
+		}});
+		unVLFM.close();
+	}
 	private void setCantidadDeObjetos(final byte[] bloque, Byte cantidadDeObjetos) {
 		bloque[blockSize-1] = cantidadDeObjetos;
 		bloque[blockSize-2] = 0;
@@ -393,7 +440,7 @@ public class TestVariableLength extends MockObjectTestCase {
 		bloque1[blockSize-10] = 0;
 	}
 	@SuppressWarnings("unchecked")
-	private DynamicAccesor crearArchivo() {
+	private VariableLengthFileManager crearArchivo() {
 		checking(new Expectations(){{
 			atLeast(1).of(fileMock).getTotalBlocks();
 			will(new CustomAction("totalBlocks") {
@@ -402,6 +449,7 @@ public class TestVariableLength extends MockObjectTestCase {
 					return cantidadDeBloquesEnFileMock;
 				}
 			});
+			allowing(fileMock).close();
 			allowing(fileMock).getBlockSize();
 			will(new CustomAction("blockSize") {
 				@Override

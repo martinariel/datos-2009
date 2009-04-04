@@ -1,5 +1,6 @@
 package ar.com.datos.test.persistencia;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
 import java.util.Queue;
@@ -143,6 +144,14 @@ public class SoundPersistenceServiceMemoryImpl implements SoundPersistenceServic
 			if (reg.getPalabra().equals(word)) return reg.getOffset();
 		}
 		return null;
+	}
+
+
+
+	@Override
+	public void close() throws IOException {
+		// TODO Auto-generated method stub
+		
 	}
 
 

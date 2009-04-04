@@ -1,5 +1,6 @@
 package ar.com.datos.persistencia;
 
+import java.io.Closeable;
 import java.io.InputStream;
 
 import ar.com.datos.audio.AnotherInputStream;
@@ -14,7 +15,7 @@ import ar.com.datos.persistencia.exception.UnregisteredWordException;
  */
 
 
-public interface SoundPersistenceService {
+public interface SoundPersistenceService extends Closeable {
 
 	/**
 	 * Permite agregar una palabra y su respectivo InputStream.
