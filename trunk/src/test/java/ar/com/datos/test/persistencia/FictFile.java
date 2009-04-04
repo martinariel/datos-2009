@@ -1,5 +1,6 @@
 package ar.com.datos.test.persistencia;
 
+import java.io.IOException;
 import java.util.Iterator;
 
 import ar.com.datos.file.Address;
@@ -37,6 +38,12 @@ public class FictFile<T extends Serializable<T>> implements DynamicAccesor<T>{
 	@Override
 	public Boolean isEmpty() {
 		return lista.isEmpty();
+	}
+
+	@Override
+	public void close() throws IOException {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

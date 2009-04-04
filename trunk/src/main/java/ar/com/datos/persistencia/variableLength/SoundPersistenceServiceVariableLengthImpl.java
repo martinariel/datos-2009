@@ -1,5 +1,7 @@
 package ar.com.datos.persistencia.variableLength;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
 
@@ -20,7 +22,7 @@ import ar.com.datos.persistencia.variableLength.registros.RegistroOffsetWord;
  *longitud variable en bloques.
  */
 
-public class SoundPersistenceServiceVariableLengthImpl implements SoundPersistenceService{
+public class SoundPersistenceServiceVariableLengthImpl implements SoundPersistenceService, Closeable{
 
 	//Archivos de palabras y de sonidos.
 	private DynamicAccesor<RegistroOffsetWord> accesoapalabras;
@@ -34,7 +36,7 @@ public class SoundPersistenceServiceVariableLengthImpl implements SoundPersisten
 	
 	
 	//tama�o de bloques por default
-	public static  Integer BLOCK_SIZE_WORDS = 16;
+	public static  Integer BLOCK_SIZE_WORDS = 4096;
 	public static  Integer BLOCK_SIZE_INPUTSTREAM = 128 * 1024;
 	
 	
@@ -140,6 +142,19 @@ public class SoundPersistenceServiceVariableLengthImpl implements SoundPersisten
 		return null;
 	}
 
+
+
+	@Override
+	public void close() throws IOException {
+		accesoapalabras.close();
+		accesoasonidos.close();
+	}
+
+	@Override
+	protected void finalize() throws Throwable {
+		this.close();
+		super.finalize();
+	}
 
 	
 }

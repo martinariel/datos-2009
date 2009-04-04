@@ -1,5 +1,6 @@
 package ar.com.datos.file.variableLength;
 
+import java.io.IOException;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -17,7 +18,6 @@ import ar.com.datos.file.BlockFile;
 import ar.com.datos.file.DynamicAccesor;
 import ar.com.datos.file.SimpleBlockFile;
 import ar.com.datos.serializer.PrimitiveTypeSerializer;
-import ar.com.datos.serializer.Serializable;
 import ar.com.datos.serializer.Serializer;
 /**
  * Esta entidad permite manejar la persistencia de objetos Serializables en un archivo de longitud variable.
@@ -26,7 +26,7 @@ import ar.com.datos.serializer.Serializer;
  *
  * @param <T> tipo de objetos a persistir y o recuperar
  */
-public class VariableLengthFileManager<T extends Serializable<T>> implements DynamicAccesor<T>, BufferRealeaser {
+public class VariableLengthFileManager<T> implements DynamicAccesor<T>, BufferRealeaser{
 
 	// Longitud del puntero al siguiente bloque en caso que un registro ocupe varios bloques
 	private static final Integer INNER_BLOCK_POINTER_SIZE = 8;
@@ -137,9 +137,10 @@ public class VariableLengthFileManager<T extends Serializable<T>> implements Dyn
 	public void release(OutputBuffer ob) {
 		Short cantidadObjetos = ob.getEntitiesCount();
 		List<T> c = new ArrayList<T>();
-		if (ob.getEntitiesCount() > 1) {
+		if (cantidadObjetos > 1) {
+			cantidadObjetos -= 1;
 			c.add(getCachedLastBlock().getData().get(getCachedLastBlock().getData().size() - 1));
-			writeEntitiesInOneBlock(ob.extractAllButLast(), cantidadObjetos);
+			writeEntitiesInOneBlock(getCachedLastBlock().getBlockNumber(), ob.extractAllButLast(), cantidadObjetos);
 		} else { 
 			setLastMultipleBlockAddress(new VariableLengthAddress(getCachedLastBlock().getBlockNumber(), (short)0));
 			writeOneEntityInMultipleBlocks(ob.extractLast());
@@ -151,13 +152,13 @@ public class VariableLengthFileManager<T extends Serializable<T>> implements Dyn
 	 * @param partes
 	 * @param cantidadObjetos
 	 */
-	protected void writeEntitiesInOneBlock(Collection<ArrayByte> partes, Short cantidadObjetos) {
+	protected void writeEntitiesInOneBlock(Long blockNumber, Collection<ArrayByte> partes, Short cantidadObjetos) {
 		Integer resto = getRealFile().getBlockSize() - CANTIDAD_REGISTROS_SIZE;
 		// Reduzco el resto para ver cuanto espacio sin utilizar qued� en la entidad
 		for (ArrayByte ab : partes) resto -= ab.getLength();
 		if (resto > 0) partes.add(new ArrayByte(new byte[resto]));
 		partes.add(new ArrayByte(PrimitiveTypeSerializer.toByte(cantidadObjetos)));
-		getRealFile().writeBlock(getRealFile().getTotalBlocks(), partes);
+		getRealFile().writeBlock(blockNumber, partes);
 	}
 
 	protected void writeOneEntityInMultipleBlocks(Collection<ArrayByte> extractLast) {
@@ -391,6 +392,23 @@ public class VariableLengthFileManager<T extends Serializable<T>> implements Dyn
 	 */
 	protected Address<Long, Short> getLastMultipleBlockAddress() {
 		return lastMultipleBlockAddress;
+	}
+	@Override
+	protected void finalize() throws Throwable {
+		this.close();
+		super.finalize();
+	}
+	@Override
+	public void close() throws IOException {
+		Short cantidadObjetos = this.getLastBlockBuffer().getEntitiesCount();
+		if (cantidadObjetos > 0) {
+			List<T> c = new ArrayList<T>();
+			c.add(getCachedLastBlock().getData().get(getCachedLastBlock().getData().size() - 1));
+			Collection<ArrayByte> todos = this.getLastBlockBuffer().extractAllButLast();
+			todos.addAll(this.getLastBlockBuffer().extractLast());
+			writeEntitiesInOneBlock(getCachedLastBlock().getBlockNumber(), todos, cantidadObjetos);
+		}
+		this.getRealFile().close();
 	}
 	/**
 	 * Inner class para iterar a este archivo

@@ -1,9 +1,9 @@
 package ar.com.datos.file;
 
-import ar.com.datos.serializer.Serializable;
+import java.io.Closeable;
 
 
-public interface SequentialAccesor<T extends Serializable<T>> extends Iterable<T>{
+public interface SequentialAccesor<T> extends Iterable<T>, Closeable{
 
 	/**
 	 * Agrega una entidad al manejador de persistencia
