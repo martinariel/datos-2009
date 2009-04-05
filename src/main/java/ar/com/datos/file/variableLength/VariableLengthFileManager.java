@@ -7,7 +7,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+import java.lang.UnsupportedOperationException;
 import ar.com.datos.buffer.InputBuffer;
 import ar.com.datos.buffer.OutputBuffer;
 import ar.com.datos.buffer.SimpleInputBuffer;
@@ -73,8 +73,8 @@ public class VariableLengthFileManager<T> implements DynamicAccesor<T>, BufferRe
 		getCachedLastBlock().getData().add(dato);
 		getLastBlockBuffer().closeEntity();
 		if (getCachedLastBlock().getData().size() == 0) return getLastMultipleBlockAddress();
-		Short s = getLastBlockBuffer().getEntitiesCount() ;
-		s-=1;
+		short s = getLastBlockBuffer().getEntitiesCount() ;
+		s--;
 		return new VariableLengthAddress(getLastBlockBufferBlockNumber(),s);
 	}
 
@@ -102,8 +102,8 @@ public class VariableLengthFileManager<T> implements DynamicAccesor<T>, BufferRe
 		byte[] block = getRealFile().readBlock(blockNumber);
 		// Para el caso que el registro esta en varios bloques me va a decir que no hay registros,
 		// pero el inputBuffer finalmente tendra todo el registro. Asi que se corrige la cantidad de registros a uno
-		Short cantidadRegistrosHidratar = getCantidadRegistros(block);
-		if (cantidadRegistrosHidratar == 0) cantidadRegistrosHidratar += 1;
+		short cantidadRegistrosHidratar = getCantidadRegistros(block);
+		if (cantidadRegistrosHidratar == 0) cantidadRegistrosHidratar ++;
 
 		List<T> li = new ArrayList<T>(cantidadRegistrosHidratar);
 		SimpleInputBuffer data = constructEmptyIBuffer();
@@ -135,10 +135,10 @@ public class VariableLengthFileManager<T> implements DynamicAccesor<T>, BufferRe
 	 */
 	@Override
 	public void release(OutputBuffer ob) {
-		Short cantidadObjetos = ob.getEntitiesCount();
+		short cantidadObjetos = ob.getEntitiesCount();
 		List<T> c = new ArrayList<T>();
 		if (cantidadObjetos > 1) {
-			cantidadObjetos -= 1;
+			cantidadObjetos --;
 			c.add(getCachedLastBlock().getData().get(getCachedLastBlock().getData().size() - 1));
 			writeEntitiesInOneBlock(getCachedLastBlock().getBlockNumber(), ob.extractAllButLast(), cantidadObjetos);
 		} else { 
@@ -446,7 +446,7 @@ public class VariableLengthFileManager<T> implements DynamicAccesor<T>, BufferRe
 
 		@Override
 		public void remove() {
-			throw new NotImplementedException();
+			throw new UnsupportedOperationException();
 		}
 		public VariableLengthFileManager<T> getVLFM() {
 			return vlfm;
