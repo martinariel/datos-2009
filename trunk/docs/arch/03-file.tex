@@ -1,32 +1,40 @@
 \section{Manejadores de Archivo}
 
-La persistencia tenía como requerimiento técnico que los datos que maneja **The Speaker** fueran persistidos en dos archivos separados. En esta primera entrega el requerimiento era que fueran estrictamente dos archivos con la siguiente estructura lógica definida.
-\newcounter{archivo}
-\begin{list}{\addtocounter{archivo}{1}\arabic{archivo}}
-{
-\setlength{\rightmargin}{\leftmargin}
-}
-\item \texttt{((palabra)i, offset)}
-\item \texttt{(stream de audio)}
-\end{list}
+Los datos que manejara **The Speaker** tenían, como requerimiento técnico, que ser persistidos en dos archivos separados y debían utilizar la siguiente estructura lógica.
+\begin{enumerate}
+	\item \texttt{((palabra)i, offset)}
+	\item \texttt{(stream de audio)}
+\end{enumerate}
 El primero está compuesto de la dupla palabra (que es un identificador) y offset/referencia. Simbolizando que para la {\it palabra} el audio se encuentra en {\it referencia}.
 El segundo archivo contiene los streams de audio capturados.
 
 \subsection{Análisis}
 Lo primero que se observa de ambos archivos es que sus registros son de longitud variable y que hay homogeneidad en los datos a almacenar, es decir, que en cada archivo se almacenan siempre los mismos tipos de datos. De manera que, ambos archivos, a pesar de tener naturalezas de datos diferentes requieren el mismo manejo. Por lo cual, admiten una misma solución de manejo del archivo mientras que la misma se mantenga indepen de la naturaleza de los datos a almacenar. 
 
-Por otra parte, las operaciones que se deben permitir son el agregado de registros y la consulta de los mismos. El agregado de registros no requiere, en ninguno de los dos casos, que se haga con un orden específico. Mientras que la recuperación de los datos, por otra parte, en el primer archivo debe poder ser secuencial (ya que se necesitan poder acceder a cada una de las palabras) y en el segundo caso debe poder accederse directamente a un registro que conozco su posición dentro del archivo. Por lo cual, estamos ante una organización secuencial de acceso relativo. Pudiendo recorrerse tanto secuencialmente como acceder a un registro específico (si se conoce previamente su dirección). La implementación de esta funcionalidad se hizo en la clase  {\textbf{VariableLengthFileManager}.}
+Por otra parte, las operaciones que se deben permitir son el agregado de registros y la consulta de los mismos. El agregado de registros no requiere, en ninguno de los dos casos, que se haga con un orden específico. Mientras que la recuperación de los datos, por otra parte, en el primer archivo debe poder ser secuencial (ya que se necesitan poder acceder a cada una de las palabras) y en el segundo caso debe poder accederse directamente a un registro que conozco su posición dentro del archivo. Por lo cual, estamos ante una organización secuencial de acceso relativo. Pudiendo recorrerse tanto secuencialmente como acceder a un registro específico (si se conoce previamente su dirección).
 
 \subsection{Solución propuesta}
-Se utilizará una entidad para abstraer a cada uno de los archivo, ambas entidades con el mismo comportamiento. Esta entidad se encarga permite tanto la carga de registros, como dos diferentes tipos de recuperación de registros (completa y secuencial, o, de un único registro y direccionada). 
+\paragraph{}
+Se utilizarán instancias de una clase llamada \textbf{VariableLengthFileManager} para abstraer a cada uno de los archivo. Esta clase define el comportamiento tanto, de la carga de registros, como de las dos formas diferentes de recuperación de registros (completa y secuencial, y, de un único registro y direccionada). 
+
 Para que la misma clase pueda persistir archivos con registros de diferente naturaleza se implementaron los serializadores  {\textit{(ver sección \ref{sec:Serializadores}.)}}
-
 El serializador es configurado en cada archivo a manejar y realiza las dos conversiones necesarias: 
-\begin{list}{+}{\setlength{\rightmargin}{\leftmargin}}
-\item la tira de bytes leida en un objeto (Mapeo)
-\item un objeto en una tira de bytes que será grabada (Serialización)
-\end{list}
+\begin{itemize}
+	\item la tira de bytes leida en un objeto (Mapeo)
+	\item un objeto en una tira de bytes que será grabada (Serialización)
+\end{itemize}
 
+Esta clase no manejará directamente el acceso al archivo físico si no que delegará en un fino wrapper de la clase \textbf{RandomAccessFile} que se encargará del manejo de los datos en bloque.
+En la siguiente imágen podemos observar la jerarquía de clases
+\begin{figure}[!htp]
+	\begin{center}
+		\includegraphics[scale=0.8]{img/ClassDiagramVariableLengthFileManager.png}
+	\end{center}
+	\caption{Probando la entrada estandar.} 
+	\label{fig:classVLFM}
+\end{figure}
+
+\paragraph{}
 El manejo de este archivo es simple, a medida que se le solicita agregar objetos los serializa con el serializador con que fue configurado y los agrega al último bloque (esto no significa que se escriba en este momento). Si se le solicita algún objeto en particular, mediante la dirección del mismo, este manejador de archivo accede al bloque que indique la dirección y mapea los datos del objeto correcto utilizando el mismo serializador.
 
 \subsubsection[Operación de creación]{Agregado de registro}
