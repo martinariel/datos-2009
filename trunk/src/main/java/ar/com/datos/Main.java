@@ -23,19 +23,26 @@ public class Main implements IWordsRecorderConector{
     private BufferedReader bufferReaderTeclado;
     private WordsPlayer reproductor;
     private WordsRecorder grabador;
-	private SoundPersistenceService servicioArchivos;
+    private SoundPersistenceService servicioArchivos;
 
-    
+
     public Main (String directorioArchivos){
-    	
-    	servicioArchivos = new SoundPersistenceServiceVariableLengthImpl(
-    			directorioArchivos + "/palabras", directorioArchivos + "/sonidos");
+
+        directorioArchivos = directorioArchivos.trim();
+
+        directorioArchivos +=
+            ((directorioArchivos.length() > 0) && !directorioArchivos.endsWith("/"))? "/":"";
+
+        servicioArchivos = new SoundPersistenceServiceVariableLengthImpl(
+                directorioArchivos + "palabras",
+                directorioArchivos + "sonidos"
+                );
 
         parser				= new SimpleTextParser();
         bufferReaderTeclado = new BufferedReader(new InputStreamReader(System.in));
         reproductor 		= new WordsPlayer(servicioArchivos);
         grabador			= new WordsRecorder(this,servicioArchivos);
-        
+
     }
 
     public void init() {
@@ -126,10 +133,10 @@ public class Main implements IWordsRecorderConector{
         case '2': playDocument();break;
         }
         try {
-			servicioArchivos.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+            servicioArchivos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -194,17 +201,17 @@ public class Main implements IWordsRecorderConector{
     public static void main(String[] args) {
         // TODO Auto-generated method stub
 
-    	Main app;
-    	
-    	if (args.length == 1){
-    		app = new Main(args[0].trim());
-    	}
-    	else {
-    		//Directorio actual
-    		app = new Main("");
-    	}
-    	
-       
+        Main app;
+
+        if (args.length == 1){
+            app = new Main(args[0].trim());
+        }
+        else {
+            //Directorio actual
+            app = new Main("");
+        }
+
+
         app.init();
     }
 
