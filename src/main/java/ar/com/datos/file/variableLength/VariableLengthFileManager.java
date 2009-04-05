@@ -21,7 +21,7 @@ import ar.com.datos.serializer.PrimitiveTypeSerializer;
 import ar.com.datos.serializer.Serializer;
 /**
  * Esta entidad permite manejar la persistencia de objetos Serializables en un archivo de longitud variable.
- * Al momento de almacenar dicho objeto se devolver� un Address para poder recuperar al mismo
+ * Al momento de almacenar dicho objeto se devolvera un Address para poder recuperar al mismo
  * @author jbarreneche
  *
  * @param <T> tipo de objetos a persistir y o recuperar
@@ -42,7 +42,7 @@ public class VariableLengthFileManager<T> implements DynamicAccesor<T>, BufferRe
 
 	// Buffers
 	
-	// Buffer de salida que contiene el �ltimo bloque del archivo o el nuevo a persistir 
+	// Buffer de salida que contiene el ultimo bloque del archivo o el nuevo a persistir 
 	private OutputBuffer lastBlockBuffer;
 	// Se maneja este cache por separado para poder contemplar de manera mas simple los casos en que, al agregar, se debe generar el nuevo bloque
 	private HydratedBlock<T> cachedLastBlock = null;
@@ -92,7 +92,7 @@ public class VariableLengthFileManager<T> implements DynamicAccesor<T>, BufferRe
 	}
 
 	/**
-	 * recupera un bloque hidratado con objetos. Puede obtenerlos de la cach� {@link}
+	 * recupera un bloque hidratado con objetos. Puede obtenerlos de la cache {@link}
 	 * @param blockNumber
 	 * @return
 	 */
@@ -101,7 +101,7 @@ public class VariableLengthFileManager<T> implements DynamicAccesor<T>, BufferRe
 		
 		byte[] block = getRealFile().readBlock(blockNumber);
 		// Para el caso que el registro esta en varios bloques me va a decir que no hay registros,
-		// pero el inputBuffer finalmente tendra todo el registro. Asi� que se corrige la cantidad de registros a uno
+		// pero el inputBuffer finalmente tendra todo el registro. Asi que se corrige la cantidad de registros a uno
 		Short cantidadRegistrosHidratar = getCantidadRegistros(block);
 		if (cantidadRegistrosHidratar == 0) cantidadRegistrosHidratar += 1;
 
@@ -117,7 +117,7 @@ public class VariableLengthFileManager<T> implements DynamicAccesor<T>, BufferRe
 		return hb;
 	}
 	/**
-	 * Manejo b�sico de cach�
+	 * Manejo basico de cache
 	 * @param hb
 	 */
 	protected void addToCache(HydratedBlock<T> hb) {
@@ -131,7 +131,7 @@ public class VariableLengthFileManager<T> implements DynamicAccesor<T>, BufferRe
 		return this.getLastBlockBufferBlockNumber().equals(blockNumber) || (this.cachedBlock != null && blockNumber.equals(this.cachedBlock.getBlockNumber()));
 	}
 	/**
-	 * Libera al OutputBuffer cuando el tama�o de los datos que est� manejando exceden el tama�o del bloque
+	 * Libera al OutputBuffer cuando el tamanio de los datos que esta manejando exceden el tamanio del bloque
 	 */
 	@Override
 	public void release(OutputBuffer ob) {
@@ -230,7 +230,7 @@ public class VariableLengthFileManager<T> implements DynamicAccesor<T>, BufferRe
 	}
 	/**
 	 * Recupera el ultimo bloque, y lo hidrata en un buffer. En caso que el ultimo bloque
-	 * pertenezca a un registro que no esta completo o que el archivo esta vacío crea un nuevo
+	 * pertenezca a un registro que no esta completo o que el archivo esta vacio crea un nuevo
 	 * buffer sin datos
 	 * @return
 	 */
