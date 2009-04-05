@@ -2,21 +2,142 @@
 
 El módulo de Buffers es quizás el mas sencillo de todos. Los buffers funcionan como una memoria de almacenamiento 
 temporal de la información. Normalmente, se hace uso del buffer como una memoria intermedia, útil para almacenar 
-información que esté por escribirse en un archivo o que haya sido leído de uno.
-
-Los buffers suelen mejorar el rendimiento en el intercambio de datos entre diferentes módulos de la aplicación.
+información que esté por escribirse en un archivo o que haya sido leído de uno. Los buffers suelen mejorar el 
+rendimiento en el intercambio de datos entre diferentes módulos de la aplicación.
 
 \subsection{Análisis}
 
 Los requisitos son claros: se necesita un Buffer de Entrada, del cual se leerán los datos cargados del archivo, y un 
 Buffer de Salida que será utilizado para escribir los datos que necesiten ser persistidos:
 
-\begin{enumerate}
+\begin{itemize}
   \item \textsf{Buffer de Entrada}: Debe poder ser cargado con los datos que se lean de los archivos y permitirá 
     recuperar dichos datos para ser utilizados en la aplicación.
-  \item \textsf{Buffer de Salida}: Debe poder ser cargado con los datos que necesiten ser persistidos 
-\end{enumerate}
+  \item \textsf{Buffer de Salida}: Debe poder ser cargado con los datos que necesiten ser persistidos.
+\end{itemize}
 
 \subsection{Solución Propuesta}
+En principio, se crearon dos interfaces sencillas para cada buffer, \texttt{InputBuffer} y \texttt{OutputBufer}, y se 
+realizaron dos implementaciones de estas interfaces que agregaron algo de comportamiento requerido por otros módulos 
+de la aplicación. {\it Ver figura \ref{classDiagBuff}.} \footnote{Las interfaces \texttt{InputBuffer} y 
+\texttt{OutputBufer} se encuentran dentro del paquete \texttt{ar.com.datos.buffer}.}
 
-texto
+\begin{figure}[!htp]
+	\begin{center}
+		\includegraphics[scale=0.4,natwidth=20pt,natheight=10pt]{img/buffers.png}
+	\end{center}
+	\caption{Diagrama de clases básico de los Buffers de Entrada y Salida} 
+	\label{classDiagBuff}
+\end{figure}
+
+Durante el desarrollo de los otros módulos fué necesario agregar funcionalidad extra a los buffers.
+
+\subsubsection{InputBuffer}
+
+La interfaz \texttt{InputBuffer} permite operaciones de lectura sobre la información cargada en el buffer.
+
+\paragraph{Lectura del buffer.}
+\texttt{InputBuffer} expone dos métodos cuyas firmas son:
+
+\begin{verbatim}
+	public byte read() throws BufferException;	
+	public byte[] read(byte[] data) throws BufferException;
+\end{verbatim}
+
+El primer método permite leer el próximo byte desde el \texttt{InputBuffer}. El segundo método realiza una operación 
+similar, pero en vez de leer el proximo byte, lee una cantidad \textbf{N} de bytes desde el buffer, siendo \textbf{N} el
+tamaño del byte array recibido por parámetro.
+
+En ambos casos, si no hay suficientes datos para leer desde el \texttt{InputBuffer}, se lanza una excepción indicando dicha
+situación.
+
+\paragraph{SimpleInputBuffer.}
+La clase \texttt{SimpleInputBuffer} es una implementación simple de la interfaz \texttt{InputBuffer}. Básicamente consta 
+de un array de bytes que representa el buffer interno y una posición que indica hasta donde se ha leído del buffer.
+
+Esta implementación agrega una funcionalidad extra necesaria por el Manejador de Archivos de Longitud Variable: el 
+método \texttt{append}. \footnote{Ver Sección: Manejadores de Archivo}
+
+\begin{verbatim}
+    public void append(ArrayByte array);
+\end{verbatim}
+
+Este método permite cargar los datos de array pasado por parámetro en el buffer. Debido a que el Manejador de Archivos
+es incapaz de conocer la cantidad de información que necesitará almacenar en el buffer, este metodo se encarga de ir 
+agregando datos al buffer sin imponer ningún limite de datos.
+
+\subsubsection{OutputBuffer}
+
+La interfaz \texttt{OutputBuffer} permite almacenar información con el objetivo de poder persistirla luego.
+
+\paragraph{Escritura del buffer.}
+\texttt{OutputBuffer} expone dos métodos cuyas firmas son:
+
+\begin{verbatim}
+	public void write(byte data);
+	public void write(byte[] data);
+\end{verbatim}
+
+Ambos métodos permiten escribir en el OutputBuffer una cierta cantidad de bytes. Estas operaciones incrementan el tamaño
+del buffer de manera que pueda conocerse en cualquier momento la cantidad de bytes que se han escrito en el mismo.
+
+\paragraph{SimpleOutputBuffer.}
+La clase \texttt{SimpleOuputBuffer} es una implementación de la interfaz \texttt{OutputBuffer}. Esta implementación se
+relaciona bastante con la clase \texttt{VariableLengthFileManager} ya que expone métodos que le son útiles al mismo.
+\footnote{Ver Sección: Manejadores de Archivo} A continuación se expone una descripción breve del funcionamiento de
+esta clase. {\it Ver figura \ref{classDiagBuffBig}.}
+
+\paragraph{Funcionamiento del SimpleOutputBuffer.}
+
+El \texttt{SimpleOutputBuffer} es el destinatario de los datos que el manejador de archivos intenta persistir. Este se
+encarga de ir agregando bytes de datos al buffer. Debido a que los registros a almacenar son de tamaño variable, 
+necesita indicarle cuando se ha llegado al final de una entidad, de manera que el buffer pueda saber cuantas entidades 
+se estan almacenando. \footnote{Cuando hablamos de \textbf{entidad} estamos haciendo referencia a un \textbf{registro}}
+
+La clase \texttt{SimpleOutputBuffer} precisa de un \texttt{BufferReleaser} que será el responsable de liberar el buffer
+en el caso de que el mismo haya sido desbordado. Cuando se agrega una entidad que sobrepasa el tamaño del buffer, este 
+informa a su releaser para que el pueda liberar el buffer.
+
+La operación de liberar el buffer se realiza luego de la operación que generó el desborde. De manera que el 
+\texttt{SimpleOutputBuffer} tiene que llevar dos buffers internos. Uno con las entidades que han entrado perfectamente
+en el buffer y un buffer temporal en el que se irá almacenando la ultima entidad no cerrada. Al momento de cerrar dicha
+entidad si hay espacio en el buffer, se la pasa al buffer permanente, sino, se la deja en el buffer temporal, y se 
+notifica del desborde.
+
+Por último, la clase que utiliza el buffer, tiene que ser capaz de recuperar por un lado, las entidades que entraron 
+perfectamente en el buffer, y por otro lado la entidad que no entró y que generó el desborde.
+\newline
+Con estas explicaciones, debería quedar claro el significado de cada método:
+\begin{verbatim}
+    // Marca el fin de una entidad y avisa si hay exceso
+    public void closeEntity();
+    
+    // Indica si ha habido un desborde en el buffer
+    public boolean isOverloaded();
+    
+    // Cantidad de entidades que fueron agregadas 
+    // (usando el metodo closeEntity)
+    public Short getEntitiesCount();
+    
+    // Extrae del buffer los datos de la ultima 
+    // entidad que se cerró.
+    public Collection<ArrayByte> extractLast();
+    
+    // Extrae del buffer todos los datos que fueron 
+    // escritos excepto los de la ultima entidad
+    // que se cerró
+    public Collection<ArrayByte> extractAllButLast();
+\end{verbatim}
+
+\subsubsection{ArrayByte}
+
+La clase \texttt{ArrayByte} encapsula un byte array (\texttt{byte []}) y permite generar subarrays a partir de la misma.
+Es utilizada en los buffers y también por otros módulos ya que amplía las funcionalidades de un array de bytes.
+
+\begin{figure}[!htp]
+	\begin{center}
+		\includegraphics[scale=0.4,natwidth=20pt,natheight=10pt]{img/buffersbig.png}
+	\end{center}
+	\caption{Diagrama de clases de los Buffers de Entrada y Salida} 
+	\label{classDiagBuffBig}
+\end{figure}
