@@ -208,9 +208,8 @@ public class Main implements IWordsRecorderConector{
         }
         else {
             //Directorio actual
-            app = new Main("");
+            app = new Main(".");
         }
-
 
         app.init();
     }
