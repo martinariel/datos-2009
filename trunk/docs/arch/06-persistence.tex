@@ -42,7 +42,7 @@ Así, al momento de ser creado el archivo, se le pasa como parámetro el serializa
 
 Si bien los archivos tienen registros diferentes, el acceso a ellos es idéntico, y se hace mediante la interfaz \textbf{DynamicAccessor}.Es decir, que se tienen dos referencias del tipo \textbf{DynamicAccessor} a objetos que son instancias de \textbf{VariableLengthFileManager}.
 
-\subsubsection{Incersión de nuevas palabras}
+\subsubsection{Inserción de nuevas palabras}
 
 Para la inserción de una palabra, con su respectivo audio, primero se recorre todo el archivo de palabras verificando que no haya sido guardada antes. Si no está, se inserta el audio en el archivo de sonidos, se recupera la dirección en la que ha sido guardado y se agrega el registro (palabra,offset) en el archivo de palabras.
 En caso de que la palabra ya exista, y se quiera volver a insertar, independientemente de si el audio es el mismo o no, se lanza una excepción.
