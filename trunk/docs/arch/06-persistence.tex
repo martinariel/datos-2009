@@ -1,11 +1,29 @@
 \section{Servicios de Persistencia}
 
-texto
+La persistencia tenía como requerimiento técnico que los datos que maneja **The Speaker** fueran persistidos en dos archivos separados. En esta primera entrega el requerimiento era que fueran estrictamente dos archivos con la siguiente estructura lógica definida.
+\newcounter{archivo}
+\begin{list}{\addtocounter{archivo}{1}\arabic{archivo}}
+{
+\setlength{\rightmargin}{\leftmargin}
+}
+\item \texttt{((palabra)i, offset)}
+\item \texttt{(stream de audio)}
+\end{list}
+El primero está compuesto de la dupla palabra (que es un identificador) y offset/referencia. Simbolizando que para la {\it palabra} el audio se encuentra en {\it referencia}.
+El segundo archivo contiene los streams de audio capturados.
 
-\subsection{Subsección}
+\subsection{Análisis}
+Lo primero que se observa de ambos archivos es que sus registros son de longitud variable y que hay homogeneidad en los datos a almacenar, es decir, que en cada archivo se almacenan siempre los mismos tipos de datos. De manera que, ambos archivos, a pesar de tener naturalezas de datos diferentes requieren el mismo manejo. Por lo cual, admiten una misma solución de manejo del archivo mientras que la misma se mantenga indepen de la naturaleza de los datos a almacenar. 
 
-texto
+Por otra parte, las operaciones que se deben permitir son el agregado de registros y la consulta de los mismos. El agregado de registros no requiere, en ninguno de los dos casos, que se haga con orden alguno. Mientras que la recuperación de los datos, por otra parte, en el primer archivo debe poder ser secuencial (ya que se necesitan poder acceder a cada una de las palabras) y en el segundo caso debe poder accederse directamente a un registro que conozco su posición dentro del archivo. Por lo cual, estamos ante una organización secuencial de acceso relativo. Pudiendo recorrerse tanto secuencialmente como acceder a un registro específico (si se conoce previamente su dirección). La implementación de esta funcionalidad se hizo en la clase  {\textbf{VariableLengthFileManager}.}
 
-\subsubsection{SubSubSección}
+\subsection{Solución propuesta}
+Esta entidad se encarga permite tanto la carga de registros, como dos diferentes tipos de lectura (completa y secuencial, o, de un único registro y direccionada). Para realizar el mapeo entre el objeto registro y los datos a almacenar se utilizan los serializadores en la sección \ref{sec:Serializadores}.
 
-texto
+El serializador es configurado en cada archivo a manejar y realiza las dos conversiones necesarias: 
+\begin{list}{+}{\setlength{\rightmargin}{\leftmargin}}
+\item la tira de bytes leida en un objeto (Mapeo)
+\item un objeto en una tira de bytes que será grabada (Serialización)
+\end{list}
+
+El manejo de este archivo es simple, a medida que se agregan objetos serializa el objeto y lo agrega al último bloque. Este último bloque no se graba hasta que el tamaño del mismo no supere el tamaño de datos del bloque. Una vez que supera, se guardan todos los registros menos el último que se agregó en el bloque que corresponda. Luego, este último registro agregado queda como el único registro que se encuentra en el último bloque.
