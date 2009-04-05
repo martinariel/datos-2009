@@ -25,15 +25,17 @@ public class Main implements IWordsRecorderConector{
     private WordsRecorder grabador;
 	private SoundPersistenceService servicioArchivos;
 
-    public Main() {
-
-        servicioArchivos = new SoundPersistenceServiceVariableLengthImpl();
+    
+    public Main (String directorioArchivos){
+    	
+    	servicioArchivos = new SoundPersistenceServiceVariableLengthImpl(
+    			directorioArchivos + "/palabras", directorioArchivos + "/sonidos");
 
         parser				= new SimpleTextParser();
         bufferReaderTeclado = new BufferedReader(new InputStreamReader(System.in));
         reproductor 		= new WordsPlayer(servicioArchivos);
         grabador			= new WordsRecorder(this,servicioArchivos);
-
+        
     }
 
     public void init() {
@@ -115,7 +117,7 @@ public class Main implements IWordsRecorderConector{
     private void showMenu() {
         System.out.println("Opciones:");
         System.out.println("1 - Carga de documentos");
-        System.out.println("2 - Reproducción de palabras");
+        System.out.println("2 - Reproduccion de palabras");
         System.out.println("Cualquier otra tecla: Salir");
         System.out.println("Seleccione una opcion:");
 
@@ -192,7 +194,17 @@ public class Main implements IWordsRecorderConector{
     public static void main(String[] args) {
         // TODO Auto-generated method stub
 
-        Main app = new Main();
+    	Main app;
+    	
+    	if (args.length == 1){
+    		app = new Main(args[0].trim());
+    	}
+    	else {
+    		//Directorio actual
+    		app = new Main("");
+    	}
+    	
+       
         app.init();
     }
 
