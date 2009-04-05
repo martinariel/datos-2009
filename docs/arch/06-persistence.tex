@@ -15,10 +15,11 @@ El segundo archivo contiene los streams de audio capturados.
 \subsection{Análisis}
 Lo primero que se observa de ambos archivos es que sus registros son de longitud variable y que hay homogeneidad en los datos a almacenar, es decir, que en cada archivo se almacenan siempre los mismos tipos de datos. De manera que, ambos archivos, a pesar de tener naturalezas de datos diferentes requieren el mismo manejo. Por lo cual, admiten una misma solución de manejo del archivo mientras que la misma se mantenga indepen de la naturaleza de los datos a almacenar. 
 
-Por otra parte, las operaciones que se deben permitir son el agregado de registros y la consulta de los mismos. El agregado de registros no requiere, en ninguno de los dos casos, que se haga con orden alguno. Mientras que la recuperación de los datos, por otra parte, en el primer archivo debe poder ser secuencial (ya que se necesitan poder acceder a cada una de las palabras) y en el segundo caso debe poder accederse directamente a un registro que conozco su posición dentro del archivo. Por lo cual, estamos ante una organización secuencial de acceso relativo. Pudiendo recorrerse tanto secuencialmente como acceder a un registro específico (si se conoce previamente su dirección). La implementación de esta funcionalidad se hizo en la clase  {\textbf{VariableLengthFileManager}.}
+Por otra parte, las operaciones que se deben permitir son el agregado de registros y la consulta de los mismos. El agregado de registros no requiere, en ninguno de los dos casos, que se haga con un orden específico. Mientras que la recuperación de los datos, por otra parte, en el primer archivo debe poder ser secuencial (ya que se necesitan poder acceder a cada una de las palabras) y en el segundo caso debe poder accederse directamente a un registro que conozco su posición dentro del archivo. Por lo cual, estamos ante una organización secuencial de acceso relativo. Pudiendo recorrerse tanto secuencialmente como acceder a un registro específico (si se conoce previamente su dirección). La implementación de esta funcionalidad se hizo en la clase  {\textbf{VariableLengthFileManager}.}
 
 \subsection{Solución propuesta}
-Esta entidad se encarga permite tanto la carga de registros, como dos diferentes tipos de lectura (completa y secuencial, o, de un único registro y direccionada). Para realizar el mapeo entre el objeto registro y los datos a almacenar se utilizan los serializadores en la sección \ref{sec:Serializadores}.
+Se utilizará una entidad para abstraer a cada uno de los archivo, ambas entidades con el mismo comportamiento. Esta entidad se encarga permite tanto la carga de registros, como dos diferentes tipos de recuperación de registros (completa y secuencial, o, de un único registro y direccionada). 
+Para que la misma clase pueda persistir archivos con registros de diferente naturaleza se implementaron los serializadores  {\textit{(ver sección \ref{sec:Serializadores}.)}}
 
 El serializador es configurado en cada archivo a manejar y realiza las dos conversiones necesarias: 
 \begin{list}{+}{\setlength{\rightmargin}{\leftmargin}}
@@ -26,4 +27,20 @@ El serializador es configurado en cada archivo a manejar y realiza las dos conve
 \item un objeto en una tira de bytes que será grabada (Serialización)
 \end{list}
 
-El manejo de este archivo es simple, a medida que se agregan objetos serializa el objeto y lo agrega al último bloque. Este último bloque no se graba hasta que el tamaño del mismo no supere el tamaño de datos del bloque. Una vez que supera, se guardan todos los registros menos el último que se agregó en el bloque que corresponda. Luego, este último registro agregado queda como el único registro que se encuentra en el último bloque.
+El manejo de este archivo es simple, a medida que se le solicita agregar objetos los serializa con el serializador con que fue configurado y los agrega al último bloque (esto no significa que se escriba en este momento). Si se le solicita algún objeto en particular, mediante la dirección del mismo, este manejador de archivo accede al bloque que indique la dirección y mapea los datos del objeto correcto utilizando el mismo serializador.
+
+\subsubsection[Operación de creación]{Agregado de registro}
+El agregado de registros, como se mencionó anteriormente, primero serializa el objeto y luego lo agrega al último bloque. Este último bloque siempre se encuentra cacheado ya que se graba (o regraba) cuando esa caché, de último bloque, desborda, es decir, su tamaño supera el tamaño designado para datos del bloque. En ese momento se graban todos los registros que estaban en caché menos el último agregado. Si, este último agregado, tuviera un tamaño mayor al tamaño de designado para datos del bloque el mismo es dividido en n bloques y todos esos bloques son grabados.
+
+\subsubsection[Operación de lectura secuencial]{Lectura de todos los datos}
+Se implementó un iterador de todo el archivo que comienza en el bloque cero, mapea todos los datos de ese bloque a objetos y los va devolviendo de a uno. Luego de devolver todos los de ese bloque, pasa al siguiente bloque y realiza la misma operatoria. Esto se repite hasta que no queden mas datos por hidratar. 
+
+\subsubsection[Operación de lectura aleatoria]{Lectura de un objeto dada una dirección}
+El manejador de archivo lee el bloque desde el archivo físico (excepto que el mismo esté en caché), y luego pasa los datos leidos por el serializador. Luego busca entre los objetos creados el que tenga la posición indicada por la dirección para poder devolverlo a quién se lo haya solicitado.
+
+\subsection{Detalles técnicos}
+Los bloques cuentan con la siguiente información de control. Los últimos 2 bytes indican (almacenado como un Short signado) la cantidad de registros enteros que posee el bloque (esto se utiliza al momento de hidratar, para no intentar hidratar mas registros de los que se encontraban almacenados), para el caso que el registro esté en múltiples bloques este valor se marca en cero y se toman los 8 bytes anteriores para indicar la posición del próximo bloque que contiene datos del mismo registro.
+
+Se implementaron 2 cachés, muy básicas, la primera, ya fue mencionada, contiene el bloque actual donde se están agregando registros. La segunda contiene el último bloque leido del disco (para disminuir accesos a disco)
+
+
