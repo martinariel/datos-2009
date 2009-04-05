@@ -1,11 +1,22 @@
 \section{Buffers de Entrada y Salida}
 
-texto
+El módulo de Buffers es quizás el mas sencillo de todos. Los buffers funcionan como una memoria de almacenamiento 
+temporal de la información. Normalmente, se hace uso del buffer como una memoria intermedia, útil para almacenar 
+información que esté por escribirse en un archivo o que haya sido leído de uno.
 
-\subsection{Subsección}
+Los buffers suelen mejorar el rendimiento en el intercambio de datos entre diferentes módulos de la aplicación.
 
-texto
+\subsection{Análisis}
 
-\subsubsection{SubSubSección}
+Los requisitos son claros: se necesita un Buffer de Entrada, del cual se leerán los datos cargados del archivo, y un 
+Buffer de Salida que será utilizado para escribir los datos que necesiten ser persistidos:
+
+\begin{enumerate}
+  \item \textsf{Buffer de Entrada}: Debe poder ser cargado con los datos que se lean de los archivos y permitirá 
+    recuperar dichos datos para ser utilizados en la aplicación.
+  \item \textsf{Buffer de Salida}: Debe poder ser cargado con los datos que necesiten ser persistidos 
+\end{enumerate}
+
+\subsection{Solución Propuesta}
 
 texto
