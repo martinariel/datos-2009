@@ -29,7 +29,7 @@ Se definieron implementaciones de los tipos más comunes de datos a serializar:
   \item La segunda serializa cada caracter, apoyándose en CharacterSerializer, y pone una secuencia de bytes predeterminada (que puede ser intercambiada) al final de la tira de bytes.
 \end{itemize}
 \end{itemize}
-\subsubsection{Alternativas y solución}
+\subsubsection{Uso con registros: Alternativas y solución}
 
 Un concepto con el que se trabajó (y luego fue descartado) fue el de armar serializadores de manera dinámica:
 Para ello pensamos en una clase llamada DynamicSerializer permitía serializar colas de objetos de distintas clases. Se construye pasando un serializador base que será usado para serializar el primer elemento de la cola. Además se recibe un serializador para el siguiente elemento que será englobado ("wrappeado") como un DynamicSerializer y devuelto (lo que permite usarlo estableciéndole otro serializador como "siguiente", wrappeado y devuelto; así con cada tipo de elemento de la cola). De esta manera cada DynamicSerializer realiza la serialización de un elemento de la cola y delega la serialización del resto al siguiente, repitiéndose el proceso hasta el final.
