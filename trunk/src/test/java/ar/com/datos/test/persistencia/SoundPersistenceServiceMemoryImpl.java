@@ -17,8 +17,8 @@ import ar.com.datos.file.DynamicAccesor;
 
 /**
  *
- *Sound Persistence Service implementado con archivos de registro de 
- *longitud variable en bloques.
+ *Sound Persistence Service implementado con listas en memoria.Se utiliza para 
+ *testear el funcionamiento de los algoritmos de busqueda e incersión de datos.
  */
 
 public class SoundPersistenceServiceMemoryImpl implements SoundPersistenceService{

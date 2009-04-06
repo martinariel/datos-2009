@@ -11,6 +11,15 @@ import ar.com.datos.serializer.Serializable;
 
 import java.util.LinkedList;
 
+
+
+/**
+ * Responde a la misma interfaz que los VariableLengthFileManager pero implementa
+ * la "persistencia" en memoria.Se usa para testear el funcionamiento de la clase
+ * SoundPersistenceService.
+ * */
+
+
 public class FictFile<T extends Serializable<T>> implements DynamicAccesor<T>{
 	
 	private LinkedList<T> lista = new LinkedList<T>();

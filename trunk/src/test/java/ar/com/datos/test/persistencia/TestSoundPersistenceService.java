@@ -9,6 +9,15 @@ import ar.com.datos.persistencia.SoundPersistenceService;
 import ar.com.datos.persistencia.exception.UnregisteredWordException;
 import ar.com.datos.persistencia.exception.WordIsAlreadyRegisteredException;
 
+/**
+ * 
+ * Test sobre la clase SoundPersistenceService.No se testea la persistencia de los datos
+ * sino el funcionamiento de los algoritmos de consulta e incersión.
+ * Se utilizan modulos ficticios para trabajar.FictFile y  
+ * SoundPersistenceServiceMemoryImpl que implementan la misma funcionalidad pero guardando 
+ * los datos en memoria.
+ * 
+ * */
 public class TestSoundPersistenceService extends TestCase {
 
 	private SoundPersistenceService sps = new SoundPersistenceServiceMemoryImpl();
@@ -36,9 +45,8 @@ public class TestSoundPersistenceService extends TestCase {
 		try
 		{
 			sps.addWord( palabradeprueba , streamoriginal );
-			assertTrue( true );
 		}
-		catch ( WordIsAlreadyRegisteredException ex ) { assertTrue(false); }
+		catch ( WordIsAlreadyRegisteredException ex ) { fail("La Excepción no debería ser lanzada"); }
 		
 		
 		//Test verificar que la palabra estï¿½.
@@ -49,10 +57,9 @@ public class TestSoundPersistenceService extends TestCase {
 		try
 		{
 			InputStream streamrecuperdo = sps.readWord( palabradeprueba );
-			assertTrue( true );
 			assertTrue( streamoriginal.equals( streamrecuperdo ) );
 		}
-		catch ( UnregisteredWordException ex ){}
+		catch ( UnregisteredWordException ex ){ fail("La Excepción no debería ser lanzada"); }
 		
 		
 		//Test agregar la misma palabra otra vez.
@@ -61,10 +68,10 @@ public class TestSoundPersistenceService extends TestCase {
 		try
 		{
 			sps.addWord( palabrasimilar , streamdistinto );
-			assertTrue( false );
+			fail("Se debería lanzar una excepción");
 		}
 		catch ( WordIsAlreadyRegisteredException ex )
-		{ assertTrue(true); }
+		{}
 		
 		
 		
@@ -73,12 +80,11 @@ public class TestSoundPersistenceService extends TestCase {
 		try
 		{
 			InputStream streamrecuperado = sps.readWord( palabradeprueba );
-			assertTrue( true );
 			assertTrue( streamrecuperado.equals( streamoriginal ) );
 			assertFalse( streamrecuperado.equals( streamdistinto ) );
 
 		}
-		catch ( UnregisteredWordException ex ){ assertTrue(false); }
+		catch ( UnregisteredWordException ex ){ fail("La Excepción no debería ser lanzada"); }
 		
 		
 	}
@@ -99,18 +105,16 @@ public class TestSoundPersistenceService extends TestCase {
 			sps.addWord( "que" , streamfalso );
 			sps.addWord( "tal" , streamfalso );
 			
-			assertTrue( true );
 		}
-		catch ( WordIsAlreadyRegisteredException ex ) { assertTrue(false); }
+		catch ( WordIsAlreadyRegisteredException ex ) { fail("La Excepción no debería ser lanzada"); }
 		
 		//pido la palabra de prueba que no estï¿½.
 		
 		try
 		{
 			sps.readWord( palabradeprueba );
-			assertTrue( false );
-		}
-		catch ( UnregisteredWordException ex ){ assertTrue( true ); }
+			fail("Debería lanzarse una excepcion");		}
+		catch ( UnregisteredWordException ex ){ }
 		
 		//Agrego la palabra dos veces, la seguna deberï¿½a tirar la excepcion
 		
@@ -119,8 +123,8 @@ public class TestSoundPersistenceService extends TestCase {
 		catch ( WordIsAlreadyRegisteredException ex ){}
 		
 		try
-		{ sps.addWord(palabradeprueba,streamdeprueba);assertTrue(false); }
-		catch ( WordIsAlreadyRegisteredException ex ){ assertTrue(true); }
+		{ sps.addWord(palabradeprueba,streamdeprueba);fail("Debería lanzarse una excepción"); }
+		catch ( WordIsAlreadyRegisteredException ex ){ }
 	}
 	
 	public void testMultiplesPalabras()
@@ -150,9 +154,8 @@ public class TestSoundPersistenceService extends TestCase {
 			sps.addWord( "perro" , streamfalso );
 			sps.addWord( "ï¿½?" , streamfalso );
 			
-			assertTrue( true );
 		}
-		catch ( WordIsAlreadyRegisteredException ex ) { assertTrue(false); }
+		catch ( WordIsAlreadyRegisteredException ex ) { fail("La Excepción no debería ser lanzada"); }
 		
 		//pregunto si estï¿½ la palabra de prueba.
 		assertTrue( sps.isRegistered( palabradeprueba ));
@@ -172,9 +175,9 @@ public class TestSoundPersistenceService extends TestCase {
 		try
 		{
 			sps.addWord( palabrasimilar , streamdistinto );
-			assertTrue( false );
+			fail("Debería lanzarse la excepción");
 		}
 		catch ( WordIsAlreadyRegisteredException ex )
-		{ assertTrue(true); }
+		{}
 	}
 }
