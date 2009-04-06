@@ -14,7 +14,6 @@ Para todo esto se definió la interface Serializador con tres métodos:
 		\includegraphics[scale=0.35,natwidth=1177pt, natheight=838pt]{img/Serializer.png}
 	\end{center}
 	\caption{Diagrama de clases del \textbf{Serializer}} 
-	\label{fig:classVLFM}
 \end{figure}
 
 \subsection{Implementaciones}
@@ -40,7 +39,6 @@ De esta manera un objeto complejo, compuesto por varios elementos simples para l
 		\includegraphics[scale=0.60,natwidth=512pt, natheight=163pt]{img/DynamicSerializerEjemplo.png}
 	\end{center}
 	\caption{Ejemplo de \textbf{DynamicSerializer}} 
-	\label{fig:classVLFM}
 \end{figure}
 
 Fue entonces cuando se decidió definir otra interfaz llamada Serializable que define un método (getSerializer()) que permite conocer el serializador para un objeto en particular (el concepto sería "un serializable sabe como serializarse"). La implementación del serializador puede hacerse en forma de una clase anónima incluida en la clase a serializar dejando, entonces, el código mucho más limpio.
