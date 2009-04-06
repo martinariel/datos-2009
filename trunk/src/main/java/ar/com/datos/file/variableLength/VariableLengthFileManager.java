@@ -154,7 +154,7 @@ public class VariableLengthFileManager<T> implements DynamicAccesor<T>, BufferRe
 	 */
 	protected void writeEntitiesInOneBlock(Long blockNumber, Collection<ArrayByte> partes, Short cantidadObjetos) {
 		Integer resto = getRealFile().getBlockSize() - CANTIDAD_REGISTROS_SIZE;
-		// Reduzco el resto para ver cuanto espacio sin utilizar quedï¿½ en la entidad
+		// Reduzco el resto para ver cuanto espacio sin utilizar quedñ en la entidad
 		for (ArrayByte ab : partes) resto -= ab.getLength();
 		if (resto > 0) partes.add(new ArrayByte(new byte[resto]));
 		partes.add(new ArrayByte(PrimitiveTypeSerializer.toByte(cantidadObjetos)));
@@ -241,7 +241,7 @@ public class VariableLengthFileManager<T> implements DynamicAccesor<T>, BufferRe
 		}
 		byte[] bloque = getRealFile().readBlock(getRealFile().getTotalBlocks() - 1);
 		Short cantidadRegistros = getCantidadRegistros(bloque);
-		// En caso que sean varios registros en el bloque ese es el ultimo bloque ya que podriï¿½a entrar un nuevo registro
+		// En caso que sean varios registros en el bloque ese es el ultimo bloque ya que podria entrar un nuevo registro
 		// Caso contrario el ultimo bloque _SIEMPRE_ va a ser un buffer nuevo 
 		if (cantidadRegistros > 0) {
 			SimpleInputBuffer ib = constructEmptyIBuffer();
