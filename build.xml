@@ -3,20 +3,21 @@
 	<property name="rundir" value="resources/temp">
 	</property>
 	<path id="path.compile">
-		<pathelement path="lib" />
+        <pathelement path="lib" />
+		<pathelement path="lib/jmock-2.5.1" />
 	</path>
 	<target name="main" depends="compress" description="Main target">
 	</target>
 	<target name="compile" description="Compilation target">
 		<echo>About to compile...</echo>
-		<mkdir dir="bin" />
-		<javac srcdir="src/main/java" destdir="bin" verbose="true" classpathref="path.compile">
+		<mkdir dir="antbin" />
+		<javac target="6" srcdir="src/main/java" destdir="antbin" verbose="true" encoding="latin1" >
 		</javac>
 	</target>
 	<target name="compress" depends="compile" description="Compression target">
 		<echo>Compressing! (Generating jar)</echo>
 		<mkdir dir="target" />
-		<jar jarfile="target/theTalker.jar" basedir="bin" includes="**/*.class">
+		<jar jarfile="target/theTalker.jar" basedir="antbin" includes="**/*.class">
 			<manifest>
 				<attribute name="Main-Class" value="ar.com.datos.Main" />
 			</manifest>
