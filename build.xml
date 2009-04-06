@@ -1,17 +1,17 @@
 <?xml version="1.0" ?>
-<project default="run" name="theTalker" basedir=".">
+<project default="full" name="theTalker" basedir=".">
 	<property name="rundir" value="resources/temp">
 	</property>
 	<path id="path.compile">
-        <pathelement path="lib" />
+		<pathelement path="lib" />
 		<pathelement path="lib/jmock-2.5.1" />
 	</path>
-	<target name="main" depends="compress" description="Main target">
-	</target>
+    <target name="full" depends="javadoc, run">
+    </target>
 	<target name="compile" description="Compilation target">
 		<echo>About to compile...</echo>
 		<mkdir dir="antbin" />
-		<javac target="6" srcdir="src/main/java" destdir="antbin" verbose="true" encoding="latin1" >
+		<javac target="6" srcdir="src/main/java" destdir="antbin" verbose="true" encoding="latin1">
 		</javac>
 	</target>
 	<target name="compress" depends="compile" description="Compression target">
@@ -23,6 +23,11 @@
 			</manifest>
 		</jar>
 	</target>
+	<target name="javadoc">
+		<mkdir dir="docs/javadoc"/>
+		<javadoc sourcepath="src/main/java" destdir="docs/javadoc" encoding="latin1">
+		</javadoc>
+	</target>
 	<target name="clean">
 		<echo>Cleaning the running enviroment :)</echo>
 		<delete>
@@ -30,7 +35,7 @@
 			</fileset>
 		</delete>
 	</target>
-	<target name="run" depends="main">
+	<target name="run" depends="compress">
 		<java dir="${rundir}" jar="target/theTalker.jar" fork="true">
 			<classpath>
 				<pathelement location="target/theTalker.jar" />
@@ -39,22 +44,17 @@
 	</target>
 	<target name="test1" depends="clean">
 		<echo>Copyng tests files to running enviroment...</echo>
-		<exec command="cat">
-			<arg file="resources/test1/*.txt" />
-		</exec>
 		<copy todir="${rundir}">
 			<fileset dir="resources/test1">
 				<include name="*" />
 			</fileset>
 		</copy>
+		<echo>Listado de archivos de prueba</echo>
+		<property name="file" value="resources/test1/saludo.txt" />
+		<antcall target="catFile">
+		</antcall>
 		<antcall target="run">
 		</antcall>
-	</target>
-	<target name="check">
-		<echo>Copyng tests files to running enviroment...</echo>
-		<echo>Listado de archivos de prueba</echo>
-        <property name="file" value="resources/test1/saludo.txt"/>
-		<antcall target="catFile"></antcall>
 	</target>
 	<target name="catFile">
 		<fileset dir="resources/test1" includes="*.txt" />
@@ -63,6 +63,6 @@
 		<exec executable="cat">
 			<arg value="${file}" />
 		</exec>
-        <echo>... fin ...</echo>
+		<echo>... fin ...</echo>
 	</target>
 </project>
