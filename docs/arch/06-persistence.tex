@@ -15,25 +15,25 @@ En particular, para esta entrega, la clase \textbf{SoundPersistenceServiceVariab
 
 En la siguiente imágen podemos observar las características de esta interfaz y, posteriormente, analizaremos la implementación:
 
-%\begin{figure}[!htp]
-%	\begin{center}
-%		\includegraphics[scale=0.5]{img/ClassModelSoundService2.JPEG}
-%	\end{center}
-%	\caption{Diagrama de clases del SoundPersistenceService}} 
-%	\label{fig:classSPS1}
-%\end{figure}
+\begin{figure}[!htp]
+	\begin{center}
+		\includegraphics[scale=0.45,natwidth=40pt,natheight=20pt]{img/ClassModelSoundService2.JPG}
+	\end{center}
+	\caption{Diagrama de clases del SoundPersistenceService}
+	\label{fig:classSPS1}
+\end{figure}
  
-%\begin{figure}[!htp]
-%	\begin{center}
-%		\includegraphics[scale=0.5]{img/ClassModelSoundService1.JPEG}
-%	\end{center}
-%	\caption{Diagrama de clases de implementación de SoundPersistenceService}} 
-%	\label{fig:classSPS2}
-%\end{figure}
+\begin{figure}[!htp]
+	\begin{center}
+		\includegraphics[scale=0.45,natwidth=40pt,natheight=20pt]{img/ClassModelSoundService1.JPG}
+	\end{center}
+	\caption{Diagrama de clases de implementación de SoundPersistenceService}
+	\label{fig:classSPS2}
+\end{figure}
 
 \subsubsection{Acceso a los archivos}
 
-De acuerdo al enunciado, existen dos archivos : uno que guarda como registros el par (palabra,offset) y otro que tiene sólamente (datosaudio).
+De acuerdo al enunciado, existen dos archivos: uno que guarda como registros el par (palabra,offset) y otro que tiene sólamente (datosaudio).
 Cada registro está representado por las clases \textbf{RegistroOffsetWord} y \textbf{RegistroInputStream} respectivamente.
 
 Cada uno de estos registros implementa la interfaz Serializable y, por lo tanto, no solo guardan datos sino, además, la información de como serializarse.
