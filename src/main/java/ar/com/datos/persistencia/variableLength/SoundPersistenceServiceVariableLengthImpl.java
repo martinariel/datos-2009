@@ -118,11 +118,17 @@ public class SoundPersistenceServiceVariableLengthImpl implements SoundPersisten
 		Address<Long, Short> offset = getOffsetOfWord( word );
 		
 		if ( offset == null ) throw new UnregisteredWordException();
-		else
-			{
-				RegistroInputStream regis = accesoasonidos.get( offset );
-				return regis.getStream();
-			}
+		
+		RegistroInputStream regis = accesoasonidos.get( offset );
+		InputStream returnValue = null;
+		try {
+			returnValue = (InputStream)regis.getStream().clone();
+		} catch (CloneNotSupportedException e) {
+			// Nunca pasa.
+		}
+
+		return returnValue;
+
 	}
 
 	
