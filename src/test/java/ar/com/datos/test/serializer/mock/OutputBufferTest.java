@@ -1,10 +1,7 @@
 package ar.com.datos.test.serializer.mock;
 
-import java.util.Collection;
-
 import ar.com.datos.buffer.InputBuffer;
 import ar.com.datos.buffer.OutputBuffer;
-import ar.com.datos.buffer.variableLength.ArrayByte;
 import ar.com.datos.util.ArraysUtils;
 
 /**
@@ -39,28 +36,4 @@ public class OutputBufferTest implements OutputBuffer {
 		this.pos++;
 	}
 
-	public void closeEntity() {
-		// No usado.	
-	}
-
-	public Collection<ArrayByte> extractAllButLast() {
-		// No usado.
-		return null;
-	}
-
-	public Collection<ArrayByte> extractLast() {
-		// No usado.
-		return null;
-	}
-
-	public Boolean isOverloaded() {
-		// No usado.
-		return null;
-	}
-
-	@Override
-	public Short getEntitiesCount() {
-		// TODO Auto-generated method stub
-		return null;
-	}
 }

@@ -1,6 +1,6 @@
 package ar.com.datos.file.variableLength;
 
-import ar.com.datos.buffer.OutputBuffer;
+import ar.com.datos.buffer.OverloadableOutputBuffer;
 
 /**
  * Las clases que implementan esta interfaz, son las encargadas de
@@ -14,5 +14,5 @@ public interface BufferRealeaser {
 	 * su capacidad
 	 * @param ob
 	 */
-	public void release(OutputBuffer ob);
+	public void release(OverloadableOutputBuffer ob);
 }
