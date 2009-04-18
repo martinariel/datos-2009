@@ -1,0 +1,51 @@
+-===== Arquitectura =====-
+
+El Main será simplemente una vista de WordService que es el backend de la aplicación y quien brinda todos los servicios a la vista. Estos servicios son 3:
+1) Agregar un Documento.
+2) Buscar un Documento.
+3) Reproducir un Documento.
+
+Veamos la arquitectura parte por parte. Pero antes definamos el concepto de Documento, que es común a todas las partes.
+
+-=== Documento ===-
+
+Es una interfaz que permite manejar un documento en forma de ->Frase<-, entendiendo por tal a un conjunto de palabras separadas por un signo de puntuación ('.', ',', ';', '?', '!', etc.). Es decir contiene un texto y permite obtener ->Frases<- desde él.
+Posee dos implementaciones, una que contiene un documento totalmente en memoria, y otra que trabaja con un archivo que lee desde disco a medida que va necesitándolo.
+
+Ahora si, veamos la arquitectura de cada una de las partes antes mencionadas.
+
+-=== 1) Agregar un Documento ===-
+
+Se divide en divide en 2 grandes partes:
+ a) Agregarlo al indice.
+ b) Agregarlo al diccionario de sonidos.
+
+Existe una caracteristica en común entre estas dos partes: el parseo. Es por eso que la arquitectura se definió de tal forma que el parseo se haga en una sola oportunidad como se mostrará luego (esto tiene una pequeña consecuencia que se mencionará al explicar la adición al diccionario de sonidos).
+
+-= a) Agregarlo un Documento al indice =-
+
+Quien se encarga de realizar esto es el Crawler, quien recibirá un ->Documento<-. En primer lugar utliza el Parser que se encarga de reemplazar símbolos diacríticos, retirar símbolos extraños, símbolos numéricos, etc, y de realizar el case folding, obteniendo por resultado una lista de palabras limpia. El Parser recibirá una ->Frase<- cada vez que se lo invoque. 
+La colección de palabras obtenida será procesada por el módulo StopWords Discriminator, cuya implementación tendrá un listado en memoria (que levanta al iniciar la aplicación desde un archivo) de frases y de palabras sueltas que son Stop Words para hacer el procesamiento. Al iniciar el procesamiento de un documento, el Parser avisa de este acontecimiento al módulo StopWords Discriminator, es decir, comienza una session de trabajo. Durante esta session el módulo de StopWords Discriminator guarda en un Set (conjunto sin repeticiones) las StopWords que va encontrando. Luego, al terminar la session, este Set de Stop Words puede ser recuperado por el Crawler (más adelante se explicará con que fin).
+El Crawler obtiene del StopWords Discriminator una colección (ordenada o desordenada, no importa) de palabras que no contienen StopWords. Esta colección (correspondiente a una sola ->Frase<-) le será entregada al Indexer.
+El Indexer es la interfaz utilizada para acceder al índice (un árbol b#). El Crawler también maneja una session con el Indexer, que comienza al procesar un ->Documento<- y termina al agregar la última ->Frase<-. El Indexer parametriza un BTree#, un módulo que maneja un árbol b# de manera genérica. El Indexer a su vez maneja una session idéntica a la que tiene con el Crawler con el módulo Inversion Sort Handler, y solo agregará las palabras al árbol una vez que el Crawler finalice la session con el Indexer.
+--> Agregar información sobre el Inversion Sort Handler cuando este definido.
+El BTree# es una implementación genérica de árbol b# que utiliza 2 archivos, uno para nodos internos y otro para hojas, y que maneja una equiparación entre nodos y bloques. Utiliza el VariableLengthFileManager en su implementación en disco. Debe ser parametrizado con una "Key" (clave de los nodos internos) y un "Element" (registro de las hojas que contiene entre otras cosas a la clave). Este Element se definirá de tal manera que tenga el listado de Documentos en su interior; este listado de Documentos se implementará utilizado el VariableLengthFileManager. No se muestra a Key ni a Element, ni al archivo del listado de Documentos en el diagrama por simplificación. Además deben brindarse los serializer correspondientes a una colección ordenada de Keys y de Elements para parametrizar al BTree#.
+Las sessiones mencionadas (entre el Crawler y el StopWords Discriminatior, entre el Crawler y Indexer y entre el Indexer y el Inversion Sort Handler) sirven para evitar tener un documento completo en memoria.
+Volvamos al StopWords Discriminator. Se mencionó antes que al finalizar la session correspondiente a un Documento, se puede recuperar un Set de las stop words encontradas. Para qué? El Crawler fue guardando también un Set del vocabulario no-stop-words, este Set será combinado con el de stop words para obtener un solo Set que será devuelto al WordService como respuesta al pedido de indexar un documento.
+
+-= b) Agregarlo un Documento al diccionario de sonidos =-
+
+Como puede adivinarse, el vocabulario completo obtenido al agregar un docuemento al índice es la entrada usada para realizar el agregado al diccionario de sonidos. Esto tiene como consecuencia que el agregado de sonidos será en distinto orden al original del documento. Pero tiene como venta el no tener que procesar dos veces el documento por el parser (y a no tener que leerlo de nuevo desde disco si es que no se lo quiere tener completo en memoria como planteamos antes).
+El módulo usado para esta acción es el llamado WordRecorder.
+Si bien se modificó levemente la interacción entre los módulos, la arquitectura es básicamente la misma que para la entrega 1, y la interacción entre módulos puede verse claramente en el esquema.
+La única gran modificación consiste en el reemplazo del "índice secuencial de sonidos" por un Trie.
+--> Agregar información sobre el Trie cuando esté definido.
+
+-=== Buscar un Documento ===-
+Esta acción es responsabilidad del Search Engine. Para hacerlo primero debe limpiar la cadena de búsqueda, para lo cual interactura con el Parser y con el StopWords Discriminator.
+Una vez que tiene la consulta limpia, realiza la búsqueda utilizando el Indexer, que a su vez utilizará el BTree#.
+El SearchEngine realiza las operaciones de conjunto y orden necesarias y devuelve un listado ordenado de ->Documentos<-.
+
+-=== Reproducir un Documento ===-
+La reproducción la realizará el DocumentPlayer, que recibirá un ->Documento<- que deberá parsear utilizando el Parser. A medida que va obteniendo las palabras correspondientes las irá reproduciendo delegando toda la complejidad en el WordPlayer.
+El WordPlayer es la contrapartida del WordRecorder explicado en 1) b), y su arquitectura es coincidente con la de este.
