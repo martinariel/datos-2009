@@ -12,7 +12,7 @@ import org.jmock.lib.action.CustomAction;
 
 import ar.com.datos.buffer.InputBuffer;
 import ar.com.datos.buffer.OutputBuffer;
-import ar.com.datos.buffer.variableLength.ArrayByte;
+import ar.com.datos.buffer.variableLength.SimpleArrayByte;
 import ar.com.datos.file.Address;
 import ar.com.datos.file.BlockFile;
 import ar.com.datos.file.DynamicAccesor;
@@ -92,7 +92,7 @@ public class TestVariableLength extends MockObjectTestCase {
 		this.cantidadDeBloquesEnFileMock = 2L;
 		final MiLinkedList<Object> campos = new MiLinkedList<Object>();
 		final byte[] bloque = new byte[blockSize];
-		Byte cantidadDeObjetos = 5;
+		Short cantidadDeObjetos = 5;
 		setCantidadDeObjetos(bloque, cantidadDeObjetos);
 		checking(new Expectations(){{
 			one(fileMock).readBlock(cantidadDeBloquesEnFileMock - 1);
@@ -119,7 +119,7 @@ public class TestVariableLength extends MockObjectTestCase {
 		this.cantidadDeBloquesEnFileMock = 2L;
 		final MiLinkedList<Object> campos = new MiLinkedList<Object>();
 		final byte[] bloque = new byte[blockSize];
-		Byte cantidadDeObjetos = 0;
+		Short cantidadDeObjetos = 0;
 		setCantidadDeObjetos(bloque, cantidadDeObjetos);
 		checking(new Expectations(){{
 			one(fileMock).readBlock(cantidadDeBloquesEnFileMock - 1);
@@ -152,13 +152,13 @@ public class TestVariableLength extends MockObjectTestCase {
 		campos2.add(2);
 		final byte[] bloqueFinal = new byte[blockSize];
 		final byte[] bloqueDatos = new byte[blockSize];
-		Byte cantidadDeObjetos = 0;
+		Short cantidadDeObjetos = 0;
 		setCantidadDeObjetos(bloqueFinal, cantidadDeObjetos);
-		final Long numeroDeBloqueBuscado = 0L;
+		final Long numeroDeBloqueBuscado = 1L;
 		cantidadDeObjetos = 2;
 		setCantidadDeObjetos(bloqueDatos, cantidadDeObjetos);
 		checking(new Expectations(){{
-			one(fileMock).readBlock(cantidadDeBloquesEnFileMock - 1);
+			atLeast(1).of(fileMock).readBlock(cantidadDeBloquesEnFileMock - 1);
 			will(returnValue(bloqueFinal));
 			one(fileMock).readBlock(numeroDeBloqueBuscado);
 			will(returnValue(bloqueDatos));
@@ -173,7 +173,7 @@ public class TestVariableLength extends MockObjectTestCase {
 	}
 	/**
 	 * Voy a pedirle que hidrate un objeto X que se encuentra en varios bloques
-	 * por ende su número de objeto es 0
+	 * por ende su número de objeto es -1 para la cabeza y 0 para el resto
 	 * En el bloque existe únicamente dicho registro
 	 * Espero que, primero le pida el último bloque (porque de esa manera es como se inicia el archivo)
 	 * Luego espero que lea el numero de bloque 
@@ -186,14 +186,12 @@ public class TestVariableLength extends MockObjectTestCase {
 		campos1.add(1);
 		final byte[] bloqueDatos = new byte[blockSize];
 		final byte[] bloqueFinal = new byte[blockSize];
-		Byte cantidadDeObjetos = 0;
+		Short cantidadDeObjetos = 0;
 		setCantidadDeObjetos(bloqueFinal, cantidadDeObjetos);
 		setearSiguientePuntero(bloqueFinal,(byte)2);
 
-		cantidadDeObjetos = 0;
-		setCantidadDeObjetos(bloqueFinal, cantidadDeObjetos);
 		final Long numeroDeBloqueBuscado = 1L;
-		cantidadDeObjetos = 0;
+		cantidadDeObjetos = -1;
 		setCantidadDeObjetos(bloqueDatos, cantidadDeObjetos);
 		setearSiguientePuntero(bloqueDatos,(byte)2);
 		final Long numeroDeSegundoBloque = 2L;
@@ -224,7 +222,7 @@ public class TestVariableLength extends MockObjectTestCase {
 		final byte[] bloque2 = new byte[blockSize];
 		final byte[] bloque3 = new byte[blockSize];
 		bloque0[blockSize-1] = 2;
-		bloque1[blockSize-1] = 0;
+		setCantidadDeObjetos(bloque1, (short)-1);
 		bloque2[blockSize-1] = 0;
 		bloque3[blockSize-1] = 1;
 		// puntero al siguiente bloque
@@ -255,20 +253,20 @@ public class TestVariableLength extends MockObjectTestCase {
 			will(returnValue(campos0));
 			one(serializerMock).hydrate(with(any(InputBuffer.class)));
 			will(returnValue(campos1));
+			atLeast(1).of(fileMock).readBlock(1L);
+			will(returnValue(bloque1));
+			one(fileMock).readBlock(2L);
+			will(returnValue(bloque2));
+			one(serializerMock).hydrate(with(any(InputBuffer.class)));
+			will(returnValue(campos2));
+			one(fileMock).readBlock(3L);
+			will(returnValue(bloque3));
 		}});
 		assertTrue(iterador.hasNext());
 		assertEquals(campos0, iterador.next());
 		assertTrue(iterador.hasNext());
 		assertEquals(campos1, iterador.next());
 		assertTrue(iterador.hasNext());
-		checking(new Expectations(){{
-			one(fileMock).readBlock(1L);
-			will(returnValue(bloque1));
-			one(fileMock).readBlock(2L);
-			will(returnValue(bloque2));
-			one(serializerMock).hydrate(with(any(InputBuffer.class)));
-			will(returnValue(campos2));
-		}});
 		assertEquals(campos2, iterador.next());
 		assertTrue(iterador.hasNext());
 		assertEquals(campos3, iterador.next());
@@ -292,9 +290,9 @@ public class TestVariableLength extends MockObjectTestCase {
 		for (Integer i = 0; i < serializacion1.length; i++) 
 			serializacion1[i] = 1; 
 		byte[] cantidadRegistrosB1 = new byte[] { (byte)0, (byte)1 };
-		final Collection<ArrayByte> bloque1 = new ArrayList<ArrayByte>();
-		bloque1.add(new ArrayByte(serializacion1));
-		bloque1.add(new ArrayByte(cantidadRegistrosB1));
+		final Collection<SimpleArrayByte> bloque1 = new ArrayList<SimpleArrayByte>();
+		bloque1.add(new SimpleArrayByte(serializacion1));
+		bloque1.add(new SimpleArrayByte(cantidadRegistrosB1));
 		
 		final byte[] serializacion2 = new byte[2 *(blockSize - 10)];
 		byte[] datosBloque2 = new byte[blockSize - 10];
@@ -310,17 +308,17 @@ public class TestVariableLength extends MockObjectTestCase {
 		
 		byte[] siguienteRegistroB2 = new byte[] { (byte)0, (byte)0, (byte)0, (byte)0, (byte)0, (byte)0, (byte)0, (byte)2};
 		byte[] cantidadRegistrosB2 = new byte[] { (byte)0, (byte)0 };
-		final Collection<ArrayByte> bloque2 = new ArrayList<ArrayByte>();
-		bloque2.add(new ArrayByte(datosBloque2));
-		bloque2.add(new ArrayByte(siguienteRegistroB2));
-		bloque2.add(new ArrayByte(cantidadRegistrosB2));
+		final Collection<SimpleArrayByte> bloque2 = new ArrayList<SimpleArrayByte>();
+		bloque2.add(new SimpleArrayByte(datosBloque2));
+		bloque2.add(new SimpleArrayByte(siguienteRegistroB2));
+		bloque2.add(new SimpleArrayByte(cantidadRegistrosB2));
 
 		byte[] siguienteRegistroB3 = new byte[] { (byte)0, (byte)0, (byte)0, (byte)0, (byte)0, (byte)0, (byte)0, (byte)2};
 		byte[] cantidadRegistrosB3 = new byte[] { (byte)0, (byte)0 };
-		final Collection<ArrayByte> bloque3 = new ArrayList<ArrayByte>();
-		bloque3.add(new ArrayByte(datosBloque3));
-		bloque3.add(new ArrayByte(siguienteRegistroB3));
-		bloque3.add(new ArrayByte(cantidadRegistrosB3));
+		final Collection<SimpleArrayByte> bloque3 = new ArrayList<SimpleArrayByte>();
+		bloque3.add(new SimpleArrayByte(datosBloque3));
+		bloque3.add(new SimpleArrayByte(siguienteRegistroB3));
+		bloque3.add(new SimpleArrayByte(cantidadRegistrosB3));
 
 		final MiLinkedList<Object> campos = new MiLinkedList<Object>();
 		campos.add(0);
@@ -395,10 +393,10 @@ public class TestVariableLength extends MockObjectTestCase {
 		final byte[] cantRegistros = new byte[] {(byte)0, (byte)1};
 		final MiLinkedList<Object> campos = new MiLinkedList<Object>();
 		campos.add(1);
-		final Collection<ArrayByte> bloque = new ArrayList<ArrayByte>();
-		bloque.add(new ArrayByte(serializacion));
-		bloque.add(new ArrayByte(relleno));
-		bloque.add(new ArrayByte(cantRegistros));
+		final Collection<SimpleArrayByte> bloque = new ArrayList<SimpleArrayByte>();
+		bloque.add(new SimpleArrayByte(serializacion));
+		bloque.add(new SimpleArrayByte(relleno));
+		bloque.add(new SimpleArrayByte(cantRegistros));
 		checking(new Expectations(){{
 			one(serializerMock).dehydrate(with(any(OutputBuffer.class)), with(campos));
 			will(new CustomAction("deshidratar") {
@@ -425,9 +423,9 @@ public class TestVariableLength extends MockObjectTestCase {
 		}});
 		unVLFM.close();
 	}
-	private void setCantidadDeObjetos(final byte[] bloque, Byte cantidadDeObjetos) {
-		bloque[blockSize-1] = cantidadDeObjetos;
-		bloque[blockSize-2] = 0;
+	private void setCantidadDeObjetos(final byte[] bloque, Short cantidadDeObjetos) {
+		bloque[blockSize-1] = cantidadDeObjetos.byteValue();
+		bloque[blockSize-2] = (byte)((cantidadDeObjetos.intValue() >> 8) & 0xFF);
 	}
 	private void setearSiguientePuntero(final byte[] bloque1, Byte siguiente) {
 		bloque1[blockSize-3] = siguiente;

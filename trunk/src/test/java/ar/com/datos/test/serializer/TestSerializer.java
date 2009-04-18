@@ -242,7 +242,7 @@ public class TestSerializer extends ExtendedTestCase {
 	 */
 	public void testCollectionSerializer() {
 		Serializer<String> stringSizeSerializer = new StringSerializerSize();
-		Serializer serializer = new CollectionSerializer<String>(stringSizeSerializer);
+		Serializer<Collection<String>> serializer = new CollectionSerializer<String>(stringSizeSerializer);
 		Collection<String> first = new LinkedList<String>();
 		first.add("1");
 		first.add("22");
