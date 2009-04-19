@@ -11,9 +11,13 @@ import ar.com.datos.file.Address;
 import ar.com.datos.file.BlockFile;
 import ar.com.datos.file.DynamicAccesor;
 import ar.com.datos.file.SimpleBlockFile;
+import ar.com.datos.file.exception.NullableSerializerRequiredException;
+import ar.com.datos.persistencia.variableLength.BlockMetaData;
 import ar.com.datos.persistencia.variableLength.BlockReader;
 import ar.com.datos.persistencia.variableLength.BlockWriter;
 import ar.com.datos.persistencia.variableLength.FlushListener;
+import ar.com.datos.persistencia.variableLength.ReplaceResponsable;
+import ar.com.datos.serializer.NullableSerializer;
 import ar.com.datos.serializer.Serializer;
 /**
  * Esta entidad permite manejar la persistencia de objetos Serializables en un archivo de longitud variable.
@@ -69,8 +73,22 @@ public class VariableLengthFileManager<T> implements DynamicAccesor<T>{
 
 	@Override
 	public Address<Long, Short> updateEntity(Address<Long, Short> direccion, T entity) {
-		// TODO Auto-generated method stub
+		HydratedBlock<T> bloque = getBlock(direccion.getBlockNumber());
+		bloque.getData().remove(direccion.getObjectNumber());
+		bloque.getData().add(direccion.getObjectNumber(), entity);
+		BlockWriter writer = new BlockWriter(getRealFile());
+		for (Long blockNumber : bloque.getBlockNumbers()) writer.addAvailableBlock(blockNumber);
+		
+		ReplaceResponsableImplementation replaceResponsable = new ReplaceResponsableImplementation(direccion.getObjectNumber());
+		writer.requireReplaceTo(replaceResponsable);
+		for (T data : bloque.getData()) {
+			getSerializador().dehydrate(writer.getOutputBuffer(), data);
+			writer.getOutputBuffer().closeEntity();
+		}
+		if (replaceResponsable.hasReplacedOccurred()) return addEntity(entity); 
+		
 		return direccion;
+		
 	}
 	/**
 	 * Devuelve un iterador que permite recorrer todos los objetos persistidos por esta entidad
@@ -106,7 +124,13 @@ public class VariableLengthFileManager<T> implements DynamicAccesor<T>{
 			li.add(this.getSerializador().hydrate(data));
 		}
 		
-		return addToCache(new HydratedBlock<T>(li, blockNumber, getBlockReader().getNextBlockNumber()));
+		return addToCache(new HydratedBlock<T>(li, getBlockNumbers(getBlockReader()), getBlockReader().getNextBlockNumber()));
+	}
+	private List<Long> getBlockNumbers(BlockReader blockReader2) {
+		List<Long> blockNumbers = new ArrayList<Long>(blockReader2.getMetaData().size());
+		for (BlockMetaData bmd: blockReader2.getMetaData())
+			blockNumbers.add(bmd.getBlockNumber());
+		return blockNumbers;
 	}
 	/**
 	 * Manejo basico de cache
@@ -183,7 +207,7 @@ public class VariableLengthFileManager<T> implements DynamicAccesor<T>{
 
 			@Override
 			public void flushed() {
-				cachedLastBlock.setBlockNumber(lastBlockWriter.getCurrentWrittingBlock());
+//				cachedLastBlock.setBlockMetaData();
 				while (lastBlockWriter.getOutputBuffer().getEntitiesCount() < cachedLastBlock.getData().size()) {
 					cachedLastBlock.getData().remove(0);
 				}
@@ -247,6 +271,36 @@ public class VariableLengthFileManager<T> implements DynamicAccesor<T>{
 
 	protected BlockReader getBlockReader() {
 		return blockReader;
+	}
+	private final class ReplaceResponsableImplementation implements	ReplaceResponsable {
+		private Short replaceEntity;
+		private Boolean replacedOccurred = false;
+
+		public ReplaceResponsableImplementation(Short objectNumber) {
+			this.replaceEntity = objectNumber;
+		}
+
+		@Override
+		public void notifyExceed(BlockWriter blockWriter) {
+			
+			if (!(getSerializador() instanceof NullableSerializer)) throw new NullableSerializerRequiredException();
+			NullableSerializer<T> serializer = (NullableSerializer<T>) getSerializador();
+
+			serializer.dehydrateNull(blockWriter.getOutputBuffer());
+			blockWriter.getOutputBuffer().closeEntity();
+
+			replacedOccurred = true;
+		}
+
+		public Boolean hasReplacedOccurred() {
+			return replacedOccurred;
+		}
+
+		@Override
+		public Short replaceObject() {
+			return replaceEntity;
+		}
+
 	}
 	/**
 	 * Inner class para iterar a este archivo

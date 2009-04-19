@@ -97,18 +97,34 @@ public class BlockWriter implements RestrictedBufferRealeaser {
 	@Override
 	public void release(RestrictedOutputBuffer ob) {
 		if (isReplaceRequiredEnabled()) {
-			ob.removeLastEntity();
-			this.replaceResponsable.notifyExceed(this);
+			requireReplace(ob);
 		} else {
-			Deque<Collection<ArrayByte>> d = ob.retrieveEntities();
-			Collection<ArrayByte> last = d.removeLast();
-			if (!d.isEmpty()) {
-				writeExistentOneBlock(d);
-				writeExistent(last, ob);
+			simpleRelease(ob);
+		}
+	}
+
+	private void simpleRelease(RestrictedOutputBuffer ob) {
+		Deque<Collection<ArrayByte>> d = ob.retrieveEntities();
+		Collection<ArrayByte> last = d.removeLast();
+		if (!d.isEmpty()) {
+			writeExistentOneBlock(d);
+			writeExistent(last, ob);
+		} else {
+			writeExistentMultipleBlock(last);
+		}
+		notifyFlushListeners();
+	}
+
+	private void requireReplace(RestrictedOutputBuffer ob) {
+		Deque<Collection<ArrayByte>> entidades = ob.retrieveEntities();
+		Integer cantidad = entidades.size();
+		for (Integer i = 0; i < cantidad; i++) {
+			Collection<ArrayByte> entidad = entidades.removeFirst();
+			if (i.equals(this.replaceResponsable.replaceObject().intValue())) {
+				this.replaceResponsable.notifyExceed(this);
 			} else {
-				writeExistentMultipleBlock(last);
+				ob.addEntity(entidad);
 			}
-			notifyFlushListeners();
 		}
 	}
 
@@ -129,12 +145,13 @@ public class BlockWriter implements RestrictedBufferRealeaser {
 		Collection<Collection<ArrayByte>> segmentos = splitInSegments(datos);
 		Iterator<Collection<ArrayByte>> it = segmentos.iterator();
 		if (availableBlocks.isEmpty()) {
-			for (Integer i = 0; i < segmentos.size(); i++) this.availableBlocks.add(this.fileBlock.getTotalBlocks() + i);
+			this.availableBlocks.add(this.fileBlock.getTotalBlocks());
 		}
 		this.lastHeadWritten = availableBlocks.first();
 		boolean first = true;
 		// Agrego a los datos la información de control
 		while(it.hasNext()) {
+			if (this.availableBlocks.isEmpty()) this.availableBlocks.add(this.fileBlock.getTotalBlocks());
 			Long bloqueActual = availableBlocks.first();
 			availableBlocks.remove(bloqueActual);
 			Collection<ArrayByte> segmento = it.next();

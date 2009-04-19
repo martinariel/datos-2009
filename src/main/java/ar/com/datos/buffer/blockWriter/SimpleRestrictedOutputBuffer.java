@@ -106,14 +106,9 @@ public class SimpleRestrictedOutputBuffer implements RestrictedOutputBuffer {
 	}
 
 	@Override
-	public void removeLastEntity() {
-		Collection<ArrayByte> last = this.bufferedEntities.removeLast();
-		for (ArrayByte ab : last) this.currentSize -= ab.getLength();
-	}
-
-	@Override
 	public void addEntity(Collection<ArrayByte> last) {
 		for (ArrayByte ab : last) this.write(ab);
 		this.closeEntity();
 	}
+
 }
