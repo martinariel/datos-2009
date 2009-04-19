@@ -8,15 +8,12 @@ import org.jmock.integration.junit3.MockObjectTestCase;
 import ar.com.datos.file.BlockFile;
 import ar.com.datos.persistencia.variableLength.BlockReader;
 import ar.com.datos.serializer.PrimitiveTypeSerializer;
-import ar.com.datos.serializer.common.SerializerCache;
-import ar.com.datos.serializer.common.ShortSerializer;
 
 public class TestBlockReader extends MockObjectTestCase {
 
 	private static final int BLOCK_SIZE = 512;
 	private BlockFile mockFileBlock;
 	private BlockReader blockReader;
-	private ShortSerializer shortSerializer = SerializerCache.getInstance().getSerializer(ShortSerializer.class);
 
 	@Override
 	protected void setUp() throws Exception {
@@ -47,7 +44,7 @@ public class TestBlockReader extends MockObjectTestCase {
 			will(returnValue(bloque5));
 		}});
 		assertEquals(BLOCK_SIZE - cantRegistros.length, this.blockReader.getOneBlockDataSize().intValue());
-		this.blockReader.goToBlock(5L);
+		this.blockReader.readBlock(5L);
 		assertTrue(this.blockReader.isBlockHead());
 		assertEquals(5, this.blockReader.getRegistryCount().intValue());
 		this.blockReader.getData().read(bloque5Data);
@@ -62,15 +59,13 @@ public class TestBlockReader extends MockObjectTestCase {
 	public void testHeadRead() throws Exception {
 		final byte[] bloque5 = new byte[BLOCK_SIZE];
 		byte[] cantRegistros = PrimitiveTypeSerializer.toByte((short)-1);
-//		byte[] bloque5Data = new byte[BLOCK_SIZE - cantRegistros.length];
 		System.arraycopy(cantRegistros, 0, bloque5, bloque5.length - cantRegistros.length, cantRegistros.length);
 		checking(new Expectations(){{
 			one(mockFileBlock).readBlock(5L);
 			will(returnValue(bloque5));
 		}});
-		this.blockReader.goToBlock(5L);
+		this.blockReader.readBlock(5L);
 		assertTrue(this.blockReader.isBlockHead());
 		assertEquals(1, this.blockReader.getRegistryCount().intValue());
-//		assertTrue(Arrays.equals(bloque5Data, this.blockReader.getData().getArray()));
 	}
 }

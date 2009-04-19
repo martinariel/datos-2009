@@ -101,12 +101,12 @@ public class SimpleBlockFile implements BlockFile {
 	}
 	@Override
 	public void writeBlock(Long blockNumber, byte[] block) {
-		ArrayList<SimpleArrayByte> blockAsCollection = new ArrayList<SimpleArrayByte>(1);
+		ArrayList<ArrayByte> blockAsCollection = new ArrayList<ArrayByte>(1);
 		blockAsCollection.add(new SimpleArrayByte(block));
 		this.writeBlock(blockNumber, blockAsCollection);
 	}
 	@Override
-	public void writeBlock(Long blockNumber, Collection<SimpleArrayByte> partes) {
+	public void writeBlock(Long blockNumber, Collection<ArrayByte> partes) {
 		Integer sumaDeLasPartes = 0;
 		for (ArrayByte ab : partes) sumaDeLasPartes += ab.getLength();
 		if (!this.getBlockSize().equals(sumaDeLasPartes)) {

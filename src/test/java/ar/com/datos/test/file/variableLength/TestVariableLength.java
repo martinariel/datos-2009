@@ -12,6 +12,7 @@ import org.jmock.lib.action.CustomAction;
 
 import ar.com.datos.buffer.InputBuffer;
 import ar.com.datos.buffer.OutputBuffer;
+import ar.com.datos.buffer.variableLength.ArrayByte;
 import ar.com.datos.buffer.variableLength.SimpleArrayByte;
 import ar.com.datos.file.Address;
 import ar.com.datos.file.BlockFile;
@@ -67,6 +68,7 @@ public class TestVariableLength extends MockObjectTestCase {
 		checking(new Expectations(){{
 			one(serializerMock).dehydrate(with(any(OutputBuffer.class)), with(campos1));
 			one(serializerMock).dehydrate(with(any(OutputBuffer.class)), with(campos2));
+			allowing(fileMock).writeBlock(with(0L), with(any(Collection.class)));
 		}});
 		DynamicAccesor unDynamicAccesor = crearArchivo();
 		Address<Long, Short> direccion1 = unDynamicAccesor.addEntity(campos1);
@@ -126,6 +128,7 @@ public class TestVariableLength extends MockObjectTestCase {
 			will(returnValue(bloque));
 			// Deserialización del registro que agrego 
 			one(serializerMock).dehydrate(with(any(OutputBuffer.class)), with(campos));
+			allowing(fileMock).writeBlock(with(cantidadDeBloquesEnFileMock), with(any(Collection.class)));
 		}});
 		DynamicAccesor unDynamicAccesor = crearArchivo();
 		Address<Long, Short> direccion = unDynamicAccesor.addEntity(campos);
@@ -136,8 +139,7 @@ public class TestVariableLength extends MockObjectTestCase {
 	 * Voy a pedirle que hidrate dos objetos que no se encuentra en el último bloque
 	 * y que su número de objeto son 0 y 1 (es decir son los dos primeros de dicho bloque)
 	 * En el bloque existe únicamente dichos registro
-	 * Espero que, primero le pida el último bloque (porque tiene que prepararse para recibir datos)
-	 * Luego espero que lea el bloque correspondiente a ambos registros
+	 * Espero que lea el bloque correspondiente a ambos registros
 	 * Que hidrate ambos y que me devuelva el segundo.
 	 * Cuando, después, le pido el primero espero que no acceda al archivo pero si que me devuelva 
 	 * el primero hidratado (que hidrató anteriormente)  
@@ -158,14 +160,14 @@ public class TestVariableLength extends MockObjectTestCase {
 		cantidadDeObjetos = 2;
 		setCantidadDeObjetos(bloqueDatos, cantidadDeObjetos);
 		checking(new Expectations(){{
-			atLeast(1).of(fileMock).readBlock(cantidadDeBloquesEnFileMock - 1);
-			will(returnValue(bloqueFinal));
 			one(fileMock).readBlock(numeroDeBloqueBuscado);
 			will(returnValue(bloqueDatos));
 			one(serializerMock).hydrate(with(any(InputBuffer.class)));
 			will(returnValue(campos1));
 			one(serializerMock).hydrate(with(any(InputBuffer.class)));
 			will(returnValue(campos2));
+			one(fileMock).readBlock(2L);
+			will(returnValue(bloqueDatos));
 		}});
 		DynamicAccesor unDynamicAccesor = crearArchivo();
 		assertEquals(campos2, unDynamicAccesor.get(new VariableLengthAddress(numeroDeBloqueBuscado, (short)1)));
@@ -175,7 +177,6 @@ public class TestVariableLength extends MockObjectTestCase {
 	 * Voy a pedirle que hidrate un objeto X que se encuentra en varios bloques
 	 * por ende su número de objeto es -1 para la cabeza y 0 para el resto
 	 * En el bloque existe únicamente dicho registro
-	 * Espero que, primero le pida el último bloque (porque de esa manera es como se inicia el archivo)
 	 * Luego espero que lea el numero de bloque 
 	 * @throws Exception
 	 */
@@ -196,8 +197,6 @@ public class TestVariableLength extends MockObjectTestCase {
 		setearSiguientePuntero(bloqueDatos,(byte)2);
 		final Long numeroDeSegundoBloque = 2L;
 		checking(new Expectations(){{
-			one(fileMock).readBlock(cantidadDeBloquesEnFileMock - 1);
-			will(returnValue(bloqueFinal));
 			one(fileMock).readBlock(numeroDeBloqueBuscado);
 			will(returnValue(bloqueDatos));
 			one(fileMock).readBlock(numeroDeSegundoBloque);
@@ -236,14 +235,6 @@ public class TestVariableLength extends MockObjectTestCase {
 		campos2.add(2);
 		final MiLinkedList<Object> campos3 = new MiLinkedList<Object>();
 		campos3.add(3);
-		checking(new Expectations(){{
-			// Carga del bloque final. Esta es la única lectura que no se hace en orden
-			one(fileMock).readBlock(cantidadDeBloquesEnFileMock - 1);
-			will(returnValue(bloque3));
-			one(serializerMock).hydrate(with(any(InputBuffer.class)));
-			will(returnValue(campos3));
-			allowing(serializerMock).dehydrate(with(any(OutputBuffer.class)),with(campos3));
-		}});
 		DynamicAccesor unDynamicAccesor = crearArchivo();
 		Iterator<MiLinkedList<Object>> iterador = unDynamicAccesor.iterator();
 		checking(new Expectations(){{
@@ -255,6 +246,12 @@ public class TestVariableLength extends MockObjectTestCase {
 			will(returnValue(campos1));
 			atLeast(1).of(fileMock).readBlock(1L);
 			will(returnValue(bloque1));
+			// Carga del bloque final. Esta es la única lectura que no se hace en orden
+			one(fileMock).readBlock(cantidadDeBloquesEnFileMock - 1);
+			will(returnValue(bloque3));
+			one(serializerMock).hydrate(with(any(InputBuffer.class)));
+			will(returnValue(campos3));
+			allowing(serializerMock).dehydrate(with(any(OutputBuffer.class)),with(campos3));
 			one(fileMock).readBlock(2L);
 			will(returnValue(bloque2));
 			one(serializerMock).hydrate(with(any(InputBuffer.class)));
@@ -290,7 +287,7 @@ public class TestVariableLength extends MockObjectTestCase {
 		for (Integer i = 0; i < serializacion1.length; i++) 
 			serializacion1[i] = 1; 
 		byte[] cantidadRegistrosB1 = new byte[] { (byte)0, (byte)1 };
-		final Collection<SimpleArrayByte> bloque1 = new ArrayList<SimpleArrayByte>();
+		final Collection<ArrayByte> bloque1 = new ArrayList<ArrayByte>();
 		bloque1.add(new SimpleArrayByte(serializacion1));
 		bloque1.add(new SimpleArrayByte(cantidadRegistrosB1));
 		
@@ -306,16 +303,16 @@ public class TestVariableLength extends MockObjectTestCase {
 			datosBloque3[i-datosBloque2.length] = 3;
 		}
 		
-		byte[] siguienteRegistroB2 = new byte[] { (byte)0, (byte)0, (byte)0, (byte)0, (byte)0, (byte)0, (byte)0, (byte)2};
-		byte[] cantidadRegistrosB2 = new byte[] { (byte)0, (byte)0 };
-		final Collection<SimpleArrayByte> bloque2 = new ArrayList<SimpleArrayByte>();
+		byte[] siguienteRegistroB2 = new byte[] { 0, 0, 0, 0, 0, 0, 0, 2};
+		byte[] cantidadRegistrosB2 = new byte[] { -1,-1};
+		final Collection<ArrayByte> bloque2 = new ArrayList<ArrayByte>();
 		bloque2.add(new SimpleArrayByte(datosBloque2));
 		bloque2.add(new SimpleArrayByte(siguienteRegistroB2));
 		bloque2.add(new SimpleArrayByte(cantidadRegistrosB2));
 
 		byte[] siguienteRegistroB3 = new byte[] { (byte)0, (byte)0, (byte)0, (byte)0, (byte)0, (byte)0, (byte)0, (byte)2};
 		byte[] cantidadRegistrosB3 = new byte[] { (byte)0, (byte)0 };
-		final Collection<SimpleArrayByte> bloque3 = new ArrayList<SimpleArrayByte>();
+		final Collection<ArrayByte> bloque3 = new ArrayList<ArrayByte>();
 		bloque3.add(new SimpleArrayByte(datosBloque3));
 		bloque3.add(new SimpleArrayByte(siguienteRegistroB3));
 		bloque3.add(new SimpleArrayByte(cantidadRegistrosB3));
@@ -340,6 +337,8 @@ public class TestVariableLength extends MockObjectTestCase {
 					return null;
 				}
 			});
+			// Graba dos veces el mismo bloque porque hace un flush para asegurarse la posición del registro agregado
+			one(fileMock).writeBlock(with(0L), with(equal(bloque1)));
 			one(serializerMock).dehydrate(with(any(OutputBuffer.class)), with(campos));
 			will(new CustomAction("deshidratar") {
 				@Override
@@ -393,7 +392,7 @@ public class TestVariableLength extends MockObjectTestCase {
 		final byte[] cantRegistros = new byte[] {(byte)0, (byte)1};
 		final MiLinkedList<Object> campos = new MiLinkedList<Object>();
 		campos.add(1);
-		final Collection<SimpleArrayByte> bloque = new ArrayList<SimpleArrayByte>();
+		final Collection<ArrayByte> bloque = new ArrayList<ArrayByte>();
 		bloque.add(new SimpleArrayByte(serializacion));
 		bloque.add(new SimpleArrayByte(relleno));
 		bloque.add(new SimpleArrayByte(cantRegistros));
@@ -410,9 +409,8 @@ public class TestVariableLength extends MockObjectTestCase {
 		}});
 		VariableLengthFileManager unVLFM = crearArchivo();
 		unVLFM.close();
-		unVLFM.addEntity(campos);
 		checking(new Expectations(){{
-			one(fileMock).writeBlock(with(0L), with(equal(bloque)));
+			atLeast(1).of(fileMock).writeBlock(with(0L), with(equal(bloque)));
 			will(new CustomAction("writeBlock") {
 				@Override
 				public Object invoke(Invocation invocation) throws Throwable {
@@ -421,6 +419,7 @@ public class TestVariableLength extends MockObjectTestCase {
 				}
 			});
 		}});
+		unVLFM.addEntity(campos);
 		unVLFM.close();
 	}
 	private void setCantidadDeObjetos(final byte[] bloque, Short cantidadDeObjetos) {

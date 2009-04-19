@@ -2,7 +2,7 @@ package ar.com.datos.file;
 
 import java.util.Collection;
 
-import ar.com.datos.buffer.variableLength.SimpleArrayByte;
+import ar.com.datos.buffer.variableLength.ArrayByte;
 
 /**
  * Abstracción de archivo por bloques
@@ -30,7 +30,7 @@ public interface BlockFile {
 	 * @param blockNumber
 	 * @return
 	 */
-	public void writeBlock(Long blockNumber, Collection<SimpleArrayByte> partes);
+	public void writeBlock(Long blockNumber, Collection<ArrayByte> partes);
 	/**
 	 * Agrega al final el nuevo bloque recibido. La cantidad total de bloques
 	 * aumenta en una unidad
