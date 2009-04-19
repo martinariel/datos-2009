@@ -15,10 +15,10 @@ import ar.com.datos.file.variableLength.BufferRealeaser;
  * Una implementacion simple (pero util) de OutputBuffer.
  * @author marcos
  */
-public class SimpleOutputBuffer implements OverloadableOutputBuffer {
+public class SimpleOverloadableOutputBuffer implements OverloadableOutputBuffer {
 
-	private Collection<SimpleArrayByte> bufferedEntities;
-	private Collection<SimpleArrayByte> lastEntity;
+	private Collection<ArrayByte> bufferedEntities;
+	private Collection<ArrayByte> lastEntity;
 	private Long bufferSize;
 	private int currentSize;
 	private short nEntities;
@@ -29,7 +29,7 @@ public class SimpleOutputBuffer implements OverloadableOutputBuffer {
 	 * Crea un SimpleOuputBuffer con un size de buffer predeterminado.
 	 * @param releaser un BufferReleaser para este buffer.
 	 */
-	public SimpleOutputBuffer(BufferRealeaser releaser){
+	public SimpleOverloadableOutputBuffer(BufferRealeaser releaser){
 		this(defaultBufferSize, releaser);
 	}
 	
@@ -38,11 +38,11 @@ public class SimpleOutputBuffer implements OverloadableOutputBuffer {
 	 * @param bufferSize size del buffer. 
 	 * @param releaser un BufferReleaser para este buffer.
 	 */
-	public SimpleOutputBuffer(Long bufferSize, BufferRealeaser releaser){
+	public SimpleOverloadableOutputBuffer(Long bufferSize, BufferRealeaser releaser){
 		this.currentSize = 0;
 		this.bufferSize = bufferSize;
-		this.bufferedEntities = new ArrayList<SimpleArrayByte>();
-		this.lastEntity = new ArrayList<SimpleArrayByte>();
+		this.bufferedEntities = new ArrayList<ArrayByte>();
+		this.lastEntity = new ArrayList<ArrayByte>();
 		this.releaser = releaser;
 	}	
 	
@@ -54,7 +54,7 @@ public class SimpleOutputBuffer implements OverloadableOutputBuffer {
 		this.nEntities++;
 		while (this.isOverloaded()) this.releaser.release(this);
 		
-		Iterator<SimpleArrayByte> it = this.lastEntity.iterator();
+		Iterator<ArrayByte> it = this.lastEntity.iterator();
 		while(it.hasNext()){
 			this.bufferedEntities.add(it.next());
 		}
@@ -65,8 +65,8 @@ public class SimpleOutputBuffer implements OverloadableOutputBuffer {
 	 * @see ar.com.datos.buffer.OutputBuffer#extractAllButLast()
 	 */
 	@Override
-	public Collection<SimpleArrayByte> extractAllButLast() {
-		ArrayList<SimpleArrayByte> retorno = new ArrayList<SimpleArrayByte>(this.bufferedEntities);
+	public Collection<ArrayByte> extractAllButLast() {
+		ArrayList<ArrayByte> retorno = new ArrayList<ArrayByte>(this.bufferedEntities);
 		for (ArrayByte ab : this.bufferedEntities)
 			this.currentSize -= ab.getLength();
 		this.bufferedEntities.clear();
@@ -78,8 +78,8 @@ public class SimpleOutputBuffer implements OverloadableOutputBuffer {
 	 * @see ar.com.datos.buffer.OutputBuffer#extractLast()
 	 */
 	@Override
-	public Collection<SimpleArrayByte> extractLast() {
-		ArrayList<SimpleArrayByte> retorno = new ArrayList<SimpleArrayByte>(this.lastEntity);
+	public Collection<ArrayByte> extractLast() {
+		ArrayList<ArrayByte> retorno = new ArrayList<ArrayByte>(this.lastEntity);
 		for (ArrayByte ab : this.lastEntity)
 			this.currentSize -= ab.getLength();
 		this.lastEntity.clear();

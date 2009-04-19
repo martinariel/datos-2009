@@ -40,7 +40,11 @@ public class BlockReader {
 		return new Long(shortSerializer.getDehydrateSize((short)0)).intValue();
 	}
 
-	public void goToBlock(Long blockNumber) {
+	/**
+	 * Recupera los datos del bloque y su metadata
+	 * @param blockNumber
+	 */
+	public void readBlock(Long blockNumber) {
 		if (!this.fullBlockData.isEmpty() && getCurrentBlockData().getBlockNumber().equals(blockNumber)) return;
 		
 		clearBlockInformation();
@@ -69,6 +73,11 @@ public class BlockReader {
 		return this.fullBlockMeta.get(this.fullBlockMeta.size() -1);
 	}
 
+	/**
+	 * Requiere que el último "goToBlock" se haya posicionado en un bloque
+	 * que sea <code>isHead</code>
+	 * @return un buffer con todos los datos cargados referidos al bloque actual
+	 */
 	public InputBuffer getData() {
 		retrieveAllInformation();
 		SimpleInputBuffer retorno = new SimpleInputBuffer();
@@ -117,7 +126,7 @@ public class BlockReader {
 		}
 		BlockReader auxBlockReader = new BlockReader(getBlockFile());
 		while (minimo < getBlockFile().getTotalBlocks()) {
-			auxBlockReader.goToBlock(minimo);
+			auxBlockReader.readBlock(minimo);
 			if (auxBlockReader.isBlockHead()) break;
 			minimo += 1;
 		}

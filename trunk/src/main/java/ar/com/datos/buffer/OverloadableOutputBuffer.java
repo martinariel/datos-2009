@@ -2,9 +2,9 @@ package ar.com.datos.buffer;
 
 import java.util.Collection;
 
-import ar.com.datos.buffer.variableLength.SimpleArrayByte;
+import ar.com.datos.buffer.variableLength.ArrayByte;
 
-public interface OverloadableOutputBuffer extends OutputBuffer {
+public interface OverloadableOutputBuffer extends EntityOutputBuffer {
 	/**
 	 * Indica si el tamaño almacenado por el buffer es mayor a la capacidad para
 	 * la cual fue definida
@@ -12,27 +12,16 @@ public interface OverloadableOutputBuffer extends OutputBuffer {
 	 */
 	public Boolean isOverloaded();
 	/**
-	 * Marca el fin de entidad/registro y avisa si hay exceso
-	 */
-	public void closeEntity();
-	
-	/**
 	 * Devuelve todos los byte[] que fueron escritos <b>excepto</b> los pertenecientes
 	 * a la última entidad que se cerró
 	 * De esta manera libera lo que ocupaban esos datos en el buffer. Esas entidades ya no cuentan cómo entidades dentro del buffer 
 	 */
-	public Collection<SimpleArrayByte> extractAllButLast();
+	public Collection<ArrayByte> extractAllButLast();
 	
 	/**
 	 * Extrae del buffer (permanentemente) todos los byte[] que fueron escritos pertenecientes a la última entidad que se cerró
 	 * De esta manera libera lo que ocupaban esos datos en el buffer. Esas entidades ya no cuentan cómo entidades dentro del buffer 
 	 */
-	public Collection<SimpleArrayByte> extractLast();
-
-	/**
-	 * Devuelve la cantidad de Entidades que fueron agregadas (cantidad de closeEntity)
-	 * @return
-	 */
-	public Short getEntitiesCount();
+	public Collection<ArrayByte> extractLast();
 
 }

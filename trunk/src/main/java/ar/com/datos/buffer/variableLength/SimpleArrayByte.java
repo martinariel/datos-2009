@@ -78,4 +78,8 @@ public class SimpleArrayByte implements ArrayByte {
 		}
 		return true;
 	}
+	@Override
+	public String toString() {
+		return miArr.toString();
+	}
 }
