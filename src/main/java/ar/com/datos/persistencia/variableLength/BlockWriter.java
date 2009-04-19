@@ -9,13 +9,16 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import ar.com.datos.buffer.EntityOutputBuffer;
-import ar.com.datos.buffer.RestrictedBufferRealeaser;
-import ar.com.datos.buffer.RestrictedOutputBuffer;
-import ar.com.datos.buffer.SimpleRestrictedOutputBuffer;
+import ar.com.datos.buffer.blockWriter.RestrictedBufferRealeaser;
+import ar.com.datos.buffer.blockWriter.RestrictedOutputBuffer;
+import ar.com.datos.buffer.blockWriter.SimpleRestrictedOutputBuffer;
 import ar.com.datos.buffer.variableLength.ArrayByte;
 import ar.com.datos.buffer.variableLength.SimpleArrayByte;
 import ar.com.datos.file.BlockFile;
 import ar.com.datos.serializer.PrimitiveTypeSerializer;
+import ar.com.datos.serializer.common.LongSerializer;
+import ar.com.datos.serializer.common.SerializerCache;
+import ar.com.datos.serializer.common.ShortSerializer;
 /**
  * Maneja el grabado automático
  * @author dev
@@ -23,6 +26,12 @@ import ar.com.datos.serializer.PrimitiveTypeSerializer;
  */
 public class BlockWriter implements RestrictedBufferRealeaser {
 
+	private static final LongSerializer LONG_SERIALIZER = SerializerCache.getInstance().getSerializer(LongSerializer.class);
+	private static final ShortSerializer SHORT_SERIALIZER = SerializerCache.getInstance().getSerializer(ShortSerializer.class);
+	// Longitud del puntero al siguiente bloque en caso que un registro ocupe varios bloques
+	private static final Integer INNER_BLOCK_POINTER_SIZE = new Long(LONG_SERIALIZER.getDehydrateSize(0L)).intValue();
+	// Longitud de la marca de cantidad de registros
+	private static final Integer REGISTRY_COUNTER_SIZE = new Long(SHORT_SERIALIZER.getDehydrateSize((short)0)).intValue();
 	private BlockFile fileBlock;
 	private ReplaceResponsable replaceResponsable = null;
 	private SortedSet<Long> availableBlocks = new TreeSet<Long>();
@@ -40,13 +49,11 @@ public class BlockWriter implements RestrictedBufferRealeaser {
 	public EntityOutputBuffer getOutputBuffer() {
 		return this.simpleRestrictedOutputBuffer;
 	}
-	private Integer getSimpleDataSize() {
-		// XXX: Corregir por el cálculo bien...
-		return this.fileBlock.getBlockSize().intValue() - 2;
+	public Integer getSimpleDataSize() {
+		return this.fileBlock.getBlockSize().intValue() - REGISTRY_COUNTER_SIZE;
 	}
-	private Integer getMultipleBlockDataSize() {
-		// XXX: Corregir por el cálculo bien...
-		return getSimpleDataSize() - 8;
+	public Integer getMultipleBlockDataSize() {
+		return getSimpleDataSize() - INNER_BLOCK_POINTER_SIZE;
 	}
 
 
@@ -141,43 +148,43 @@ public class BlockWriter implements RestrictedBufferRealeaser {
 	/**
 	 * Corta en pedazos de igual tamaño igual al tamaño de datos para registros que se encuentran en varios bloques
 	 * rellenando con bytes vací­os el ultimo segmento
-	 * @param extractLast
+	 * @param segmentSource
 	 * @return
 	 */
-	private Collection<Collection<ArrayByte>> splitInSegments(Collection<ArrayByte> extractLast) {
-		Integer tamanioSegmentos = getMultipleBlockDataSize();
-		Integer sumaParcial = 0;
-		Collection<ArrayByte> pedacitoActual = new ArrayList<ArrayByte>();
-		Collection<Collection<ArrayByte>> pedacitos = new ArrayList<Collection<ArrayByte>>();
-		for (ArrayByte ab: extractLast) {
-			if ((ab.getLength() + sumaParcial) > tamanioSegmentos) {
-				pedacitoActual.add(ab.getLeftSubArray(tamanioSegmentos - sumaParcial));
-				pedacitos.add(pedacitoActual);
+	private Collection<Collection<ArrayByte>> splitInSegments(Collection<ArrayByte> segmentSource) {
+		Integer segmentSize = getMultipleBlockDataSize();
+		Integer currentSegmentSize = 0;
+		Collection<ArrayByte> currentSegment = new ArrayList<ArrayByte>();
+		Collection<Collection<ArrayByte>> segments = new ArrayList<Collection<ArrayByte>>();
+		for (ArrayByte currentArrayByte: segmentSource) {
+			if ((currentArrayByte.getLength() + currentSegmentSize) > segmentSize) {
+				currentSegment.add(currentArrayByte.getLeftSubArray(segmentSize - currentSegmentSize));
+				segments.add(currentSegment);
 				
-				ArrayByte resto = ab.getRightSubArray(tamanioSegmentos - sumaParcial);
-				pedacitoActual = new ArrayList<ArrayByte>();
-				while (resto.getLength() > tamanioSegmentos) {
-					pedacitoActual.add(resto.getLeftSubArray(tamanioSegmentos));
-					pedacitos.add(pedacitoActual);
-					resto = resto.getRightSubArray(tamanioSegmentos);
-					pedacitoActual = new ArrayList<ArrayByte>();
+				ArrayByte resto = currentArrayByte.getRightSubArray(segmentSize - currentSegmentSize);
+				currentSegment = new ArrayList<ArrayByte>();
+				while (resto.getLength() > segmentSize) {
+					currentSegment.add(resto.getLeftSubArray(segmentSize));
+					segments.add(currentSegment);
+					resto = resto.getRightSubArray(segmentSize);
+					currentSegment = new ArrayList<ArrayByte>();
 				}
-				sumaParcial = resto.getLength();
+				currentSegmentSize = resto.getLength();
 				if (resto.getLength() > 0) {
-					pedacitoActual.add(resto);
+					currentSegment.add(resto);
 				}
 			} else {
-				pedacitoActual.add(ab);
-				sumaParcial += ab.getLength();
+				currentSegment.add(currentArrayByte);
+				currentSegmentSize += currentArrayByte.getLength();
 			}
 		}
-		if (sumaParcial > 0) {
-			if (sumaParcial < tamanioSegmentos) {
-				pedacitoActual.add(new SimpleArrayByte(new byte[tamanioSegmentos - sumaParcial]));
+		if (currentSegmentSize > 0) {
+			if (currentSegmentSize < segmentSize) {
+				currentSegment.add(new SimpleArrayByte(new byte[segmentSize - currentSegmentSize]));
 			}
-			pedacitos.add(pedacitoActual);
+			segments.add(currentSegment);
 		}
-		return pedacitos;
+		return segments;
 	}
 	
 	private void writeExistentOneBlock(Deque<Collection<ArrayByte>> d) {

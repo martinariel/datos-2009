@@ -1,7 +1,7 @@
 /**
  * 
  */
-package ar.com.datos.buffer;
+package ar.com.datos.buffer.blockWriter;
 
 import java.util.ArrayList;
 import java.util.Collection;

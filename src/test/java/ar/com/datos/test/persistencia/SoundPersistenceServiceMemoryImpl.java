@@ -3,16 +3,15 @@ package ar.com.datos.test.persistencia;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
-import java.util.Queue;
-
-import ar.com.datos.persistencia.SoundPersistenceService;
-import ar.com.datos.persistencia.exception.*;
-import ar.com.datos.persistencia.variableLength.registros.*;
 
 import ar.com.datos.audio.AnotherInputStream;
-import ar.com.datos.file.variableLength.VariableLengthFileManager;
 import ar.com.datos.file.Address;
 import ar.com.datos.file.DynamicAccesor;
+import ar.com.datos.persistencia.SoundPersistenceService;
+import ar.com.datos.persistencia.exception.UnregisteredWordException;
+import ar.com.datos.persistencia.exception.WordIsAlreadyRegisteredException;
+import ar.com.datos.persistencia.variableLength.registros.RegistroInputStream;
+import ar.com.datos.persistencia.variableLength.registros.RegistroOffsetWord;
 
 
 /**
@@ -28,34 +27,16 @@ public class SoundPersistenceServiceMemoryImpl implements SoundPersistenceServic
 	private DynamicAccesor<RegistroInputStream> accesoasonidos;
 	
 	
-	//path de los archivos de palabras y de sonidos
-	private String nombrearchivodepalabras;
-	private String nombrearchivodesonidos;
-	
-	
-	
-	//tamaï¿½o de bloques por default
+	//tamaño de bloques por default
 	public static  Integer BLOCK_SIZE_WORDS = 1000;
 	public static  Integer BLOCK_SIZE_INPUTSTREAM = 1000;
 	
 	
-	
-	//path de archivos por default
-	private static  String DEFAULT_NAME_FILE_WORDS = "C:/palabras";
-	private static  String DEFAULT_NAME_FILE_STREAM = "C:/sonidos";
-	
-	
-	
-
 	/**
 	 * Constructor sin argumentos.Configura nombres de archivos por default.
 	 * */
 	
 	public SoundPersistenceServiceMemoryImpl(){
-		
-		nombrearchivodepalabras = DEFAULT_NAME_FILE_WORDS;
-		nombrearchivodesonidos = DEFAULT_NAME_FILE_STREAM;
-		
 		init();
 	}
 	
@@ -67,10 +48,6 @@ public class SoundPersistenceServiceMemoryImpl implements SoundPersistenceServic
 	 * */
 	
 	public SoundPersistenceServiceMemoryImpl( String pathwords, String pathsounds ){
-		
-		nombrearchivodepalabras = pathwords;
-		nombrearchivodesonidos = pathsounds;
-		
 		init();
 	}
 	
@@ -150,7 +127,6 @@ public class SoundPersistenceServiceMemoryImpl implements SoundPersistenceServic
 
 	@Override
 	public void close() throws IOException {
-		// TODO Auto-generated method stub
 		
 	}
 

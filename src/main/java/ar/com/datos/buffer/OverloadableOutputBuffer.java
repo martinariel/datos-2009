@@ -4,6 +4,7 @@ import java.util.Collection;
 
 import ar.com.datos.buffer.variableLength.ArrayByte;
 
+@Deprecated
 public interface OverloadableOutputBuffer extends EntityOutputBuffer {
 	/**
 	 * Indica si el tamaño almacenado por el buffer es mayor a la capacidad para
