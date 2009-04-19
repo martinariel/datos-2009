@@ -35,6 +35,7 @@ public class ExtendedTestCase extends TestCase {
 		assertTrue(c.compare(bigger, lower) >= 0);
 	}
 	
+	@SuppressWarnings("unchecked")
 	public void assertLower(Comparable lower, Comparable bigger) {
 		assertBigger(bigger, lower);
 	}
@@ -43,6 +44,7 @@ public class ExtendedTestCase extends TestCase {
 		assertBigger(bigger, lower, c);
 	}
 	
+	@SuppressWarnings("unchecked")
 	public void assertLowerOrEquals(Comparable lower, Comparable bigger) {
 		assertBiggerOrEquals(bigger, lower);
 	}

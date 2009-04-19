@@ -1,8 +1,9 @@
-package ar.com.datos.buffer;
+package ar.com.datos.buffer.blockWriter;
 
 import java.util.Collection;
 import java.util.Deque;
 
+import ar.com.datos.buffer.EntityOutputBuffer;
 import ar.com.datos.buffer.variableLength.ArrayByte;
 
 public interface RestrictedOutputBuffer extends EntityOutputBuffer {

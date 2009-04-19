@@ -51,8 +51,13 @@ public class FictFile<T extends Serializable<T>> implements DynamicAccesor<T>{
 
 	@Override
 	public void close() throws IOException {
-		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public Address<Long, Short> updateEntity(Address<Long, Short> direccion, T object) {
+		this.lista.add(direccion.getBlockNumber().intValue(), object);
+		return direccion;
 	}
 
 }

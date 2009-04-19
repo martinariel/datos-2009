@@ -8,6 +8,7 @@ import ar.com.datos.buffer.OverloadableOutputBuffer;
  * @author dev
  *
  */
+@Deprecated
 public interface BufferRealeaser {
 	/**
 	 * Extrae datos del buffer hasta que quede con carga menor a 

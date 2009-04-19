@@ -60,7 +60,7 @@ public class RegistroInputStream implements Serializable<RegistroInputStream>{
 					object.getStream().read(datos);
 					output.write(datos);
 				} catch (IOException e) {
-					// TODO Esta excepcion no se deberia dar por tiempo de desarrollo se deja el catch
+					// XXX Esta excepcion no se deberia dar por tiempo de desarrollo se deja el catch
 					e.printStackTrace();
 				}
 			}

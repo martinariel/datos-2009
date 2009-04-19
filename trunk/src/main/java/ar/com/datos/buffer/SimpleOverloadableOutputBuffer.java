@@ -15,6 +15,7 @@ import ar.com.datos.file.variableLength.BufferRealeaser;
  * Una implementacion simple (pero util) de OutputBuffer.
  * @author marcos
  */
+@Deprecated
 public class SimpleOverloadableOutputBuffer implements OverloadableOutputBuffer {
 
 	private Collection<ArrayByte> bufferedEntities;

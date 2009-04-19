@@ -116,7 +116,7 @@ public class SimpleBlockFile implements BlockFile {
 			seekBlock(blockNumber);
 			for (ArrayByte ab : partes) getFileAccessor().write(ab.getArray());
 		} catch (IOException e) {
-			// TODO Ver en que caso podrÃ­a tirar esta excepciÃ³n y hacer
+			// XXX Ver en que caso podrí­a tirar esta excepción y hacer
 			// un manejo apropiado de la misma
 			throw new RuntimeException(e);
 		}
@@ -136,7 +136,7 @@ public class SimpleBlockFile implements BlockFile {
 			if (getFileAccessor().read(leido) == -1) throw new OutOfBoundsException(); 
 			return leido;
 		} catch (IOException e) {
-			// TODO Ver en que caso podrÃ­a tirar esta excepciÃ³n y hacer
+			// XXX Ver en que caso podrí­a tirar esta excepción y hacer
 			// un manejo apropiado de la misma
 			throw new RuntimeException(e);
 		}
@@ -147,7 +147,7 @@ public class SimpleBlockFile implements BlockFile {
 			try {
 				fileAccessor.close();
 			} catch (IOException e) {
-				// TODO Ver en que caso podrÃ­a tirar esta excepciÃ³n y hacer
+				// XXX Ver en que caso podrí­a tirar esta excepción y hacer
 				// un manejo apropiado de la misma
 				throw new RuntimeException(e);
 			}

@@ -3,8 +3,8 @@ package ar.com.datos.buffer.exception;
 import java.util.ArrayList;
 import java.util.List;
 
-@SuppressWarnings("serial")
 public class BufferException extends RuntimeException {
+	private static final long serialVersionUID = 1914623651661956043L;
 	private List<Throwable> causes;
 
 	public BufferException() {
@@ -28,7 +28,7 @@ public class BufferException extends RuntimeException {
 		this.causes = causes;
 	}
 
-	public List getCauses() {
+	public List<Throwable> getCauses() {
 		if(causes != null && !causes.isEmpty()) {
 			return causes;
 		} else {
