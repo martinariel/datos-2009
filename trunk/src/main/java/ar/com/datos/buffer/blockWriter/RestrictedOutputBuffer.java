@@ -19,11 +19,6 @@ public interface RestrictedOutputBuffer extends EntityOutputBuffer {
 	public Deque<Collection<ArrayByte>> retrieveEntities();
 	
 	/**
-	 * Elimina la última entidad que fue agregada
-	 */
-	public void removeLastEntity();
-	
-	/**
 	 * Agrega una entidad completa (ejecuta closeEntity)
 	 */
 	public void addEntity(Collection<ArrayByte> last);

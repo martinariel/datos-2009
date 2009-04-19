@@ -2,6 +2,6 @@ package ar.com.datos.persistencia.variableLength;
 
 public interface ReplaceResponsable {
 
-	void notifyExceed(BlockWriter blockWriter);
-
+	public void notifyExceed(BlockWriter blockWriter);
+	public Short replaceObject();
 }
