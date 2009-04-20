@@ -114,7 +114,8 @@ public class VariableLengthFileManager<T> implements DynamicAccesor<T>{
 	 */
 	protected HydratedBlock<T> getBlock(Long blockNumber) {
 		if (isBlockInCache(blockNumber)) return getBlockFromCache(blockNumber);
-
+		if (this.isEmpty()) return new HydratedBlock<T>(new ArrayList<T>(0),0L, BlockFile.END_BLOCK); 
+		
 		getBlockReader().readBlock(blockNumber);
 		
 		InputBuffer data = getBlockReader().getData();
@@ -169,7 +170,7 @@ public class VariableLengthFileManager<T> implements DynamicAccesor<T>{
 		this.serializador = serializador;
 	}
 	private Long getLastBlockBufferBlockNumber() {
-		return this.lastBlockWriter.getCurrentWrittingBlock();
+		return getCachedLastBlock().getBlockNumber();
 	}
 	protected HydratedBlock<T> getCachedLastBlock() {
 		if (cachedLastBlock == null) {
@@ -190,10 +191,10 @@ public class VariableLengthFileManager<T> implements DynamicAccesor<T>{
 			if (br.isBlockHead()) {
 				fillLastBlockBufferWith(br.getData(), lastBlockNumber, br.getRegistryCount());
 			} else {
-				fillLastBlockBufferWith(null, null, 0); 
+				fillLastBlockBufferWith(null, BlockFile.END_BLOCK, 0); 
 			}
 		} else {
-			fillLastBlockBufferWith(null, null, 0); 
+			fillLastBlockBufferWith(null, BlockFile.END_BLOCK, 0); 
 		}
 	}
 	/**
@@ -207,10 +208,11 @@ public class VariableLengthFileManager<T> implements DynamicAccesor<T>{
 
 			@Override
 			public void flushed() {
-//				cachedLastBlock.setBlockMetaData();
 				while (lastBlockWriter.getOutputBuffer().getEntitiesCount() < cachedLastBlock.getData().size()) {
 					cachedLastBlock.getData().remove(0);
 				}
+				if (cachedLastBlock.getData().isEmpty()) cachedLastBlock.setBlock(BlockFile.END_BLOCK);
+				else cachedLastBlock.setBlock(lastBlockWriter.getCurrentWrittingBlock());
 			}
 			
 		});
@@ -225,7 +227,7 @@ public class VariableLengthFileManager<T> implements DynamicAccesor<T>{
 	 */
 	private void fillLastBlockBufferWith(InputBuffer iBuffer, Long lastBlockNumber, Integer cantidadRegistros) {
 		this.setCachedLastBlock(new HydratedBlock<T>(new ArrayList<T>(), lastBlockNumber, BlockFile.END_BLOCK));
-		if (lastBlockNumber != null) {
+		if (lastBlockNumber != BlockFile.END_BLOCK) {
 			for (Integer i = 0; i < cantidadRegistros; i++) {
 				T hydrate = this.getSerializador().hydrate(iBuffer);
 				this.getCachedLastBlock().getData().add(hydrate);
@@ -237,7 +239,7 @@ public class VariableLengthFileManager<T> implements DynamicAccesor<T>{
 	}
 	@Override
 	public Boolean isEmpty() {
-		return this.getLastBlockBufferBlockNumber() == 0 && getCachedLastBlock().getData().isEmpty();
+		return this.getRealFile().getTotalBlocks().equals(0L) && this.getLastBlockBufferBlockNumber() == BlockFile.END_BLOCK && getCachedLastBlock().getData().isEmpty();
 	}
 	/**
 	 * Actualiza la información del iterador que itera sobre este archivo

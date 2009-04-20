@@ -35,7 +35,7 @@ public class BlockWriter implements RestrictedBufferRealeaser {
 	private BlockFile fileBlock;
 	private ReplaceResponsable replaceResponsable = null;
 	private SortedSet<Long> availableBlocks = new TreeSet<Long>();
-	private Long lastHeadWritten;
+	private Long lastHeadWritten = BlockFile.END_BLOCK;
 	private FlushListener flushListener;
 	private SimpleRestrictedOutputBuffer simpleRestrictedOutputBuffer;
 	public BlockWriter(BlockFile fileBlock) {
@@ -58,7 +58,7 @@ public class BlockWriter implements RestrictedBufferRealeaser {
 
 
 	public Long getCurrentWrittingBlock() {
-		if (lastHeadWritten == null) {
+		if (lastHeadWritten.equals(BlockFile.END_BLOCK)) {
 			if (availableBlocks.isEmpty()) {
 				flush();
 			} else {
@@ -144,17 +144,18 @@ public class BlockWriter implements RestrictedBufferRealeaser {
 	private void writeExistentMultipleBlock(Collection<ArrayByte> datos) {
 		Collection<Collection<ArrayByte>> segmentos = splitInSegments(datos);
 		Iterator<Collection<ArrayByte>> it = segmentos.iterator();
-		if (availableBlocks.isEmpty()) {
-			this.availableBlocks.add(this.fileBlock.getTotalBlocks());
+		Integer i = 0;
+		while (availableBlocks.size() < segmentos.size()) {
+			this.availableBlocks.add(this.fileBlock.getTotalBlocks() + i);
+			i++;
 		}
 		this.lastHeadWritten = availableBlocks.first();
 		boolean first = true;
 		// Agrego a los datos la información de control
 		while(it.hasNext()) {
-			if (this.availableBlocks.isEmpty()) this.availableBlocks.add(this.fileBlock.getTotalBlocks());
 			Long bloqueActual = availableBlocks.first();
-			availableBlocks.remove(bloqueActual);
 			Collection<ArrayByte> segmento = it.next();
+			availableBlocks.remove(bloqueActual);
 			Long proximoBloque = it.hasNext()? availableBlocks.first() : bloqueActual;
 			segmento.add(new SimpleArrayByte(PrimitiveTypeSerializer.toByte(proximoBloque)));
 			segmento.add(new SimpleArrayByte(PrimitiveTypeSerializer.toByte((short)(first? -1:0))));

@@ -83,7 +83,7 @@ public class BlockReader {
 		SimpleInputBuffer retorno = new SimpleInputBuffer();
 		for (Integer i = 0; i < this.fullBlockData.size(); i ++) {
 			SimpleBlockData sbd = this.fullBlockData.get(i);
-			retorno.append(new SimpleArrayByte(sbd .getBlock()).getLeftSubArray(this.fullBlockMeta.get(i).getDataSize()));
+			retorno.append(new SimpleArrayByte(sbd.getBlock()).getLeftSubArray(this.fullBlockMeta.get(i).getDataSize()));
 		}
 		return retorno;
 	}

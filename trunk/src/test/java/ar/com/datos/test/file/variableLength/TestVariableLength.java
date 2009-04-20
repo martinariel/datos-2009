@@ -71,6 +71,7 @@ public class TestVariableLength extends MockObjectTestCase {
 			allowing(fileMock).writeBlock(with(0L), with(any(Collection.class)));
 		}});
 		DynamicAccesor unDynamicAccesor = crearArchivo();
+		assertFalse(unDynamicAccesor.iterator().hasNext());
 		Address<Long, Short> direccion1 = unDynamicAccesor.addEntity(campos1);
 		assertEquals(0, direccion1.getBlockNumber().intValue());
 		assertEquals(0, direccion1.getObjectNumber().intValue());
@@ -166,8 +167,8 @@ public class TestVariableLength extends MockObjectTestCase {
 			will(returnValue(campos1));
 			one(serializerMock).hydrate(with(any(InputBuffer.class)));
 			will(returnValue(campos2));
-			one(fileMock).readBlock(2L);
-			will(returnValue(bloqueDatos));
+			allowing(fileMock).readBlock(2L);
+			will(returnValue(bloqueFinal));
 		}});
 		DynamicAccesor unDynamicAccesor = crearArchivo();
 		assertEquals(campos2, unDynamicAccesor.get(new VariableLengthAddress(numeroDeBloqueBuscado, (short)1)));
@@ -203,6 +204,8 @@ public class TestVariableLength extends MockObjectTestCase {
 			will(returnValue(bloqueFinal));
 			one(serializerMock).hydrate(with(any(InputBuffer.class)));
 			will(returnValue(campos1));
+			allowing(fileMock).readBlock(2L);
+			will(returnValue(bloqueFinal));
 		}});
 		DynamicAccesor unDynamicAccesor = crearArchivo();
 		assertEquals(campos1, unDynamicAccesor.get(new VariableLengthAddress(numeroDeBloqueBuscado, (short)0)));
@@ -238,6 +241,11 @@ public class TestVariableLength extends MockObjectTestCase {
 		DynamicAccesor unDynamicAccesor = crearArchivo();
 		Iterator<MiLinkedList<Object>> iterador = unDynamicAccesor.iterator();
 		checking(new Expectations(){{
+			// Carga del bloque final. Esta es la única lectura que no se hace en orden
+			one(fileMock).readBlock(cantidadDeBloquesEnFileMock - 1);
+			will(returnValue(bloque3));
+			one(serializerMock).hydrate(with(any(InputBuffer.class)));
+			will(returnValue(campos3));
 			one(fileMock).readBlock(0L);
 			will(returnValue(bloque0));
 			one(serializerMock).hydrate(with(any(InputBuffer.class)));
@@ -246,11 +254,6 @@ public class TestVariableLength extends MockObjectTestCase {
 			will(returnValue(campos1));
 			atLeast(1).of(fileMock).readBlock(1L);
 			will(returnValue(bloque1));
-			// Carga del bloque final. Esta es la única lectura que no se hace en orden
-			one(fileMock).readBlock(cantidadDeBloquesEnFileMock - 1);
-			will(returnValue(bloque3));
-			one(serializerMock).hydrate(with(any(InputBuffer.class)));
-			will(returnValue(campos3));
 			allowing(serializerMock).dehydrate(with(any(OutputBuffer.class)),with(campos3));
 			one(fileMock).readBlock(2L);
 			will(returnValue(bloque2));
