@@ -8,12 +8,13 @@ import java.util.Collection;
  *
  * @author mfernandez
  *
+ *@deprecated
  */
 public interface IParser {
 
-	/**
-	 * @param filePath
-	 * @return Collection<String> con todas las palabras del archivo.
-	 */
-	public Collection<String> parseTextFile(String filePath) throws IOException;
+    /**
+     * @param filePath
+     * @return Collection<String> con todas las palabras del archivo.
+     */
+    public Collection<String> parseTextFile(String filePath) throws IOException;
 }
