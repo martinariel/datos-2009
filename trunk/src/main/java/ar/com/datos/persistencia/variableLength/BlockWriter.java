@@ -87,7 +87,9 @@ public class BlockWriter implements RestrictedBufferRealeaser {
 	public void requireReplaceTo(ReplaceResponsable replaceResponsable) {
 		this.replaceResponsable = replaceResponsable;
 	}
-
+	public ReplaceResponsable getRequierResponsable() {
+		return this.replaceResponsable;
+	}
 	public void unsetRequireReplace() {
 		requireReplaceTo(null);
 	}
@@ -120,7 +122,7 @@ public class BlockWriter implements RestrictedBufferRealeaser {
 		Integer cantidad = entidades.size();
 		for (Integer i = 0; i < cantidad; i++) {
 			Collection<ArrayByte> entidad = entidades.removeFirst();
-			if (i.equals(this.replaceResponsable.replaceObject().intValue())) {
+			if (i.equals(this.replaceResponsable.replaceObjectNumber().intValue())) {
 				this.replaceResponsable.notifyExceed(this);
 			} else {
 				ob.addEntity(entidad);

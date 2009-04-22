@@ -74,18 +74,22 @@ public class VariableLengthFileManager<T> implements DynamicAccesor<T>{
 	@Override
 	public Address<Long, Short> updateEntity(Address<Long, Short> direccion, T entity) {
 		HydratedBlock<T> bloque = getBlock(direccion.getBlockNumber());
-		bloque.getData().remove(direccion.getObjectNumber());
+		bloque.getData().remove(direccion.getObjectNumber().intValue());
 		bloque.getData().add(direccion.getObjectNumber(), entity);
 		BlockWriter writer = new BlockWriter(getRealFile());
 		for (Long blockNumber : bloque.getBlockNumbers()) writer.addAvailableBlock(blockNumber);
+		Integer cantidadEnElBloque = bloque.getData().size(); 
 		
-		ReplaceResponsableImplementation replaceResponsable = new ReplaceResponsableImplementation(direccion.getObjectNumber());
-		writer.requireReplaceTo(replaceResponsable);
+		if (cantidadEnElBloque > 1) {
+			ReplaceResponsableImplementation replaceResponsable = new ReplaceResponsableImplementation(direccion.getObjectNumber());
+			writer.requireReplaceTo(replaceResponsable);
+		}
 		for (T data : bloque.getData()) {
 			getSerializador().dehydrate(writer.getOutputBuffer(), data);
 			writer.getOutputBuffer().closeEntity();
 		}
-		if (replaceResponsable.hasReplacedOccurred()) return addEntity(entity); 
+		writer.flush();
+		if (writer.isReplaceRequiredEnabled() && writer.getRequierResponsable().hasReplacedOccurred()) return addEntity(entity); 
 		
 		return direccion;
 		
@@ -299,7 +303,7 @@ public class VariableLengthFileManager<T> implements DynamicAccesor<T>{
 		}
 
 		@Override
-		public Short replaceObject() {
+		public Short replaceObjectNumber() {
 			return replaceEntity;
 		}
 
