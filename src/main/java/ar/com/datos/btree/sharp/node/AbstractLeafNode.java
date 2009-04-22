@@ -81,7 +81,8 @@ public abstract class AbstractLeafNode<E extends Element<K>, K extends Key> exte
 	 * Un {@link KeyNodeReference} cuya clave será la correspondiente al primer
 	 * {@link Element} del nodo creado, y el NodeReference apuntará al nodo creado.
 	 */
-	private KeyNodeReference<E, K> split(AbstractLeafNode<E, K> brother,
+	// FIXME: Este método debe ser private. Está como público para el desarrollo.
+	public KeyNodeReference<E, K> split(AbstractLeafNode<E, K> brother,
 										boolean leftBrother, WrappedParam<K> fatherKey) throws BTreeException {
 		// Trabajo a los nodos como left, center y rigth, donde center es el nuevo nodo.
 		AbstractLeafNode<E, K> left = (leftBrother) ? brother : this;
@@ -353,7 +354,11 @@ public abstract class AbstractLeafNode<E extends Element<K>, K extends Key> exte
 	 * Patrón de diseño Template.
 	 */
 	protected abstract List<E> getThirdPart(boolean left);
-	
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
 	@Override
 	public String toString() {
 		String returnValue = "@@";
