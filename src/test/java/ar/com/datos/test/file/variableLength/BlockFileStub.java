@@ -1,6 +1,7 @@
 package ar.com.datos.test.file.variableLength;
 
 import java.security.InvalidParameterException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -11,6 +12,12 @@ public class BlockFileStub implements BlockFile {
 
 	private List<byte[]> blocks;
 	private Integer blockSize;
+	private List<Long> writtenBlocks;
+	public BlockFileStub(Integer blockSize) {
+		this.setBlockSize(blockSize);
+		writtenBlocks = new ArrayList<Long>();
+		blocks = new ArrayList<byte[]>();
+	}
 	@Override
 	public void appendBlock(byte[] block) {
 		verifySize(block);
@@ -53,7 +60,7 @@ public class BlockFileStub implements BlockFile {
 	private void verifySize(Collection<ArrayByte> partes) {
 		Integer total = 0;
 		for (ArrayByte ab: partes) total += ab.getLength();
-		if (total != getBlockSize()) throw new InvalidParameterException("Wow! tamaño incorrecto");
+		if (total != getBlockSize().intValue()) throw new InvalidParameterException("Wow! tamaño incorrecto");
 	}
 
 	@Override
@@ -67,10 +74,20 @@ public class BlockFileStub implements BlockFile {
 				index++;
 			}
 		}
+		addToWrittenBlocks(blockNumber);
 	}
 
+	private void addToWrittenBlocks(Long blockNumber) {
+		writtenBlocks.add(blockNumber);
+	}
 	public void setBlockSize(Integer blockSize) {
 		this.blockSize = blockSize;
 	}
-
+	public void extendTo(Integer numberOfBlocks) {
+		while (numberOfBlocks > this.blocks.size())
+			appendBlock(new byte[this.blockSize]);
+	}
+	public List<Long> getWrittenBlocks() {
+		return writtenBlocks;
+	}
 }
