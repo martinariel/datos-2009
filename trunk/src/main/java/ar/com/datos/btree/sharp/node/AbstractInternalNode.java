@@ -94,7 +94,8 @@ public abstract class AbstractInternalNode<E extends Element<K>, K extends Key> 
 	 * Un {@link KeyNodeReference} cuya clave será la correspondiente al primer
 	 * {@link Element} del nodo creado, y el NodeReference apuntará al nodo creado.
 	 */
-	private KeyNodeReference<E, K> split(AbstractInternalNode<E, K> brother,
+	// FIXME: Este método debe ser private. Está como público para el desarrollo.
+	public KeyNodeReference<E, K> split(AbstractInternalNode<E, K> brother,
 										boolean leftBrother, WrappedParam<K> fatherKey) throws BTreeException {
 		// Trabajo a los nodos como left, center y rigth, donde center es el nuevo nodo.
 		AbstractInternalNode<E, K> left = (leftBrother) ? brother : this;
@@ -362,9 +363,30 @@ public abstract class AbstractInternalNode<E extends Element<K>, K extends Key> 
 	 */
 	protected abstract List<KeyNodeReference<E, K>> getThirdPart(boolean left);
 	
+//	@Override
+//	public String toString() {
+//		String returnValue = "<<" + this.firstChild.toString() + "||";
+//		Iterator<KeyNodeReference<E, K>> it = this.keysNodes.iterator();
+//		while (it.hasNext()) {
+//			returnValue += it.next().toString();
+//			if (it.hasNext()) {
+//				returnValue += "||";
+//			}
+//		}
+//		returnValue += ">>";
+//
+//		return returnValue;
+//	}
+
+	// FIXME: Este toString() debe ser reemplazado por el de arriba. Solo está para desarrollo.
 	@Override
 	public String toString() {
-		String returnValue = "<<" + this.firstChild.toString() + "||";
+		String returnValue;
+		if (this.firstChild == null) {
+			returnValue = "<<" + "((N:null))" + "||";
+		} else {
+			returnValue = "<<" + this.firstChild.toString() + "||";
+		}
 		Iterator<KeyNodeReference<E, K>> it = this.keysNodes.iterator();
 		while (it.hasNext()) {
 			returnValue += it.next().toString();

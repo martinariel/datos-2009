@@ -25,7 +25,7 @@ public class TestBTreePlusMemory extends ExtendedTestCase {
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
-		this.bTreeSharp = new BTreeSharpFactory<TestElement, TestKey>().createBTreeSharpMemory((short)4, (short)4);
+		this.bTreeSharp = new BTreeSharpFactory<TestElement, TestKey>().createBTreeSharpMemory((short)9, (short)9);
 	}
 
 	@Override
@@ -57,6 +57,21 @@ public class TestBTreePlusMemory extends ExtendedTestCase {
 //		} catch (BTreeException e) {
 //			// No debería ocurrir.	
 //			e.printStackTrace();
+//		}
+//	}
+	
+//	/**
+//	 * Test intensivo. Puede tardar MUCHO (más de 40 minutos).
+//	 */
+//	public void testIntensivo() {
+//		BTreeSharpFactory<TestElement, TestKey> bTreeSharpFactory = new BTreeSharpFactory<TestElement, TestKey>();
+//		for (short i = 3; i < 12; i++) { // Tamaño nodo interno
+//			for (short j = 3; j < 12; j++) { // Tamaño nodo hoja
+//				for (int k = 0; k < 3; k++) { // Número de pruebas por tamaño.
+//					this.bTreeSharp = bTreeSharpFactory.createBTreeSharpMemory(i, j); 
+//					testRandomInsertion();
+//				}
+//			}
 //		}
 //	}
 	
