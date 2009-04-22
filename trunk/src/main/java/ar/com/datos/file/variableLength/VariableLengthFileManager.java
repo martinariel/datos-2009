@@ -11,13 +11,10 @@ import ar.com.datos.file.Address;
 import ar.com.datos.file.BlockFile;
 import ar.com.datos.file.DynamicAccesor;
 import ar.com.datos.file.SimpleBlockFile;
-import ar.com.datos.file.exception.NullableSerializerRequiredException;
 import ar.com.datos.persistencia.variableLength.BlockMetaData;
 import ar.com.datos.persistencia.variableLength.BlockReader;
 import ar.com.datos.persistencia.variableLength.BlockWriter;
 import ar.com.datos.persistencia.variableLength.FlushListener;
-import ar.com.datos.persistencia.variableLength.ReplaceResponsable;
-import ar.com.datos.serializer.NullableSerializer;
 import ar.com.datos.serializer.Serializer;
 /**
  * Esta entidad permite manejar la persistencia de objetos Serializables en un archivo de longitud variable.
@@ -81,8 +78,11 @@ public class VariableLengthFileManager<T> implements DynamicAccesor<T>{
 		Integer cantidadEnElBloque = bloque.getData().size(); 
 		
 		if (cantidadEnElBloque > 1) {
-			ReplaceResponsableImplementation replaceResponsable = new ReplaceResponsableImplementation(direccion.getObjectNumber());
-			writer.requireReplaceTo(replaceResponsable);
+			if (cantidadEnElBloque.equals(direccion.getObjectNumber().intValue() + 1)) {
+				writer.requireReplaceTo(new ReplaceResponsableDontReplace(direccion.getObjectNumber()));
+			} else {
+				writer.requireReplaceTo(new ReplaceResponsableWithNull<T>(direccion.getObjectNumber(),getSerializador()));
+			}
 		}
 		for (T data : bloque.getData()) {
 			getSerializador().dehydrate(writer.getOutputBuffer(), data);
@@ -277,36 +277,6 @@ public class VariableLengthFileManager<T> implements DynamicAccesor<T>{
 
 	protected BlockReader getBlockReader() {
 		return blockReader;
-	}
-	private final class ReplaceResponsableImplementation implements	ReplaceResponsable {
-		private Short replaceEntity;
-		private Boolean replacedOccurred = false;
-
-		public ReplaceResponsableImplementation(Short objectNumber) {
-			this.replaceEntity = objectNumber;
-		}
-
-		@Override
-		public void notifyExceed(BlockWriter blockWriter) {
-			
-			if (!(getSerializador() instanceof NullableSerializer)) throw new NullableSerializerRequiredException();
-			NullableSerializer<T> serializer = (NullableSerializer<T>) getSerializador();
-
-			serializer.dehydrateNull(blockWriter.getOutputBuffer());
-			blockWriter.getOutputBuffer().closeEntity();
-
-			replacedOccurred = true;
-		}
-
-		public Boolean hasReplacedOccurred() {
-			return replacedOccurred;
-		}
-
-		@Override
-		public Short replaceObjectNumber() {
-			return replaceEntity;
-		}
-
 	}
 	/**
 	 * Inner class para iterar a este archivo
