@@ -129,7 +129,7 @@ public class Parser implements Iterable<Collection<String>> {
 
         	if (posicionSeparator > 0){
         		lineaResultado = linea.substring(0, posicionSeparator);
-        		lineaAnterior  = linea.substring(posicionSeparator);
+        		lineaAnterior  = linea.substring(posicionSeparator+1);
         	}
         	else {
         		lineaResultado = linea;
