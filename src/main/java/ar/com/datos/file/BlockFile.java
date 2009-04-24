@@ -10,7 +10,7 @@ import ar.com.datos.buffer.variableLength.ArrayByte;
  * @author dev
  *
  */
-public interface BlockFile {
+public interface BlockFile extends Iterable<byte[]> {
 
 	Long END_BLOCK = -1L;
 	/**

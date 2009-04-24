@@ -4,8 +4,11 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
+import java.util.Iterator;
 
 import ar.com.datos.buffer.variableLength.ArrayByte;
 import ar.com.datos.buffer.variableLength.SimpleArrayByte;
@@ -24,7 +27,24 @@ public class SimpleBlockFile implements BlockFile {
 	private File file;
 	private Integer blockSize;
 	private RandomAccessFile fileAccessor;
-	
+
+	/**
+	 * Construye un SimpleBlockFile que usa un archivo temporal de Java
+	 * <code>File.createTempFile()</code>
+	 * @param string
+	 * @param blockSize
+	 */
+	public SimpleBlockFile(Integer blockSize) {
+		setBlockSize(blockSize);
+		setFile(constructTempFile());
+		verifyFile();
+	}
+
+	/**
+	 * Construye un SimpleBlockFile que usa el archivo en la ruta especificada
+	 * @param string
+	 * @param blockSize
+	 */
 	public SimpleBlockFile(String string, Integer blockSize) {
 		setBlockSize(blockSize);
 		setFile(constructFile(string));
@@ -32,7 +52,7 @@ public class SimpleBlockFile implements BlockFile {
 	}
 	/**
 	 * Verifica la integridad del archivo y los permisos sobre el mismo.
-	 * En caso de no existir tambiÃ©n lo crea
+	 * En caso de no existir también lo crea
 	 */
 	protected void verifyFile() {
 		if (!this.getFile().exists()) {
@@ -50,7 +70,7 @@ public class SimpleBlockFile implements BlockFile {
 			throw new ValidacionIncorrectaException("Cantidad de bloques inconsistente");
 	}
 	/**
-	 * MÃ©todo de construcciÃ³n del randomAccesFile
+	 * Método de construcción del randomAccesFile
 	 * Puede ser rescrito por las subclases o modificado para que los tests no trabajen con archivos
 	 * reales
 	 * @param archivo
@@ -64,7 +84,7 @@ public class SimpleBlockFile implements BlockFile {
 		}
 	}
 	/**
-	 * MÃ©todo de construcciÃ³n del File
+	 * Método de construcción del File
 	 * Puede ser rescrito por las subclases o modificado para que los tests no trabajen con archivos
 	 * reales
 	 * @param archivo
@@ -73,6 +93,16 @@ public class SimpleBlockFile implements BlockFile {
 	protected File constructFile(String string) {
 		return new File(string);
 	}
+	private File constructTempFile() {
+		try {
+			return File.createTempFile(new SimpleDateFormat("yyMMdd_HHmmssSSSS").format(new Date()),"simpleBlockFileTemporal");
+		} catch (IOException e) {
+			// XXX Ver en que caso podrí­a tirar esta excepción y hacer
+			// un manejo apropiado de la misma
+			throw new RuntimeException(e);
+		}
+	}
+
 	public Integer getBlockSize() {
 		return blockSize;
 	}
@@ -152,6 +182,34 @@ public class SimpleBlockFile implements BlockFile {
 				throw new RuntimeException(e);
 			}
 			fileAccessor = null;
+		}
+		
+	}
+
+	@Override
+	public Iterator<byte[]> iterator() {
+		return new SimpleBlockFileIterator(this);
+	}
+	private class SimpleBlockFileIterator implements Iterator<byte[]> {
+
+		private Long currentBlock = 0L;
+		private SimpleBlockFile sbf;
+		public SimpleBlockFileIterator(SimpleBlockFile sbf) {
+			this.sbf = sbf;
+		}
+		@Override
+		public boolean hasNext() {
+			return sbf.getTotalBlocks() > currentBlock;
+		}
+
+		@Override
+		public byte[] next() {
+			return sbf.readBlock(currentBlock++);
+		}
+
+		@Override
+		public void remove() {
+			throw new UnsupportedOperationException();
 		}
 		
 	}
