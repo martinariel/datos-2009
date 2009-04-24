@@ -1,4 +1,4 @@
-package ar.com.datos.wordservice;
+package ar.com.datos.wordservice.stopwords;
 
 import java.util.List;
 
