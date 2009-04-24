@@ -10,19 +10,42 @@ public class SimpleStopWordsDiscriminator implements StopWordsDiscriminator {
 	
 	private Hashtable stopPhrases;
 	private Set<String> stopWords;
+	private Object nullReference;
 	
-	public SimpleStopWordsDiscriminator(Set<String> stopWords, Hashtable stopPhrases){
+	/**
+	 * @param
+	 * @param
+	 */
+	public SimpleStopWordsDiscriminator(Set<String> stopWords, List<List<String>> stopPhrases){
+		this.nullReference = new Object();
 		this.stopWords = stopWords;
-		this.stopPhrases = stopPhrases;
+		this.stopPhrases = new Hashtable();
+		this.constructStopPhrasesHashChain(stopPhrases);
 	}
-	
+	private void constructStopPhrasesHashChain(List<List<String>> phrases){
+		List<String> phrase;
+		for (int i=0; i < phrases.size(); i++){
+			phrase = phrases.get(i);
+			this.stopPhrases.put(phrase.get(0), 
+                this.createHashChainElement(phrase.subList(1, phrase.size()-1)));
+		}
+	}
+	private Object createHashChainElement(List<String> subphrase){
+		if (subphrase.size()>1){
+			Hashtable h = new Hashtable();
+			h.put(subphrase.get(0), 
+	            this.createHashChainElement(subphrase.subList(1, subphrase.size()-1)));
+			return h;
+		} else {
+			return this.nullReference;
+		}
+	}
 	private boolean isStopWord(String word){
 		return this.stopWords.contains(word);
 	}
 	
-	@ Override
 	public List<String> processPhrase(List<String> phrase) {
-		String word;
+		String word, auxWord;
 		Hashtable hash = this.stopPhrases;
 		List<String> tempWords = new LinkedList<String>();
 		List<String> nonStopWords = new LinkedList<String>();
@@ -38,24 +61,31 @@ public class SimpleStopWordsDiscriminator implements StopWordsDiscriminator {
 		}
 		// we have at least 2 words in phrase
 		
-		int i = 0;
 		while(!phrase.isEmpty()){
-			word = phrase.get(i);
+			word = phrase.remove(0);
 			if (hash.containsKey(word)){
 				tempWords.add(word);
-				hash = (Hashtable) hash.get(word);
-				if (hash == null){ 			// stop phrase found!
+				try{
+					hash = (Hashtable) hash.get(word);
+				} catch(Exception e){
 					tempWords.clear();
-					for (int j=0; j<i; j++) // remove stop phrase from 'phrase'
-						phrase.remove(j);	// we only need NON-stop words/phrases
-					i=0;
+					hash = this.stopPhrases;
 				}
-				i++;
+			} else if (this.stopPhrases.containsKey(word)){
+				while(!tempWords.isEmpty()){
+					auxWord = tempWords.remove(0);
+					if (!isStopWord(auxWord)) nonStopWords.add(auxWord);
+				}
+				tempWords.add(word);
+				hash = (Hashtable) hash.get(word);
 			} else {
-				if (this.isStopWord(word)){
-					phrase.remove(i);		// is stop word, forget it
-				} else {
-					nonStopWords.add(phrase.remove(i));	// non stop word, keep it!
+				while(!tempWords.isEmpty()){
+					auxWord = tempWords.remove(0);
+					if (!isStopWord(auxWord)) nonStopWords.add(auxWord);
+				}
+				hash = this.stopPhrases;
+				if (!this.isStopWord(word)){
+					nonStopWords.add(word);		// non stop word, keep it!
 				}
 			}
 		}
