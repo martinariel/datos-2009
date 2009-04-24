@@ -11,7 +11,7 @@ public class ArrayOfBytesComparator implements Comparator<byte[]> {
 		
 		while (index < arg0.length && arg0[index] == arg1[index]) { index++; }
 
-		return (index == arg0.length)? 0: new Byte(arg0[index]).compareTo(new Byte(arg1[index]));
+		return (index == arg0.length)? 0: new Integer((int) arg0[index] & 0xFF).compareTo(new Integer((int)arg1[index] & 0xFF));
 	}
 
 }
