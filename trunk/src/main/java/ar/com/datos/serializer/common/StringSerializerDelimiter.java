@@ -32,7 +32,14 @@ public class StringSerializerDelimiter implements Serializer<String> {
 	}
 
 	/**
-	 * Permite construir una instancia que usara como delimitador la secuencia
+	 * Permite construir una instancia que usará un delimitador por defecto.
+	 */
+	public StringSerializerDelimiter() {
+		this(new byte[] {0, 0});
+	}
+	
+	/**
+	 * Permite construir una instancia que usará como delimitador la secuencia
 	 * pasada.
 	 */
 	public StringSerializerDelimiter(byte[] delimiter) {
@@ -40,7 +47,7 @@ public class StringSerializerDelimiter implements Serializer<String> {
 	}
 
 	/**
-	 * Permite construir una instancia que usara como delimitador el string
+	 * Permite construir una instancia que usará como delimitador el string
 	 * pasado.
 	 */
 	public StringSerializerDelimiter(String delimiter) {
