@@ -63,19 +63,22 @@ public class TestFixedLengthKeyCounter extends TestCase {
 		contador.setSerializer(new LongSerializer());
 		contador.startSession();
 		Random r = new Random();
-		for (Integer i = 0; i < 934; i++) {
-			Long random = r.nextLong() % 512;
+		for (Integer i = 0; i < 1934; i++) {
+			Long random = Math.abs(r.nextLong() % 1024);
 			contarEnMapa(resultadosEsperados, random);
 			contador.countKey(random);
 		}
 		contador.endSession();
 		Iterator<KeyCount<Long>> iterador = contador.iterator();
 		Integer cantidadDeResultados = 0;
+		Long previousKey = Long.MIN_VALUE;
 		while (iterador.hasNext()) {
 			cantidadDeResultados ++;
 			KeyCount<Long> current = iterador.next();
+			assertTrue(previousKey + " < " + current.getKey(), previousKey < current.getKey());
 			assertTrue(resultadosEsperados.containsKey(current.getKey()));
 			assertEquals(resultadosEsperados.get(current.getKey()), current.getCount());
+			previousKey = current.getKey();
 		}
 		assertEquals(resultadosEsperados.keySet().size(), cantidadDeResultados.intValue());
 	}
