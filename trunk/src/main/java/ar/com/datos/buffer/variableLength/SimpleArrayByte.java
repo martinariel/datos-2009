@@ -82,4 +82,8 @@ public class SimpleArrayByte implements ArrayByte {
 	public String toString() {
 		return miArr.toString();
 	}
+	@Override
+	public void setByte(Integer index, Byte leOctetDeBits) {
+		this.miArr[index + start] = leOctetDeBits;
+	}
 }

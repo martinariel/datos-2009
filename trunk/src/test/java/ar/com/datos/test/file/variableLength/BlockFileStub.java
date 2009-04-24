@@ -3,6 +3,7 @@ package ar.com.datos.test.file.variableLength;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 import ar.com.datos.buffer.variableLength.ArrayByte;
@@ -90,4 +91,9 @@ public class BlockFileStub implements BlockFile {
 	public List<Long> getWrittenBlocks() {
 		return writtenBlocks;
 	}
+	@Override
+	public Iterator<byte[]> iterator() {
+		return this.blocks.iterator();
+	}
+	
 }

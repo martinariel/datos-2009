@@ -14,4 +14,5 @@ public interface ArrayByte {
 
 	public ArrayByte getSubArray(Integer beginIndex, Integer endIndex);
 
+	public void setByte(Integer index, Byte leOctetDeBits);
 }
