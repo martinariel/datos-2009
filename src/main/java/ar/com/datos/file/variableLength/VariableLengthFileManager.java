@@ -7,10 +7,10 @@ import java.util.Iterator;
 import java.util.List;
 
 import ar.com.datos.buffer.InputBuffer;
-import ar.com.datos.file.Address;
+import ar.com.datos.file.BlockAccessor;
 import ar.com.datos.file.BlockFile;
-import ar.com.datos.file.DynamicAccesor;
 import ar.com.datos.file.SimpleBlockFile;
+import ar.com.datos.file.address.BlockAddress;
 import ar.com.datos.persistencia.variableLength.BlockMetaData;
 import ar.com.datos.persistencia.variableLength.BlockReader;
 import ar.com.datos.persistencia.variableLength.BlockWriter;
@@ -23,7 +23,7 @@ import ar.com.datos.serializer.Serializer;
  *
  * @param <T> tipo de objetos a persistir y o recuperar
  */
-public class VariableLengthFileManager<T> implements DynamicAccesor<T>{
+public class VariableLengthFileManager<T> implements BlockAccessor<BlockAddress<Long, Short>, T> {
 
 	// Referencia al archivo real donde se realiza la persistencia
 	private BlockFile realFile;
@@ -61,7 +61,7 @@ public class VariableLengthFileManager<T> implements DynamicAccesor<T>{
      * @see ar.com.datos.file.DynamicAccesor#addEntity(Object)
      */
     @Override
-	public Address<Long, Short> addEntity(T data) {
+	public VariableLengthAddress addEntity(T data) {
 		getCachedLastBlock().getData().add(data);
 		getSerializador().dehydrate(this.lastBlockWriter.getOutputBuffer(), data);
 		this.lastBlockWriter.getOutputBuffer().closeEntity();
@@ -69,7 +69,7 @@ public class VariableLengthFileManager<T> implements DynamicAccesor<T>{
 	}
 
 	@Override
-	public Address<Long, Short> updateEntity(Address<Long, Short> direccion, T entity) {
+	public BlockAddress<Long, Short> updateEntity(BlockAddress<Long, Short> direccion, T entity) {
 		HydratedBlock<T> bloque = getBlock(direccion.getBlockNumber());
 		bloque.getData().remove(direccion.getObjectNumber().intValue());
 		bloque.getData().add(direccion.getObjectNumber(), entity);
@@ -94,6 +94,15 @@ public class VariableLengthFileManager<T> implements DynamicAccesor<T>{
 		return direccion;
 		
 	}
+	@Override
+	public Short getAmountOfBlocksFor(BlockAddress<Long, Short> address) {
+		HydratedBlock<T> bloque = getBlock(address.getBlockNumber());
+		return (short)bloque.getBlockNumbers().size();
+	}
+	@Override
+	public Integer getDataSizeFor(Short numberOfChainedBlocks) {
+		return numberOfChainedBlocks > 1? this.lastBlockWriter.getMultipleBlockDataSize() * numberOfChainedBlocks : this.lastBlockWriter.getSimpleDataSize();
+	}
 	/**
 	 * Devuelve un iterador que permite recorrer todos los objetos persistidos por esta entidad
 	 * @see ar.com.datos.file.DynamicAccesor#iterator()
@@ -104,11 +113,11 @@ public class VariableLengthFileManager<T> implements DynamicAccesor<T>{
 	}
 
 	/**
-	 * @see ar.com.datos.file.DynamicAccesor#get(Address)
+	 * @see ar.com.datos.file.DynamicAccesor#get(BlockAddress)
 	 */
 	@Override
-	public T get(Address<Long, Short> direccion) {
-		return getBlock(direccion.getBlockNumber()).getData().get(direccion.getObjectNumber());
+	public T get(BlockAddress<Long, Short> address) {
+		return getBlock(address.getBlockNumber()).getData().get(address.getObjectNumber());
 	}
 
 	/**

@@ -1,12 +1,18 @@
 package ar.com.datos.file;
 
+import ar.com.datos.file.address.Address;
 
-public interface DynamicAccesor<T> extends SequentialAccesor<T> {
 
-	public T get(Address<Long, Short> direccion);
+public interface DynamicAccesor<A extends Address, T> extends SequentialAccesor<A, T> {
 
-	public Address<Long, Short> updateEntity(Address<Long, Short> direccion, T object);
+	/**
+	 * Recupera la entidad almacenada en la direccion recibida.
+	 * Si no existe arroja <code>UnknownEntity</code>
+	 * @param address: dirección de búsqueda
+	 * @return objeto en la dirección <code>address</code>
+	 */
+	public T get(A address);
 
-//	public Short getAmountOfBlocksFor(Address<Long, Short> direccion);
-//	public Integer getDataSizeFor(Short numberOfChainedBlocks);
+	public A updateEntity(A address, T object);
+
 }

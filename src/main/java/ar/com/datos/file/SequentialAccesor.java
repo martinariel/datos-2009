@@ -2,15 +2,17 @@ package ar.com.datos.file;
 
 import java.io.Closeable;
 
+import ar.com.datos.file.address.Address;
 
-public interface SequentialAccesor<T> extends Iterable<T>, Closeable{
+
+public interface SequentialAccesor<A extends Address, T> extends Iterable<T>, Closeable{
 
 	/**
 	 * Agrega una entidad al manejador de persistencia
 	 * @param campos
 	 * @return
 	 */
-	public Address<Long, Short> addEntity(T campos);
+	public A addEntity(T campos);
 
 	/**
 	 * Indica si no hay entidades a las que se pueden acceder

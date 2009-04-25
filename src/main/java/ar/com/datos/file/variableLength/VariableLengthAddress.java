@@ -1,8 +1,8 @@
 package ar.com.datos.file.variableLength;
 
-import ar.com.datos.file.Address;
+import ar.com.datos.file.address.BlockAddress;
 
-public class VariableLengthAddress implements Address<Long, Short> {
+public class VariableLengthAddress implements BlockAddress<Long, Short> {
 
 	private Long block;
 	private Short object;
@@ -19,6 +19,11 @@ public class VariableLengthAddress implements Address<Long, Short> {
 	@Override
 	public Short getObjectNumber() {
 		return this.object;
+	}
+
+	@Override
+	public String getUnifiedAddress() {
+		return String.format("%1$019d%2$05d", getBlockNumber(), getObjectNumber());
 	}
 
 }

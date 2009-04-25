@@ -5,8 +5,8 @@ import java.io.InputStream;
 import java.util.Iterator;
 
 import ar.com.datos.audio.AnotherInputStream;
-import ar.com.datos.file.Address;
 import ar.com.datos.file.DynamicAccesor;
+import ar.com.datos.file.address.BlockAddress;
 import ar.com.datos.persistencia.SoundPersistenceService;
 import ar.com.datos.persistencia.exception.UnregisteredWordException;
 import ar.com.datos.persistencia.exception.WordIsAlreadyRegisteredException;
@@ -23,8 +23,8 @@ import ar.com.datos.persistencia.variableLength.registros.RegistroOffsetWord;
 public class SoundPersistenceServiceMemoryImpl implements SoundPersistenceService{
 
 	//Archivos de palabras y de sonidos.
-	private DynamicAccesor<RegistroOffsetWord> accesoapalabras;
-	private DynamicAccesor<RegistroInputStream> accesoasonidos;
+	private DynamicAccesor<BlockAddress<Long, Short>, RegistroOffsetWord> accesoapalabras;
+	private DynamicAccesor<BlockAddress<Long, Short>, RegistroInputStream> accesoasonidos;
 	
 	
 	//tamaño de bloques por default
@@ -68,7 +68,7 @@ public class SoundPersistenceServiceMemoryImpl implements SoundPersistenceServic
 	public void addWord(String word, AnotherInputStream stream)
 			throws WordIsAlreadyRegisteredException {
 		
-		Address<Long, Short> offset = getOffsetOfWord( word );
+		BlockAddress<Long, Short> offset = getOffsetOfWord( word );
 		if ( offset != null ) throw new WordIsAlreadyRegisteredException();
 		else
 		{
@@ -93,7 +93,7 @@ public class SoundPersistenceServiceMemoryImpl implements SoundPersistenceServic
 	@Override
 	public InputStream readWord(String word) throws UnregisteredWordException {
 		
-		Address<Long, Short> offset = getOffsetOfWord( word );
+		BlockAddress<Long, Short> offset = getOffsetOfWord( word );
 		
 		if ( offset == null ) throw new UnregisteredWordException();
 		else
@@ -111,7 +111,7 @@ public class SoundPersistenceServiceMemoryImpl implements SoundPersistenceServic
 	 *  
 	 * */
 	
-	public Address<Long, Short> getOffsetOfWord( String word )
+	public BlockAddress<Long, Short> getOffsetOfWord( String word )
 	{
 		Iterator<RegistroOffsetWord> it = accesoapalabras.iterator();
 		
