@@ -13,6 +13,4 @@ public interface DynamicAccesor<A extends Address, T> extends SequentialAccesor<
 	 */
 	public T get(A address);
 
-	public A updateEntity(A address, T object);
-
 }
