@@ -14,9 +14,9 @@ import ar.com.datos.buffer.InputBuffer;
 import ar.com.datos.buffer.OutputBuffer;
 import ar.com.datos.buffer.variableLength.ArrayByte;
 import ar.com.datos.buffer.variableLength.SimpleArrayByte;
-import ar.com.datos.file.Address;
 import ar.com.datos.file.BlockFile;
 import ar.com.datos.file.DynamicAccesor;
+import ar.com.datos.file.address.BlockAddress;
 import ar.com.datos.file.variableLength.VariableLengthAddress;
 import ar.com.datos.file.variableLength.VariableLengthFileManager;
 import ar.com.datos.serializer.Serializable;
@@ -70,12 +70,12 @@ public class TestVariableLength extends MockObjectTestCase {
 			one(serializerMock).dehydrate(with(any(OutputBuffer.class)), with(campos2));
 			allowing(fileMock).writeBlock(with(0L), with(any(Collection.class)));
 		}});
-		DynamicAccesor unDynamicAccesor = crearArchivo();
+		VariableLengthFileManager unDynamicAccesor = crearArchivo();
 		assertFalse(unDynamicAccesor.iterator().hasNext());
-		Address<Long, Short> direccion1 = unDynamicAccesor.addEntity(campos1);
+		BlockAddress<Long, Short> direccion1 = unDynamicAccesor.addEntity(campos1);
 		assertEquals(0, direccion1.getBlockNumber().intValue());
 		assertEquals(0, direccion1.getObjectNumber().intValue());
-		Address<Long, Short> direccion2 = unDynamicAccesor.addEntity(campos2);
+		BlockAddress<Long, Short> direccion2 = unDynamicAccesor.addEntity(campos2);
 		assertEquals(0, direccion2.getBlockNumber().intValue());
 		assertEquals(1, direccion2.getObjectNumber().intValue());
 		assertEquals(campos2, unDynamicAccesor.get(direccion2));
@@ -104,8 +104,8 @@ public class TestVariableLength extends MockObjectTestCase {
 			will(returnValue(campos));
 			allowing(serializerMock).dehydrate(with(any(OutputBuffer.class)), with(campos));
 		}});
-		DynamicAccesor unDynamicAccesor = crearArchivo();
-		Address<Long, Short> direccion = unDynamicAccesor.addEntity(campos);
+		VariableLengthFileManager unDynamicAccesor = crearArchivo();
+		BlockAddress<Long, Short> direccion = unDynamicAccesor.addEntity(campos);
 		assertEquals(this.cantidadDeBloquesEnFileMock - 1L, direccion.getBlockNumber().longValue());
 		assertEquals(cantidadDeObjetos.shortValue(), direccion.getObjectNumber().shortValue());
 		assertEquals(campos, unDynamicAccesor.get(direccion));
@@ -131,8 +131,8 @@ public class TestVariableLength extends MockObjectTestCase {
 			one(serializerMock).dehydrate(with(any(OutputBuffer.class)), with(campos));
 			allowing(fileMock).writeBlock(with(cantidadDeBloquesEnFileMock), with(any(Collection.class)));
 		}});
-		DynamicAccesor unDynamicAccesor = crearArchivo();
-		Address<Long, Short> direccion = unDynamicAccesor.addEntity(campos);
+		VariableLengthFileManager unDynamicAccesor = crearArchivo();
+		BlockAddress<Long, Short> direccion = unDynamicAccesor.addEntity(campos);
 		assertEquals(cantidadDeBloquesEnFileMock, direccion.getBlockNumber());
 		assertEquals(cantidadDeObjetos.shortValue(), direccion.getObjectNumber().shortValue());
 	}
@@ -207,8 +207,10 @@ public class TestVariableLength extends MockObjectTestCase {
 			allowing(fileMock).readBlock(2L);
 			will(returnValue(bloqueFinal));
 		}});
-		DynamicAccesor unDynamicAccesor = crearArchivo();
-		assertEquals(campos1, unDynamicAccesor.get(new VariableLengthAddress(numeroDeBloqueBuscado, (short)0)));
+		VariableLengthFileManager unDynamicAccesor = crearArchivo();
+		VariableLengthAddress address = new VariableLengthAddress(numeroDeBloqueBuscado, (short)0);
+		assertEquals(campos1, unDynamicAccesor.get(address));
+		assertEquals(2, unDynamicAccesor.getAmountOfBlocksFor(address).intValue());
 	}
 	/**
 	 * Voy a pedirle el iterador. El archivo va a estar cargado con 4 bloques
@@ -369,9 +371,9 @@ public class TestVariableLength extends MockObjectTestCase {
 			});
 		}});
 		this.cantidadDeBloquesEnFileMock = 0L;
-		DynamicAccesor unDynamicAccesor = crearArchivo();
-		Address direccionr1 = unDynamicAccesor.addEntity(campos);
-		Address direccionr2 = unDynamicAccesor.addEntity(campos);
+		VariableLengthFileManager unDynamicAccesor = crearArchivo();
+		BlockAddress direccionr1 = unDynamicAccesor.addEntity(campos);
+		BlockAddress direccionr2 = unDynamicAccesor.addEntity(campos);
 		assertEquals(0L, direccionr1.getBlockNumber());
 		assertEquals(0, direccionr1.getObjectNumber().intValue());
 		assertEquals(1L, direccionr2.getBlockNumber());

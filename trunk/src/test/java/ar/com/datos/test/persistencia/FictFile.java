@@ -3,8 +3,8 @@ package ar.com.datos.test.persistencia;
 import java.io.IOException;
 import java.util.Iterator;
 
-import ar.com.datos.file.Address;
 import ar.com.datos.file.DynamicAccesor;
+import ar.com.datos.file.address.BlockAddress;
 import ar.com.datos.file.variableLength.VariableLengthAddress;
 import ar.com.datos.serializer.Serializable;
 
@@ -20,17 +20,17 @@ import java.util.LinkedList;
  * */
 
 
-public class FictFile<T extends Serializable<T>> implements DynamicAccesor<T>{
+public class FictFile<T extends Serializable<T>> implements DynamicAccesor<BlockAddress<Long, Short>, T>{
 	
 	private LinkedList<T> lista = new LinkedList<T>();
 	
 	@Override
-	public T get(Address<Long, Short> direccion) {
+	public T get(BlockAddress<Long, Short> direccion) {
 		return lista.get( direccion.getBlockNumber().intValue() );
 	}
 
 	@Override
-	public Address<Long, Short> addEntity(T campos) {
+	public BlockAddress<Long, Short> addEntity(T campos) {
 		lista.add( campos );
 		
 		Long bk = new Long( lista.size()-1 );
@@ -55,7 +55,7 @@ public class FictFile<T extends Serializable<T>> implements DynamicAccesor<T>{
 	}
 
 	@Override
-	public Address<Long, Short> updateEntity(Address<Long, Short> direccion, T object) {
+	public BlockAddress<Long, Short> updateEntity(BlockAddress<Long, Short> direccion, T object) {
 		this.lista.add(direccion.getBlockNumber().intValue(), object);
 		return direccion;
 	}

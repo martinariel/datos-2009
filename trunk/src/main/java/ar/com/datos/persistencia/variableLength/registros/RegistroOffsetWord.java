@@ -2,7 +2,7 @@ package ar.com.datos.persistencia.variableLength.registros;
 
 import ar.com.datos.buffer.InputBuffer;
 import ar.com.datos.buffer.OutputBuffer;
-import ar.com.datos.file.Address;
+import ar.com.datos.file.address.BlockAddress;
 import ar.com.datos.file.variableLength.VariableLengthAddress;
 import ar.com.datos.serializer.Serializable;
 import ar.com.datos.serializer.Serializer;
@@ -29,14 +29,14 @@ public class RegistroOffsetWord implements Serializable<RegistroOffsetWord> {
 	
 	
 
-	public RegistroOffsetWord( Address<Long, Short> offset, String unapalabra )
+	public RegistroOffsetWord( BlockAddress<Long, Short> offset, String unapalabra )
 	{
 		blocknumber = offset.getBlockNumber();
 		objectnumber = offset.getObjectNumber();
 		palabra = unapalabra;
 	}
 	
-	public Address<Long,Short> getOffset() 
+	public VariableLengthAddress getOffset() 
 	{
 		return new VariableLengthAddress( blocknumber, objectnumber );
 	}
@@ -48,7 +48,7 @@ public class RegistroOffsetWord implements Serializable<RegistroOffsetWord> {
 	}
 	
 	
-	public void setOffset(Address<Long,Short> unoffset) 
+	public void setOffset(BlockAddress<Long,Short> unoffset) 
 	{
 		this.blocknumber = unoffset.getBlockNumber();
 		this.objectnumber = unoffset.getObjectNumber();
