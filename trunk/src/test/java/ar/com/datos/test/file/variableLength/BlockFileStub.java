@@ -48,7 +48,7 @@ public class BlockFileStub implements BlockFile {
 	public void writeBlock(Long blockNumber, byte[] block) {
 		verifySize(block);
 		verifyNotExceed(blockNumber);
-		this.blocks.add(blockNumber.intValue(), block);
+		updateBlock(blockNumber, block);
 	}
 
 	private void verifyNotExceed(Long blockNumber) {
@@ -75,7 +75,12 @@ public class BlockFileStub implements BlockFile {
 				index++;
 			}
 		}
+		updateBlock(blockNumber, block);
 		addToWrittenBlocks(blockNumber);
+	}
+	private void updateBlock(Long blockNumber, byte[] block) {
+		if (this.blocks.size() > blockNumber) this.blocks.remove(blockNumber.intValue());
+		this.blocks.add(blockNumber.intValue(), block);
 	}
 
 	private void addToWrittenBlocks(Long blockNumber) {

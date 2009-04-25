@@ -14,7 +14,6 @@ import ar.com.datos.file.address.BlockAddress;
 import ar.com.datos.persistencia.variableLength.BlockMetaData;
 import ar.com.datos.persistencia.variableLength.BlockReader;
 import ar.com.datos.persistencia.variableLength.BlockWriter;
-import ar.com.datos.persistencia.variableLength.FlushListener;
 import ar.com.datos.serializer.Serializer;
 /**
  * Esta entidad permite manejar la persistencia de objetos Serializables en un archivo de longitud variable.
@@ -34,11 +33,6 @@ public class VariableLengthFileManager<T> implements BlockAccessor<BlockAddress<
 	// Usar solo para insertar al final
 	private BlockWriter lastBlockWriter;
 	
-	// Se maneja este cache por separado para poder contemplar de manera mas simple los casos en que, al agregar, se debe generar el nuevo bloque
-	private HydratedBlock<T> cachedLastBlock = null;
-	// Implementacion simple de cache de un solo bloque
-	private HydratedBlock<T> cachedBlock;
-	
 	/**
 	 * Permite crear una instancia indicando cual es el serializador a usar en lugar de usar el nativo de los objetos de tipo T
 	 * 
@@ -51,21 +45,29 @@ public class VariableLengthFileManager<T> implements BlockAccessor<BlockAddress<
 		this.lastBlockWriter = new BlockWriter(this.getRealFile());
     	// Si no puedo almacenar al menos un byte por registro en los casos que el registro excede el tamaño del bloque
     	// nunca podrí­a almacenar dicho registro. Así que no tiene sentido un archivo de ese tamaño de blocksize
-		if (this.lastBlockWriter.getMultipleBlockDataSize() < 1) throw new InvalidParameterException("InvalidBlockSize, blockSize must be greater than " + this.lastBlockWriter.getMultipleBlockDataSize());
+		if (getLastBlockWriter().getMultipleBlockDataSize() < 1) throw new InvalidParameterException("InvalidBlockSize, blockSize must be greater than " + getLastBlockWriter().getMultipleBlockDataSize());
 
 		setEntitySerializer(entitySerializer);
 		setBlockReader(new BlockReader(this.getRealFile()));
-		syncCacheAndLastBlockWriter();
 	}
     /**
      * @see ar.com.datos.file.DynamicAccesor#addEntity(Object)
      */
     @Override
 	public VariableLengthAddress addEntity(T data) {
-		getCachedLastBlock().getData().add(data);
-		getSerializador().dehydrate(this.lastBlockWriter.getOutputBuffer(), data);
-		this.lastBlockWriter.getOutputBuffer().closeEntity();
-		return new VariableLengthAddress(this.lastBlockWriter.getCurrentWrittingBlock(),this.lastBlockWriter.getCurrentWrittingEntityNumber());
+    	VariableLengthAddress retorno = addEntityNoFlush(data);
+    	getLastBlockWriter().flush();
+		return retorno;
+	}
+
+    /**
+     * Hace un addEntity pero sin hacer flush (requerido para las versiones con caché)
+     */
+	protected VariableLengthAddress addEntityNoFlush(T data) {
+		getSerializador().dehydrate(getLastBlockWriter().getOutputBuffer(), data);
+		getLastBlockWriter().getOutputBuffer().closeEntity();
+		Short currentWrittingEntityNumber = getLastBlockWriter().getCurrentWrittingEntityNumber();
+		return new VariableLengthAddress(getLastBlockWriter().getCurrentWrittingBlock(),--currentWrittingEntityNumber);
 	}
 
 	@Override
@@ -101,7 +103,7 @@ public class VariableLengthFileManager<T> implements BlockAccessor<BlockAddress<
 	}
 	@Override
 	public Integer getDataSizeFor(Short numberOfChainedBlocks) {
-		return numberOfChainedBlocks > 1? this.lastBlockWriter.getMultipleBlockDataSize() * numberOfChainedBlocks : this.lastBlockWriter.getSimpleDataSize();
+		return numberOfChainedBlocks > 1? getLastBlockWriter().getMultipleBlockDataSize() * numberOfChainedBlocks : getLastBlockWriter().getSimpleDataSize();
 	}
 	/**
 	 * Devuelve un iterador que permite recorrer todos los objetos persistidos por esta entidad
@@ -126,7 +128,6 @@ public class VariableLengthFileManager<T> implements BlockAccessor<BlockAddress<
 	 * @return
 	 */
 	protected HydratedBlock<T> getBlock(Long blockNumber) {
-		if (isBlockInCache(blockNumber)) return getBlockFromCache(blockNumber);
 		if (this.isEmpty()) return new HydratedBlock<T>(new ArrayList<T>(0),0L, BlockFile.END_BLOCK); 
 		
 		getBlockReader().readBlock(blockNumber);
@@ -138,27 +139,13 @@ public class VariableLengthFileManager<T> implements BlockAccessor<BlockAddress<
 			li.add(this.getSerializador().hydrate(data));
 		}
 		
-		return addToCache(new HydratedBlock<T>(li, getBlockNumbers(getBlockReader()), getBlockReader().getNextBlockNumber()));
+		return new HydratedBlock<T>(li, getBlockNumbers(getBlockReader()), getBlockReader().getNextBlockNumber());
 	}
 	private List<Long> getBlockNumbers(BlockReader blockReader2) {
 		List<Long> blockNumbers = new ArrayList<Long>(blockReader2.getMetaData().size());
 		for (BlockMetaData bmd: blockReader2.getMetaData())
 			blockNumbers.add(bmd.getBlockNumber());
 		return blockNumbers;
-	}
-	/**
-	 * Manejo basico de cache
-	 * @param hb
-	 */
-	protected HydratedBlock<T> addToCache(HydratedBlock<T> hb) {
-		return this.cachedBlock = hb;
-	}
-	protected HydratedBlock<T> getBlockFromCache(Long blockNumber) {
-		if (blockNumber.equals(this.getLastBlockBufferBlockNumber())) return getCachedLastBlock();
-		return this.cachedBlock;
-	}
-	protected Boolean isBlockInCache(Long blockNumber) {
-		return blockNumber.equals(this.getLastBlockBufferBlockNumber()) || (this.cachedBlock != null && blockNumber.equals(this.cachedBlock.getBlockNumber()));
 	}
 	/**
 	 * Construye el archivo de bloques que a utilizar para la persistencia 
@@ -182,77 +169,10 @@ public class VariableLengthFileManager<T> implements BlockAccessor<BlockAddress<
 	protected void setEntitySerializer(Serializer<T> serializador) {
 		this.serializador = serializador;
 	}
-	private Long getLastBlockBufferBlockNumber() {
-		return getCachedLastBlock().getBlockNumber();
-	}
-	protected HydratedBlock<T> getCachedLastBlock() {
-		if (cachedLastBlock == null) {
-			createCachedLastBlock();
-		}
-		return cachedLastBlock;
-	}
-	private void setCachedLastBlock(HydratedBlock<T> cachedLastBlock) {
-		this.cachedLastBlock = cachedLastBlock;
-	}
-	private void createCachedLastBlock() {
-		if (getRealFile().getTotalBlocks() > 0) {
-			BlockReader br = new BlockReader(this.getRealFile());
-			// Voy al último bloque del archivo
-			Long lastBlockNumber = getRealFile().getTotalBlocks() - 1;
-			br.readBlock(lastBlockNumber);
-			// Si es un head, significa que puedo hidratarlo
-			if (br.isBlockHead()) {
-				fillLastBlockBufferWith(br.getData(), lastBlockNumber, br.getRegistryCount());
-			} else {
-				fillLastBlockBufferWith(null, BlockFile.END_BLOCK, 0); 
-			}
-		} else {
-			fillLastBlockBufferWith(null, BlockFile.END_BLOCK, 0); 
-		}
-	}
-	/**
-	 * Se asegura que el HydratedBlock y el lastBlockWriter tengan siempre la misma cantidad de elementos
-	 * De esta manera, si el writer flushea y reduce la cantidad de entidades en el buffer también, esas entidades,
-	 * se retiran del caché del último bloque
-	 */
-	private void syncCacheAndLastBlockWriter() {
-		// Maneja la sincronización entre los datos almacenados en el blockWriter y el lastBlockCache. Debería externalizarse a un objeto que maneje caché
-		this.lastBlockWriter.addFlushListener(new FlushListener() {
 
-			@Override
-			public void flushed() {
-				while (lastBlockWriter.getOutputBuffer().getEntitiesCount() < cachedLastBlock.getData().size()) {
-					cachedLastBlock.getData().remove(0);
-				}
-				if (cachedLastBlock.getData().isEmpty()) cachedLastBlock.setBlock(BlockFile.END_BLOCK);
-				else cachedLastBlock.setBlock(lastBlockWriter.getCurrentWrittingBlock());
-			}
-			
-		});
-	}
-
-	/**
-	 * El metodo esta implementado de esta manera para 
-	 * @param iBuffer
-	 * @param lastBlockNumber
-	 * @param cantidadRegistros
-	 * @return
-	 */
-	private void fillLastBlockBufferWith(InputBuffer iBuffer, Long lastBlockNumber, Integer cantidadRegistros) {
-		this.setCachedLastBlock(new HydratedBlock<T>(new ArrayList<T>(), lastBlockNumber, BlockFile.END_BLOCK));
-		if (lastBlockNumber != BlockFile.END_BLOCK) {
-			for (Integer i = 0; i < cantidadRegistros; i++) {
-				T hydrate = this.getSerializador().hydrate(iBuffer);
-				this.getCachedLastBlock().getData().add(hydrate);
-				this.getSerializador().dehydrate(this.lastBlockWriter.getOutputBuffer(), hydrate);
-				this.lastBlockWriter.getOutputBuffer().closeEntity();
-			}
-			this.lastBlockWriter.addAvailableBlock(lastBlockNumber);
-		}
-	}
 	@Override
 	public Boolean isEmpty() {
-		return this.getRealFile().getTotalBlocks().equals(0L) && this.getLastBlockBufferBlockNumber() == BlockFile.END_BLOCK && getCachedLastBlock().getData().isEmpty();
+		return this.getRealFile().getTotalBlocks().equals(0L);
 	}
 	/**
 	 * Actualiza la información del iterador que itera sobre este archivo
@@ -263,11 +183,7 @@ public class VariableLengthFileManager<T> implements BlockAccessor<BlockAddress<
 		HydratedBlock<T> hb = this.getBlock(iterator.getNextBlock());
 		iterator.setCachedObjects(hb.getData().iterator());
 		Long nextBlockNumber = hb.getNextBlockNumber();
-		if (nextBlockNumber.equals(this.getCachedLastBlock().getBlockNumber()) && this.getCachedLastBlock().getData().size() ==  0) {
-			iterator.setNextBlock(BlockFile.END_BLOCK);
-		} else {
-			iterator.setNextBlock(nextBlockNumber);
-		}
+		iterator.setNextBlock(nextBlockNumber);
 		
 	}
 	@Override
@@ -277,7 +193,7 @@ public class VariableLengthFileManager<T> implements BlockAccessor<BlockAddress<
 	}
 	@Override
 	public void close() throws IOException {
-		this.lastBlockWriter.flush();
+		getLastBlockWriter().flush();
 		this.getRealFile().close();
 	}
 	protected void setBlockReader(BlockReader blockReader) {
@@ -286,6 +202,9 @@ public class VariableLengthFileManager<T> implements BlockAccessor<BlockAddress<
 
 	protected BlockReader getBlockReader() {
 		return blockReader;
+	}
+	protected BlockWriter getLastBlockWriter() {
+		return this.lastBlockWriter;
 	}
 	/**
 	 * Inner class para iterar a este archivo

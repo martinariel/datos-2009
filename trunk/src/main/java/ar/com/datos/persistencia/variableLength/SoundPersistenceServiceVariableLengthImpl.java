@@ -9,7 +9,7 @@ import ar.com.datos.audio.AnotherInputStream;
 import ar.com.datos.file.DynamicAccesor;
 import ar.com.datos.file.address.BlockAddress;
 import ar.com.datos.file.variableLength.VariableLengthAddress;
-import ar.com.datos.file.variableLength.VariableLengthFileManager;
+import ar.com.datos.file.variableLength.VariableLengthWithCache;
 import ar.com.datos.persistencia.SoundPersistenceService;
 import ar.com.datos.persistencia.exception.UnregisteredWordException;
 import ar.com.datos.persistencia.exception.WordIsAlreadyRegisteredException;
@@ -82,8 +82,8 @@ public class SoundPersistenceServiceVariableLengthImpl implements SoundPersisten
 	 * */
 	
 	private void init() {
-		accesoapalabras = new VariableLengthFileManager<RegistroOffsetWord>(nombrearchivodepalabras,BLOCK_SIZE_WORDS, RegistroOffsetWord.getSerializerStatic());
-		accesoasonidos = new VariableLengthFileManager<RegistroInputStream>(nombrearchivodesonidos,BLOCK_SIZE_INPUTSTREAM, RegistroInputStream.getSerializerStatic());
+		accesoapalabras = new VariableLengthWithCache<RegistroOffsetWord>(nombrearchivodepalabras,BLOCK_SIZE_WORDS, RegistroOffsetWord.getSerializerStatic());
+		accesoasonidos = new VariableLengthWithCache<RegistroInputStream>(nombrearchivodesonidos,BLOCK_SIZE_INPUTSTREAM, RegistroInputStream.getSerializerStatic());
 	}
 
 
