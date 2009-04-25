@@ -55,9 +55,9 @@ public class TestFileWrapper extends TestCase {
 		BlockFile bf = getNewBlockFile();
 		try {
 			bf.appendBlock(new byte[2]);
-			fail("Agrego un bloque de tamaño inválido");
+			fail("Agrego un bloque de tama�o inválido");
 		} catch (InvalidBlockException e) {
-			assertEquals("Se esperaba un bloque de tamaño " + blockSize, e.getMessage());
+			assertEquals("Se esperaba un bloque de tama�o " + blockSize, e.getMessage());
 			bf.appendBlock(new byte[blockSize]);
 		}
 	}
@@ -97,7 +97,7 @@ public class TestFileWrapper extends TestCase {
 				return fileMock;
 			}
 			@Override
-			protected RandomAccessFile constructAccesor(File archivo) {
+			protected RandomAccessFile constructAccesor() {
 				return accessMock;
 			}
 		};

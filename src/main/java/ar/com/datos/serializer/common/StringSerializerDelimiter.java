@@ -19,6 +19,9 @@ public class StringSerializerDelimiter implements Serializer<String> {
 	 * Secuencia que sera usada como delimitador del String.
 	 */
 	private byte[] delimiter;
+	static {
+		SerializerCache.getInstance().addSerializer(new StringSerializerDelimiter());
+	}
 
 	/**
 	 * Convierte un String a byte[]

@@ -54,10 +54,4 @@ public class FictFile<T extends Serializable<T>> implements DynamicAccesor<Block
 		
 	}
 
-	@Override
-	public BlockAddress<Long, Short> updateEntity(BlockAddress<Long, Short> direccion, T object) {
-		this.lista.add(direccion.getBlockNumber().intValue(), object);
-		return direccion;
-	}
-
 }
