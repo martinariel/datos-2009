@@ -69,7 +69,7 @@ public class BlockWriter implements RestrictedBufferRealeaser {
 	}
 	public Short getCurrentWrittingEntityNumber() {
 		Short entitiesCount = this.getOutputBuffer().getEntitiesCount();
-		return (entitiesCount == 0)? 0 : --entitiesCount;
+		return (entitiesCount == 0)? 1 : entitiesCount;
 	}
 	public void flush() {
 		// Nothing to flush

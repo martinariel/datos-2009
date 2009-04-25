@@ -15,7 +15,7 @@ import ar.com.datos.buffer.OutputBuffer;
 import ar.com.datos.file.BlockFile;
 import ar.com.datos.file.variableLength.HydratedBlock;
 import ar.com.datos.file.variableLength.VariableLengthAddress;
-import ar.com.datos.file.variableLength.VariableLengthFileManager;
+import ar.com.datos.file.variableLength.VariableLengthWithCache;
 import ar.com.datos.serializer.NullableSerializer;
 /**
  * Pruebas con archivo inicial vacío
@@ -32,7 +32,7 @@ public class TestVariableLengthUpdate extends MockObjectTestCase {
 	private Integer cantidadDeVecesCreado;
 	//Mantyenimiento de los bloques hidratados que espero recuperar en las lecturas
 	private Map<Integer, HydratedBlock<String>> bloquesHidratados;
-	private VariableLengthFileManager<String> dynamicAccessor;
+	private VariableLengthWithCache<String> dynamicAccessor;
 	@Override
 	@SuppressWarnings("unchecked")
 	protected void setUp() throws Exception {
@@ -195,8 +195,8 @@ public class TestVariableLengthUpdate extends MockObjectTestCase {
 			assertEquals(l[i], writtenBlocks.get(i));
 		}
 	}
-	private VariableLengthFileManager<String> crearArchivo() {
-		return new VariableLengthFileManager<String>("nombreArchivo",blockSize, serializerMock) {
+	private VariableLengthWithCache<String> crearArchivo() {
+		return new VariableLengthWithCache<String>("nombreArchivo",blockSize, serializerMock) {
 			@Override
 			public BlockFile constructFile(String nombreArchivo, Integer blockSize) {
 				cantidadDeVecesCreado++;

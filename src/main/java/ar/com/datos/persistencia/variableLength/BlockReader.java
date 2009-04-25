@@ -131,7 +131,7 @@ public class BlockReader {
 			minimo += 1;
 		}
 		
-		if (minimo == getBlockFile().getTotalBlocks()) return BlockFile.END_BLOCK;
+		if (minimo.equals(getBlockFile().getTotalBlocks())) return BlockFile.END_BLOCK;
 		
 		return minimo;
 	}

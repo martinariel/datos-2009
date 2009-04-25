@@ -7,6 +7,7 @@ import java.util.Collection;
  * @author mfernandez
  * @deprecated;
  */
+@Deprecated
 public class SimpleTextParser extends AbstractTextParser {
 
     @Override

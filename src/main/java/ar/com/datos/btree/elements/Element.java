@@ -21,5 +21,5 @@ public interface Element<K extends Key> {
 	 * al nodo; false en caso contrario.
 	 * Esto queda a criterio del implementador.
 	 */
-	public boolean updateElement(Element element);
+	public boolean updateElement(Element<K> element);
 }
