@@ -17,6 +17,7 @@ import ar.com.datos.buffer.variableLength.SimpleArrayByte;
 import ar.com.datos.file.BlockFile;
 import ar.com.datos.file.DynamicAccesor;
 import ar.com.datos.file.address.BlockAddress;
+import ar.com.datos.file.variableLength.InvalidAddressException;
 import ar.com.datos.file.variableLength.VariableLengthFileManager;
 import ar.com.datos.file.variableLength.address.VariableLengthAddress;
 import ar.com.datos.serializer.Serializable;
@@ -78,7 +79,6 @@ public class TestVariableLength extends MockObjectTestCase {
 			will(returnValue(campos2));
 		}});
 		VariableLengthFileManager unDynamicAccesor = crearArchivo();
-		
 		assertFalse(unDynamicAccesor.iterator().hasNext());
 		BlockAddress<Long, Short> direccion1 = unDynamicAccesor.addEntity(campos1);
 		assertEquals(0, direccion1.getBlockNumber().intValue());
@@ -89,6 +89,12 @@ public class TestVariableLength extends MockObjectTestCase {
 		assertEquals(1, direccion2.getObjectNumber().intValue());
 		assertEquals(campos2, unDynamicAccesor.get(direccion2));
 		assertEquals(campos1, unDynamicAccesor.get(direccion1));
+		try {
+			unDynamicAccesor.get(new VariableLengthAddress(3L,(short) 0));
+			fail("no tiró la excepción esperada");
+		} catch (InvalidAddressException iae) {
+			// Todo Ok! =)
+		}
 	}
 	/**
 	 * Dado un archivo que tiene el último bloque con varios registros, voy a agregar un registro

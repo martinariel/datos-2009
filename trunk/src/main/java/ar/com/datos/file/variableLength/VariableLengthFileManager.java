@@ -11,6 +11,7 @@ import ar.com.datos.file.BlockAccessor;
 import ar.com.datos.file.BlockFile;
 import ar.com.datos.file.SimpleBlockFile;
 import ar.com.datos.file.address.BlockAddress;
+import ar.com.datos.file.exception.OutOfBoundsException;
 import ar.com.datos.file.variableLength.address.VariableLengthAddress;
 import ar.com.datos.persistencia.variableLength.BlockMetaData;
 import ar.com.datos.persistencia.variableLength.BlockReader;
@@ -120,9 +121,13 @@ public class VariableLengthFileManager<T> implements BlockAccessor<BlockAddress<
 	 */
 	@Override
 	public T get(BlockAddress<Long, Short> address) {
-		HydratedBlock<T> block = getBlock(address.getBlockNumber());
-		if ((!block.getBlockNumber().equals(address.getBlockNumber())) || (block.getData().size() <= address.getObjectNumber().intValue())) throw new InvalidAddressException();
-		return block.getData().get(address.getObjectNumber());
+		try {
+			HydratedBlock<T> block = getBlock(address.getBlockNumber());
+			if ((!block.getBlockNumber().equals(address.getBlockNumber())) || (block.getData().size() <= address.getObjectNumber().intValue())) throw new InvalidAddressException();
+			return block.getData().get(address.getObjectNumber());
+		} catch (OutOfBoundsException ob) {
+			throw new InvalidAddressException(ob);
+		}
 	}
 
 	/**
@@ -132,7 +137,7 @@ public class VariableLengthFileManager<T> implements BlockAccessor<BlockAddress<
 	 */
 	protected HydratedBlock<T> getBlock(Long blockNumber) {
 		if (this.isEmpty()) return new HydratedBlock<T>(new ArrayList<T>(0),0L, BlockFile.END_BLOCK); 
-		
+
 		getBlockReader().readBlock(blockNumber);
 		
 		InputBuffer data = getBlockReader().getData();

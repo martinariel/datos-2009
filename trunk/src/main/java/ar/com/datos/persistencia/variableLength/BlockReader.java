@@ -9,6 +9,7 @@ import ar.com.datos.buffer.InputBuffer;
 import ar.com.datos.buffer.SimpleInputBuffer;
 import ar.com.datos.buffer.variableLength.SimpleArrayByte;
 import ar.com.datos.file.BlockFile;
+import ar.com.datos.file.exception.OutOfBoundsException;
 import ar.com.datos.serializer.common.SerializerCache;
 import ar.com.datos.serializer.common.ShortSerializer;
 
@@ -44,8 +45,9 @@ public class BlockReader {
 	 * Recupera los datos del bloque y su metadata
 	 * @param blockNumber
 	 */
-	public void readBlock(Long blockNumber) {
+	public void readBlock(Long blockNumber) throws OutOfBoundsException{
 		if (!this.fullBlockData.isEmpty() && getCurrentBlockData().getBlockNumber().equals(blockNumber)) return;
+		if (this.blockFile.getTotalBlocks() <= blockNumber) throw new OutOfBoundsException();
 		clearBlockInformation();
 		retrieveBlockDataAndMeta(blockNumber);
 	}
