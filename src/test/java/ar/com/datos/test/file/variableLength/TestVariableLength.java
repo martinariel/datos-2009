@@ -78,10 +78,12 @@ public class TestVariableLength extends MockObjectTestCase {
 			will(returnValue(campos2));
 		}});
 		VariableLengthFileManager unDynamicAccesor = crearArchivo();
+		
 		assertFalse(unDynamicAccesor.iterator().hasNext());
 		BlockAddress<Long, Short> direccion1 = unDynamicAccesor.addEntity(campos1);
 		assertEquals(0, direccion1.getBlockNumber().intValue());
 		assertEquals(0, direccion1.getObjectNumber().intValue());
+
 		BlockAddress<Long, Short> direccion2 = unDynamicAccesor.addEntity(campos2);
 		assertEquals(0, direccion2.getBlockNumber().intValue());
 		assertEquals(1, direccion2.getObjectNumber().intValue());
