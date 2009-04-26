@@ -52,10 +52,10 @@ public class TestStopWordsDiscriminator extends TestCase {
 		LinkedList<String> phrase = new LinkedList<String>();
 		String art2 = "Toda persona tiene los derechos y libertades proclamados en " +
 				"esta Declaracion sin distincion alguna de raza color sexo idioma religion " +
-				"opinion politica o de cualquier otra i­ndole origen nacional o social " +
+				"opinion politica o de cualquier otra indole origen nacional o social " +
 				"posicion economica nacimiento o cualquier otra condicion";
-		String expected = "persona derechos libertades proclamados Declaracion" +
-				"raza color sexo idioma religion opinion politica nacional social" +
+		String expected = "persona derechos libertades proclamados Declaracion " +
+				"raza color sexo idioma religion opinion politica nacional social " +
 				"economica nacimiento condicion";
 		phrase.addAll(Arrays.asList(art2.split(" ")));
 		assertEquals(expected, formatResult(this.discriminator.processPhrase(phrase)));
@@ -65,7 +65,7 @@ public class TestStopWordsDiscriminator extends TestCase {
 		LinkedList<String> phrase = new LinkedList<String>();
 		String art3 = "Todo individuo tiene derecho a la vida a la libertad y " +
 				"a la seguridad de su persona";
-		String expected = "individuo derecho vida libertad seguridad persona";
+		String expected = "individuo vida libertad seguridad persona";
 		phrase.addAll(Arrays.asList(art3.split(" ")));
 		assertEquals(expected, formatResult(this.discriminator.processPhrase(phrase)));
 	}
@@ -87,7 +87,14 @@ public class TestStopWordsDiscriminator extends TestCase {
 		phrase.addAll(Arrays.asList(art29.split(" ")));
 		assertEquals(expected, formatResult(this.discriminator.processPhrase(phrase)));
 	}
-	
+	public void testPhrase(){
+		LinkedList<String> phrase = new LinkedList<String>();
+		String art29 = "en consecuencia en consecuencia cualquier otra sin distincion " +
+				"alguna cualquier otra sin distincion otra tiene en consecuencia";
+		String expected = "distincion";
+		phrase.addAll(Arrays.asList(art29.split(" ")));
+		assertEquals(expected, formatResult(this.discriminator.processPhrase(phrase)));
+	}
 	
 	// Metodos utilitarios a continuacion
 	
@@ -99,7 +106,7 @@ public class TestStopWordsDiscriminator extends TestCase {
 		stopWords.addAll(Arrays.asList(stringStopWords.split(",")));
 	}
 	private void loadStopPhrases(List<List<String>> stopPhrases){
-		String stopPhrase1 = "En consecuencia";
+		String stopPhrase1 = "en consecuencia";
 		String stopPhrase2 = "sin distincion alguna";
 		String stopPhrase3 = "cualquier otra";
 		String stopPhrase4 = "tiene derecho";
