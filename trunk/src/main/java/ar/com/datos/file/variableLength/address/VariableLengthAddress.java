@@ -1,4 +1,4 @@
-package ar.com.datos.file.variableLength;
+package ar.com.datos.file.variableLength.address;
 
 import ar.com.datos.file.address.BlockAddress;
 

@@ -7,6 +7,7 @@ import ar.com.datos.buffer.FileInputBuffer;
 import ar.com.datos.buffer.FileOutputBuffer;
 import ar.com.datos.file.DynamicAccesor;
 import ar.com.datos.file.StandardFileWrapper;
+import ar.com.datos.file.variableLength.address.OffsetAddress;
 import ar.com.datos.serializer.Serializer;
 
 public class StraightVariableLengthFile<T> implements DynamicAccesor<OffsetAddress, T> {

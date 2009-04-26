@@ -5,7 +5,7 @@ import java.util.Iterator;
 
 import ar.com.datos.file.DynamicAccesor;
 import ar.com.datos.file.address.BlockAddress;
-import ar.com.datos.file.variableLength.VariableLengthAddress;
+import ar.com.datos.file.variableLength.address.VariableLengthAddress;
 import ar.com.datos.serializer.Serializable;
 
 

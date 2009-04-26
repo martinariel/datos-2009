@@ -3,7 +3,7 @@ package ar.com.datos.persistencia.variableLength.registros;
 import ar.com.datos.buffer.InputBuffer;
 import ar.com.datos.buffer.OutputBuffer;
 import ar.com.datos.file.address.BlockAddress;
-import ar.com.datos.file.variableLength.VariableLengthAddress;
+import ar.com.datos.file.variableLength.address.VariableLengthAddress;
 import ar.com.datos.serializer.Serializable;
 import ar.com.datos.serializer.Serializer;
 import ar.com.datos.serializer.common.LongSerializer;

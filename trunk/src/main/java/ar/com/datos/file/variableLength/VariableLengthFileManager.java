@@ -11,6 +11,7 @@ import ar.com.datos.file.BlockAccessor;
 import ar.com.datos.file.BlockFile;
 import ar.com.datos.file.SimpleBlockFile;
 import ar.com.datos.file.address.BlockAddress;
+import ar.com.datos.file.variableLength.address.VariableLengthAddress;
 import ar.com.datos.persistencia.variableLength.BlockMetaData;
 import ar.com.datos.persistencia.variableLength.BlockReader;
 import ar.com.datos.persistencia.variableLength.BlockWriter;

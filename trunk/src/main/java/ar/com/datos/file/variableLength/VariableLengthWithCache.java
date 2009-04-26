@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import ar.com.datos.buffer.InputBuffer;
 import ar.com.datos.file.BlockFile;
+import ar.com.datos.file.variableLength.address.VariableLengthAddress;
 import ar.com.datos.persistencia.variableLength.BlockReader;
 import ar.com.datos.persistencia.variableLength.FlushListener;
 import ar.com.datos.serializer.Serializer;

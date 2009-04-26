@@ -1,21 +1,19 @@
 package ar.com.datos.indexer.keywordIndexer;
 
-public class KeyCount<T> {
-	private T key;
-	private Integer count;
+import ar.com.datos.util.Tuple;
+
+public class KeyCount<T> extends Tuple<T, Integer> {
 	
 	public KeyCount(T key, Integer count) {
-		super();
-		this.key = key;
-		this.count = count;
+		super(key, count);
 	}
 
 	public T getKey() {
-		return key;
+		return getFirst();
 	}
 
 	public Integer getCount() {
-		return count;
+		return getSecond();
 	}
 
 }
