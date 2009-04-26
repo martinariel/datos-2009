@@ -46,7 +46,6 @@ public class BlockReader {
 	 */
 	public void readBlock(Long blockNumber) {
 		if (!this.fullBlockData.isEmpty() && getCurrentBlockData().getBlockNumber().equals(blockNumber)) return;
-		
 		clearBlockInformation();
 		retrieveBlockDataAndMeta(blockNumber);
 	}

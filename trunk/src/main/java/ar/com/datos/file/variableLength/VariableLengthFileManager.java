@@ -120,7 +120,9 @@ public class VariableLengthFileManager<T> implements BlockAccessor<BlockAddress<
 	 */
 	@Override
 	public T get(BlockAddress<Long, Short> address) {
-		return getBlock(address.getBlockNumber()).getData().get(address.getObjectNumber());
+		HydratedBlock<T> block = getBlock(address.getBlockNumber());
+		if ((!block.getBlockNumber().equals(address.getBlockNumber())) || (block.getData().size() <= address.getObjectNumber().intValue())) throw new InvalidAddressException();
+		return block.getData().get(address.getObjectNumber());
 	}
 
 	/**
