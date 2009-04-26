@@ -4,6 +4,7 @@ import ar.com.datos.btree.elements.Element;
 import ar.com.datos.btree.elements.Key;
 import ar.com.datos.btree.exception.BTreeException;
 import ar.com.datos.btree.sharp.conf.BTreeSharpConfiguration;
+import ar.com.datos.btree.sharp.impl.disk.node.NodeType;
 import ar.com.datos.util.WrappedParam;
 
 /**
@@ -53,7 +54,7 @@ public abstract class Node<E extends Element<K>, K extends Key> {
 	 * debe ser obtenida de él mediante {@link #getFirstKey()}.
 	 * Si no se produjo split al agregar el {@link Element}, se devolverá null.
 	 *
-	 * @throws BTreePlusException
+	 * @throws BTreeException
 	 * Si hay algún problema agregando el {@link Element} pasado.
 	 */
 	public abstract KeyNodeReference<E, K> addElement(E element, 
@@ -79,6 +80,11 @@ public abstract class Node<E extends Element<K>, K extends Key> {
 	public abstract ChainedNode<E, K> findNode(K key) throws BTreeException;
 
 	/**
+	 * Obtiene el {@link NodeType} correspondiente a este Nodo.
+	 */
+	public abstract NodeType getNodeType();
+	
+	/**
 	 * Método llamado luego de agregar un {@link Element} al nodo.
 	 * Generalmente será usado para para que el nodo se guarde en disco, en implementaciones
 	 * que lo requieran.
@@ -91,5 +97,5 @@ public abstract class Node<E extends Element<K>, K extends Key> {
 	/**
 	 * Calcula el tamaño del nodo.
 	 */
-	protected abstract int calculateNodeSize();
+	protected abstract long calculateNodeSize();
 }

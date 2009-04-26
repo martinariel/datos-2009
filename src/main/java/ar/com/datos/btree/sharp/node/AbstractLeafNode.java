@@ -9,6 +9,7 @@ import ar.com.datos.btree.elements.Element;
 import ar.com.datos.btree.elements.Key;
 import ar.com.datos.btree.exception.BTreeException;
 import ar.com.datos.btree.sharp.conf.BTreeSharpConfiguration;
+import ar.com.datos.btree.sharp.impl.disk.node.NodeType;
 import ar.com.datos.util.WrappedParam;
 
 /**
@@ -212,7 +213,7 @@ public abstract class AbstractLeafNode<E extends Element<K>, K extends Key> exte
 	/**
 	 * Obtiene la capacidad máxima del nodo.
 	 */
-	protected short getNodeMaxCapacity() {
+	protected int getNodeMaxCapacity() {
 		return this.bTreeSharpConfiguration.getMaxCapacityLeafNode();
 	}
 	
@@ -265,6 +266,15 @@ public abstract class AbstractLeafNode<E extends Element<K>, K extends Key> exte
 		return element;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see ar.com.datos.btree.sharp.node.Node#getNodeType()
+	 */
+	@Override
+	public NodeType getNodeType() {
+		return NodeType.LEAF;
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * @see ar.com.datos.btree.sharp.node.Node#findNode(ar.com.datos.btree.elements.Key)

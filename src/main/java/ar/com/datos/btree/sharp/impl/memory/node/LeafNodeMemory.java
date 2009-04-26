@@ -47,7 +47,7 @@ public final class LeafNodeMemory<E extends Element<K>, K extends Key> extends A
 	 * @see ar.com.datos.btree.sharp.node.Node#calculateNodeSize()
 	 */
 	@Override
-	protected int calculateNodeSize() {
+	protected long calculateNodeSize() {
 		return this.elements.size();
 	}
 

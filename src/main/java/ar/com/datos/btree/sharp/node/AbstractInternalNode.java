@@ -8,6 +8,7 @@ import ar.com.datos.btree.elements.Element;
 import ar.com.datos.btree.elements.Key;
 import ar.com.datos.btree.exception.BTreeException;
 import ar.com.datos.btree.sharp.conf.BTreeSharpConfiguration;
+import ar.com.datos.btree.sharp.impl.disk.node.NodeType;
 import ar.com.datos.util.WrappedParam;
 
 /**
@@ -266,7 +267,7 @@ public abstract class AbstractInternalNode<E extends Element<K>, K extends Key> 
 	/**
 	 * Obtiene la capacidad máxima del nodo.
 	 */
-	protected short getNodeMaxCapacity() {
+	protected int getNodeMaxCapacity() {
 		return this.bTreeSharpConfiguration.getMaxCapacityInternalNode();
 	}
 	
@@ -350,6 +351,15 @@ public abstract class AbstractInternalNode<E extends Element<K>, K extends Key> 
 		return nodeReference.getNode().findNode(key);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see ar.com.datos.btree.sharp.node.Node#getNodeType()
+	 */
+	@Override
+	public NodeType getNodeType() {
+		return NodeType.INTERNAL;
+	}
+		
 	/**
 	 * Obtiene la tercera parte del nodo de la izquierda o de la derecha
 	 * según el valor de left sea true o no.

@@ -20,7 +20,7 @@ public class TestIndexer extends TestCase {
 		SimpleSessionIndexer<OffsetAddress> unIndexador = new SimpleSessionIndexer<OffsetAddress>(fileName, new OffsetAddressSerializer()) {
 			@Override
 			protected BTree<IndexerTreeElement<OffsetAddress>, IndexerTreeKey> constructIndexedElements(String fileName) {
-				return new BTreeSharpFactory<IndexerTreeElement<OffsetAddress>, IndexerTreeKey>().createBTreeSharpMemory((short)16, (short)16);
+				return new BTreeSharpFactory<IndexerTreeElement<OffsetAddress>, IndexerTreeKey>().createBTreeSharpMemory(16, 16);
 			}
 		};
 		unIndexador.startSession();

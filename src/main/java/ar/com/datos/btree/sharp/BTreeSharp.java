@@ -1,6 +1,5 @@
 package ar.com.datos.btree.sharp;
 
-import java.lang.reflect.Field;
 import java.util.NoSuchElementException;
 
 import ar.com.datos.btree.BTree;
@@ -8,12 +7,10 @@ import ar.com.datos.btree.BTreeIterator;
 import ar.com.datos.btree.elements.Element;
 import ar.com.datos.btree.elements.Key;
 import ar.com.datos.btree.exception.BTreeException;
-import ar.com.datos.btree.sharp.conf.AdministrativeBTreeSharp;
 import ar.com.datos.btree.sharp.conf.BTreeSharpConfiguration;
 import ar.com.datos.btree.sharp.impl.memory.node.NodeReferenceMemory;
 import ar.com.datos.btree.sharp.node.ChainedNode;
 import ar.com.datos.btree.sharp.node.Node;
-import ar.com.datos.btree.sharp.node.NodeReference;
 import ar.com.datos.util.WrappedParam;
 
 /**
@@ -28,25 +25,19 @@ public class BTreeSharp<E extends Element<K>, K extends Key> implements BTree<E,
 	/** Nodo principal del árbol. */
 	private Node<E, K> rootNode;
 	
-	/** Permite realizar ciertas operaciones sobre el árbol. */
-	private AdministrativeBTreeSharp<E, K> administrativeBTreeSharp;
-	
 	/** Permite saber si la instancia es utilizable. */	
 	private boolean destroyed;
 	
 	/**
-	 * Permite crear un {@link BTreeSharp}.
+	 * Permite crear un {@link BTreeSharp}. El árbol creado será totalmente nuevo.
 	 *
 	 * @param bTreeSharpConfiguration
 	 * Configuraciones del árbol.
-	 * 
-	 * @param administrativeBTreeSharp
-	 * Permite realizar operaciones administrativas sobre el árbol que dependen de la implementación.
 	 */
-	public BTreeSharp(BTreeSharpConfiguration<E, K> bTreeSharpConfiguration, AdministrativeBTreeSharp<E, K> administrativeBTreeSharp) {
+	public BTreeSharp(BTreeSharpConfiguration<E, K> bTreeSharpConfiguration) {
 		this.bTreeSharpConfiguration = bTreeSharpConfiguration;
-		this.administrativeBTreeSharp = administrativeBTreeSharp;
 		this.destroyed = false;
+		this.rootNode = null;
 	}
 
 	/**
@@ -55,44 +46,15 @@ public class BTreeSharp<E extends Element<K>, K extends Key> implements BTree<E,
 	 * @param bTreeSharpConfiguration
 	 * Configuraciones del árbol.
 	 * 
-	 * @param administrativeBTreeSharp
-	 * Permite realizar operaciones administrativas sobre el árbol que dependen de la implementacion.
-	 * 
-	 * @param rootNodeReference
-	 * Referencia al nodo raíz (debe ser un nodo raiz válido).
-	 * @throws BTreeException 
+	 * @param rootNode
+	 * Nodo raiz.
 	 */
-	public BTreeSharp(BTreeSharpConfiguration<E, K> bTreeSharpConfiguration, AdministrativeBTreeSharp<E, K> administrativeBTreeSharp, NodeReference<E, K> rootNodeReference) throws BTreeException {
+	public BTreeSharp(BTreeSharpConfiguration<E, K> bTreeSharpConfiguration, Node<E, K> rootNode) {
 		this.bTreeSharpConfiguration = bTreeSharpConfiguration;
-		this.administrativeBTreeSharp = administrativeBTreeSharp;
 		this.destroyed = false;
-		this.rootNode = rootNodeReference.getNode();
+		this.rootNode = rootNode;
 	}
 
-	@SuppressWarnings("unchecked")
-	private NodeReference<E, K> getRootNodeReference() throws BTreeException {
-		try {
-			NodeReference<E, K> rootNodeReference;
-// FIXME
-//			if (this.rootNode != null) {
-				// Obtengo el Node reference de la segunda hoja
-				Field fieldRootNodeReference = Node.class.getDeclaredField("myNodeReference");
-				fieldRootNodeReference.setAccessible(true);
-				rootNodeReference = (NodeReference<E, K>)fieldRootNodeReference.get(this.rootNode);
-				fieldRootNodeReference.setAccessible(false);
-//			} else {
-//				rootNodeReference = new NodeReferenceDisk<E, K>(-1, null);
-//			}
-			return rootNodeReference;
-		} catch (Exception e) {
-			throw new BTreeException(e);
-		}
-	}
-		
-
-	
-	
-	
 	/*
 	 * (non-Javadoc)
 	 * @see ar.com.datos.btree.BTree#addElement(ar.com.datos.btree.elements.Element)
@@ -106,11 +68,8 @@ public class BTreeSharp<E extends Element<K>, K extends Key> implements BTree<E,
 		try {
 			if (this.rootNode == null) {
 				this.rootNode = this.bTreeSharpConfiguration.getBTreeSharpFactory().createEspecialRootNode(this.bTreeSharpConfiguration, this);
-			}
-
+			} 
 			this.rootNode.addElement(element, new NodeReferenceMemory<E, K>(null), false, new WrappedParam<K>());
-			// FIXME
-			// this.administrativeBTreeSharp.updateRoot(getRootNodeReference());
 		} catch (BTreeException e) {
 			throw e;
 		} catch (Exception e) {
@@ -144,7 +103,7 @@ public class BTreeSharp<E extends Element<K>, K extends Key> implements BTree<E,
 	@Override
 	public BTreeIterator<E> iterator(K key) throws BTreeException {
 		if (this.destroyed) {
-			throw new BTreeException();
+			throw new BTreeException("El árbol ya fue cerrado.");
 		}
 		
 		ChainedNode<E, K> node = null;
@@ -163,8 +122,7 @@ public class BTreeSharp<E extends Element<K>, K extends Key> implements BTree<E,
 	public void destroy() {
 		if (!this.destroyed) {
 			try {
-				//this.administrativeBTreeSharp.updateRoot(getRootNodeReference());
-				this.administrativeBTreeSharp.closeTree();
+				this.bTreeSharpConfiguration.closeTree();
 				this.destroyed = true;
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -196,13 +154,9 @@ public class BTreeSharp<E extends Element<K>, K extends Key> implements BTree<E,
 	 * @author fvalido
 	 */
 	private class BTreeSharpIterator implements BTreeIterator<E> {
-		/**
-		 * {@link Key} de referencia para saber cual es el próximo o anterior elemento. 
-		 */
+		/** {@link Key} de referencia para saber cual es el próximo o anterior elemento. */
 		private K currentKey;
-		/**
-		 * Nodo actual en el que intentar buscar el próximo o el siguiente.
-		 */
+		/** Nodo actual en el que intentar buscar el próximo o el anterior. */
 		private ChainedNode<E, K> currentNode;
 		/**
 		 * Indica si es la primera vez que se llama a next o a previous.

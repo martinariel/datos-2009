@@ -46,9 +46,6 @@ public class PrimitiveTypeSerializer {
 	 * igual al largo de b.
 	 * Luego puede ser reconvertido utilizando {@link #toBooleanArray(byte[])}.
 	 * La conversion se realiza segun lo expresado por {@link #toByte(boolean)}.
-	 *
-	 * XXX ??: Esto puede mejorarse para poder meter hasta ocho booleans en una sola posicion
-	 *           de la tira devuelta. Esto debe hacerse en consonancia con {@link #toBooleanArray(byte[])}.
 	 */
 	public static byte[] toByte(boolean[] b) {
 		byte[] bytes = new byte[b.length];
@@ -64,9 +61,6 @@ public class PrimitiveTypeSerializer {
 	 * usando {@link #toByte(boolean[])}.
 	 * La tira devuelta tendra tantos elementos como el parametro pasado.
 	 * La conversion se realiza segun lo expresado por {@link #toBoolean(byte[])}.
-	 *
-	 * XXX ??: Esto puede mejorarse para poder leer hasta ocho booleans en una sola posicion
-	 *           de la tira recibida. Esto debe hacerse en consonancia con {@link #toByte(boolean[])}.
 	 */
 	public static boolean[] toBooleanArray(byte[] bytes) {
 		boolean[] booleans = new boolean[bytes.length];

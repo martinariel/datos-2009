@@ -19,13 +19,13 @@ import ar.com.datos.test.btree.sharp.mock.TestKey;
  *
  * @author fvalido
  */
-public class TestBTreePlusMemory extends ExtendedTestCase {
+public class TestBTreeSharpMemory extends ExtendedTestCase {
 	private BTree<TestElement, TestKey> bTreeSharp;
 
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
-		this.bTreeSharp = new BTreeSharpFactory<TestElement, TestKey>().createBTreeSharpMemory((short)9, (short)9);
+		this.bTreeSharp = new BTreeSharpFactory<TestElement, TestKey>().createBTreeSharpMemory(9, 9);
 	}
 
 	@Override
@@ -65,8 +65,8 @@ public class TestBTreePlusMemory extends ExtendedTestCase {
 //	 */
 //	public void testIntensivo() {
 //		BTreeSharpFactory<TestElement, TestKey> bTreeSharpFactory = new BTreeSharpFactory<TestElement, TestKey>();
-//		for (short i = 3; i < 12; i++) { // Tamaño nodo interno
-//			for (short j = 3; j < 12; j++) { // Tamaño nodo hoja
+//		for (int i = 3; i < 12; i++) { // Tamaño nodo interno
+//			for (int j = 3; j < 12; j++) { // Tamaño nodo hoja
 //				for (int k = 0; k < 3; k++) { // Número de pruebas por tamaño.
 //					this.bTreeSharp = bTreeSharpFactory.createBTreeSharpMemory(i, j); 
 //					testRandomInsertion();
