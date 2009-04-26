@@ -8,6 +8,7 @@ import ar.com.datos.btree.elements.Element;
 import ar.com.datos.btree.elements.Key;
 import ar.com.datos.btree.exception.BTreeException;
 import ar.com.datos.btree.sharp.conf.BTreeSharpConfiguration;
+import ar.com.datos.btree.sharp.impl.disk.node.NodeType;
 import ar.com.datos.btree.sharp.impl.memory.BTreeSharpConfigurationMemory;
 import ar.com.datos.btree.sharp.node.AbstractRootNode;
 import ar.com.datos.btree.sharp.node.ChainedNode;
@@ -40,7 +41,7 @@ public final class RootNodeMemory<E extends Element<K>, K extends Key> extends A
 	 * @see ar.com.datos.btree.sharp.node.Node#calculateNodeSize()
 	 */
 	@Override
-	protected int calculateNodeSize() {
+	protected long calculateNodeSize() {
 		return this.keysNodes.size();
 	}
 
@@ -125,32 +126,31 @@ public final class RootNodeMemory<E extends Element<K>, K extends Key> extends A
 		
 		@Override
 		public KeyNodeReference<E, K> addElement(E element, NodeReference<E, K> brother, boolean leftBrother, WrappedParam<K> fatherKey) throws BTreeException {
-			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
-		protected int calculateNodeSize() {
-			// TODO Auto-generated method stub
+		protected long calculateNodeSize() {
 			return 0;
 		}
 
 		@Override
 		public E findElement(K key) throws BTreeException {
-			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
 		public ChainedNode<E, K> findNode(K key) throws BTreeException {
-			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
 		protected void postAddElement() throws BTreeException {
-			// TODO Auto-generated method stub
-			
+		}
+
+		@Override
+		public NodeType getNodeType() {
+			return null;
 		}
 	}
 	

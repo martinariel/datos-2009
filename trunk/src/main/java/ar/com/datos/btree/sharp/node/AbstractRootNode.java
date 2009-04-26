@@ -6,6 +6,7 @@ import ar.com.datos.btree.elements.Element;
 import ar.com.datos.btree.elements.Key;
 import ar.com.datos.btree.exception.BTreeException;
 import ar.com.datos.btree.sharp.conf.BTreeSharpConfiguration;
+import ar.com.datos.btree.sharp.impl.disk.node.NodeType;
 import ar.com.datos.util.WrappedParam;
 
 /**
@@ -27,8 +28,18 @@ public abstract class AbstractRootNode<E extends Element<K>, K extends Key> exte
 
 	/*
 	 * (non-Javadoc)
+	 * @see ar.com.datos.btree.sharp.node.Node#getNodeType()
+	 */
+	@Override
+	public NodeType getNodeType() {
+		return NodeType.ROOT;
+	}
+	
+	/*
+	 * (non-Javadoc)
 	 * @see ar.com.datos.btree.sharp.node.AbstractInternalNode#overflow(ar.com.datos.btree.sharp.node.AbstractInternalNode, boolean, ar.com.datos.util.WrappedParam)
 	 */
+	@Override
 	protected KeyNodeReference<E, K> overflow(AbstractInternalNode<E, K> brother,
 			 								boolean leftBrother, WrappedParam<K> fatherKey) throws BTreeException {
 		// Aca no hay hermano, ni clave del padre... Solo debo crear 3 hijos, poner
@@ -79,7 +90,7 @@ public abstract class AbstractRootNode<E extends Element<K>, K extends Key> exte
 	 * @see ar.com.datos.btree.sharp.node.AbstractInternalNode#getNodeMaxCapacity()
 	 */
 	@Override
-	protected final short getNodeMaxCapacity() {
+	protected final int getNodeMaxCapacity() {
 		return this.bTreeSharpConfiguration.getMaxCapacityRootNode();
 	}
 

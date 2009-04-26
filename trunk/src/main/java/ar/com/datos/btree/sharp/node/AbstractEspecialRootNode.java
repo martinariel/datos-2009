@@ -7,6 +7,7 @@ import ar.com.datos.btree.elements.Key;
 import ar.com.datos.btree.exception.BTreeException;
 import ar.com.datos.btree.sharp.BTreeSharp;
 import ar.com.datos.btree.sharp.conf.BTreeSharpConfiguration;
+import ar.com.datos.btree.sharp.impl.disk.node.NodeType;
 import ar.com.datos.util.WrappedParam;
 
 /**
@@ -28,12 +29,24 @@ public abstract class AbstractEspecialRootNode<E extends Element<K>, K extends K
 	 *
 	 * @param bTreeSharpConfiguration
 	 * Configuraciones del árbol que incluirán la configuración del nodo.
+	 * 
+	 * @param btree
+	 * Árbol que contiene a esta raiz.
 	 */
 	public AbstractEspecialRootNode(BTreeSharpConfiguration<E, K> bTreeSharpConfiguration, BTreeSharp<E, K> btree) {
 		super(bTreeSharpConfiguration, null, null);
 		this.btree = btree;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see ar.com.datos.btree.sharp.node.AbstractLeafNode#getNodeType()
+	 */
+	@Override
+	public NodeType getNodeType() {
+		return NodeType.ESPECIALROOT;
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * @see ar.com.datos.btree.sharp.node.AbstractLeafNode#overflow(ar.com.datos.btree.sharp.node.AbstractLeafNode, boolean, ar.com.datos.util.WrappedParam)
@@ -78,9 +91,10 @@ public abstract class AbstractEspecialRootNode<E extends Element<K>, K extends K
 		definitiveRootNode.keysNodes.add(new KeyNodeReference<E, K>(rigth.elements.get(0).getKey(), rigth.myNodeReference));
 		
 		// Método template.
+		definitiveRootNode.myNodeReference = this.myNodeReference.getSameNodeReference(definitiveRootNode, NodeType.ROOT);
 		definitiveRootNode.postAddElement();
 		
-		// Establezco es definitiveRootNode en el arbol.
+		// Establezco el definitiveRootNode en el arbol.
 		this.btree.setRootNode(definitiveRootNode);
 		
 		return null;
@@ -100,7 +114,7 @@ public abstract class AbstractEspecialRootNode<E extends Element<K>, K extends K
 	 * @see ar.com.datos.btree.sharp.node.AbstractLeafNode#getNodeMaxCapacity()
 	 */
 	@Override
-	protected short getNodeMaxCapacity() {
+	protected int getNodeMaxCapacity() {
 		return this.bTreeSharpConfiguration.getMaxCapacityRootNode();
 	}
 	

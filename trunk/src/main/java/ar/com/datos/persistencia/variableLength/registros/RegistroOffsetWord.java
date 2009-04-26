@@ -70,7 +70,7 @@ public class RegistroOffsetWord implements Serializable<RegistroOffsetWord> {
 		return new Serializer<RegistroOffsetWord>()
 		{
 
-			private StringSerializerDelimiter stringSerializer = new StringSerializerDelimiter( new byte[] {(byte)0, (byte)(0)});
+			private StringSerializerDelimiter stringSerializer = new StringSerializerDelimiter();
 			private LongSerializer longserializer = SerializerCache.getInstance().getSerializer(LongSerializer.class);
 			private ShortSerializer shortserializer = SerializerCache.getInstance().getSerializer(ShortSerializer.class);
 			

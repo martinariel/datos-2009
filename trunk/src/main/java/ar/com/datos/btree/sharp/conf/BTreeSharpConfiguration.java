@@ -2,23 +2,25 @@ package ar.com.datos.btree.sharp.conf;
 
 import ar.com.datos.btree.elements.Element;
 import ar.com.datos.btree.elements.Key;
+import ar.com.datos.btree.exception.BTreeException;
 import ar.com.datos.btree.sharp.BTreeSharp;
 
 /**
  * Configuraciones necesarias para un {@link BTreeSharp}
+ * Además: métodos relacionados con la administración de un BTree.
  * Debe ser implementado por cada Implementación (Memoria, Disco, "etc.").
  * 
  * @author fvalido
  */
 public abstract class BTreeSharpConfiguration<E extends Element<K>, K extends Key> {
 	/** Máxima capacidad de un nodo interno. */
-	private short maxCapacityInternalNode;
+	private int maxCapacityInternalNode;
 	
 	/** Máxima capacidad de un nodo hoja. */
-	private short maxCapacityLeafNode;
+	private int maxCapacityLeafNode;
 	
 	/** Máxima capacidad de un nodo raiz */
-	private short maxCapacityRootNode;
+	private int maxCapacityRootNode;
 	
 	/** Abstract factory con las implementaciones a usar. */
 	private BTreeSharpNodeFactory<E, K> bTreeSharpFactory;
@@ -35,7 +37,7 @@ public abstract class BTreeSharpConfiguration<E extends Element<K>, K extends Ke
 	 * @param bTreeSharpFactory
 	 * Factory correspondiente a la implementación del árbol B# que se esté usando.
 	 */
-	public BTreeSharpConfiguration(short maxCapacityInternalNode, short maxCapacityLeafNode, short maxCapacityRootNode, BTreeSharpNodeFactory<E, K> bTreeSharpFactory) {
+	public BTreeSharpConfiguration(int maxCapacityInternalNode, int maxCapacityLeafNode, int maxCapacityRootNode, BTreeSharpNodeFactory<E, K> bTreeSharpFactory) {
 		this.maxCapacityInternalNode = maxCapacityInternalNode;
 		this.maxCapacityLeafNode = maxCapacityLeafNode;
 		this.maxCapacityRootNode = maxCapacityRootNode;
@@ -43,23 +45,35 @@ public abstract class BTreeSharpConfiguration<E extends Element<K>, K extends Ke
 	}
 
 	/**
+	 * Especifica que el árbol no será usado más por ahora.
+	 */
+	public abstract void closeTree() throws BTreeException;
+	
+	/**
+	 * Constructor.
+	 * Requiere que se llame a cada uno de los #set... por separado antes de ser usado.
+	 */
+	public BTreeSharpConfiguration(BTreeSharpNodeFactory<E, K> bTreeSharpFactory) {
+	}
+	
+	/**
 	 * Permite obtener la máxima capacidad de un nodo interno.
 	 */
-	public short getMaxCapacityInternalNode() {
-		return maxCapacityInternalNode;
+	public int getMaxCapacityInternalNode() {
+		return this.maxCapacityInternalNode;
 	}
 	/**
 	 * Permite obtener la máxima capacidad de un nodo hoja.
 	 */
-	public short getMaxCapacityLeafNode() {
-		return maxCapacityLeafNode;
+	public int getMaxCapacityLeafNode() {
+		return this.maxCapacityLeafNode;
 	}
 
 	/**
 	 * Permite obtener la máxima capacidad de un nodo raiz.
 	 */
-	public short getMaxCapacityRootNode() {
-		return maxCapacityRootNode;
+	public int getMaxCapacityRootNode() {
+		return this.maxCapacityRootNode;
 	}
 	
 	/**
@@ -67,6 +81,27 @@ public abstract class BTreeSharpConfiguration<E extends Element<K>, K extends Ke
 	 * árbol B# que se esté usando.
 	 */
 	public BTreeSharpNodeFactory<E, K> getBTreeSharpFactory() {
-		return bTreeSharpFactory;
+		return this.bTreeSharpFactory;
+	}
+
+	/**
+	 * Permite establecer la máxima capacidad de un nodo interno.
+	 */
+	public void setMaxCapacityInternalNode(int maxCapacityInternalNode) {
+		this.maxCapacityInternalNode = maxCapacityInternalNode;
+	}
+
+	/**
+	 * Permite establecer la máxima capacidad de un nodo hoja.
+	 */
+	public void setMaxCapacityLeafNode(int maxCapacityLeafNode) {
+		this.maxCapacityLeafNode = maxCapacityLeafNode;
+	}
+
+	/**
+	 * Permite establecer la máxima capacidad de un nodo raiz.
+	 */
+	public void setMaxCapacityRootNode(int maxCapacityRootNode) {
+		this.maxCapacityRootNode = maxCapacityRootNode;
 	}
 }

@@ -3,6 +3,7 @@ package ar.com.datos.btree.sharp.impl.memory;
 import ar.com.datos.btree.elements.Element;
 import ar.com.datos.btree.elements.Key;
 import ar.com.datos.btree.exception.BTreeConfException;
+import ar.com.datos.btree.exception.BTreeException;
 import ar.com.datos.btree.sharp.conf.BTreeSharpConfiguration;
 
 /**
@@ -19,7 +20,16 @@ public class BTreeSharpConfigurationMemory<E extends Element<K>, K extends Key> 
 	 * @param maxCapacityLeafNode
 	 * Máxima capacidad para un nodo hoja.
 	 */
-	public BTreeSharpConfigurationMemory(short maxCapacityInternalNode, short maxCapacityLeafNode) throws BTreeConfException {
+	public BTreeSharpConfigurationMemory(int maxCapacityInternalNode, int maxCapacityLeafNode) throws BTreeConfException {
 			super(maxCapacityInternalNode, maxCapacityLeafNode, (short)(2 * maxCapacityInternalNode), new BTreeSharpNodeMemoryFactory<E, K>());
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see ar.com.datos.btree.sharp.conf.BTreeSharpConfiguration#closeTree()
+	 */
+	@Override
+	public void closeTree() throws BTreeException {
+		// No hace nada.
 	}
 }

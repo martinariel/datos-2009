@@ -24,6 +24,9 @@ public final class EspecialRootNodeMemory<E extends Element<K>, K extends Key> e
 	 *
 	 * @param bTreeSharpConfiguration
 	 * Configuraciones del árbol que incluirán la configuración del nodo.
+	 * 
+	 * @param btree
+	 * Árbol que contiene a esta raiz.
 	 */
 	public EspecialRootNodeMemory(BTreeSharpConfigurationMemory<E, K> bTreeSharpConfiguration, BTreeSharp<E, K> btree) {
 		super(bTreeSharpConfiguration, btree);
@@ -35,7 +38,7 @@ public final class EspecialRootNodeMemory<E extends Element<K>, K extends Key> e
 	 * @see ar.com.datos.btree.sharp.node.Node#calculateNodeSize()
 	 */
 	@Override
-	protected int calculateNodeSize() {
+	protected long calculateNodeSize() {
 		return this.elements.size();
 	}
 
