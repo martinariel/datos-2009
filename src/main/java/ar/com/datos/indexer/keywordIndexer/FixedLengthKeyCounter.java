@@ -22,6 +22,12 @@ public class FixedLengthKeyCounter<T> implements SessionHandler, Iterable<KeyCou
 	private Serializer<T> serializer;
 	private BlockFile data;
 	private BlockFile countedKeys;
+	
+	public FixedLengthKeyCounter(Serializer<T> serializer) {
+		super();
+		this.serializer = serializer;
+	}
+
 	@Override
 	public void startSession() {
 		this.data = constructFile(getBlockSize().intValue());
@@ -34,7 +40,11 @@ public class FixedLengthKeyCounter<T> implements SessionHandler, Iterable<KeyCou
 		this.data.close();
 		this.data = null;
 	}
-
+	/**
+	 * Hace un ordenamiento por merge que se encarga de contar los casos que son iguales
+	 * @param semiPartes
+	 * @return
+	 */
 	private BlockFile mergeChunksAndCount(List<BlockFile> semiPartes) {
 		BlockFile countingKeys = constructFile(data.getBlockSize() + new Long(countSerializer.getDehydrateSize(0)).intValue());
 		List<byte[]> currentKeys = new ArrayList<byte[]>(semiPartes.size());
@@ -60,6 +70,12 @@ public class FixedLengthKeyCounter<T> implements SessionHandler, Iterable<KeyCou
 		return countingKeys;
 	}
 
+	/**
+	 * Dada la lista de currentkeys busca la que es menor
+	 * @param currentKeys
+	 * @param comparator
+	 * @return
+	 */
 	private byte[] getMinimumKey(List<byte[]> currentKeys, ArrayOfBytesComparator comparator) {
 		byte[] minimumKey = currentKeys.get(0);
 		for (byte[] data : currentKeys)
@@ -67,12 +83,25 @@ public class FixedLengthKeyCounter<T> implements SessionHandler, Iterable<KeyCou
 		return minimumKey;
 	}
 
+	/**
+	 * Carga la lista de currentKeys con el primer dato de cada iterador
+	 * @param currentKeys
+	 * @param iteradores
+	 */
 	private void cargarInitialKeys(List<byte[]> currentKeys, List<Iterator<byte[]>> iteradores) {
 		for (Iterator<byte[]> it: iteradores)  {
 			currentKeys.add(it.next());
 		}
 	}
 
+	/**
+	 * Actualiza la siguiente clave del iterador {@code it}, en caso que dicho iterador no tenga mas datos lo remueve tanto
+	 * de la lista de currentkeys como de la lista de iteradores 
+	 * @param currentKeys
+	 * @param iteradores
+	 * @param it
+	 * @return <code>true</code> si se pudo obtener una siguiente clave. <code>false</code> si no había una siguiente clave para el iterador
+	 */
 	private boolean getNextKey(List<byte[]> currentKeys, List<Iterator<byte[]>> iteradores, Iterator<byte[]> it) {
 		currentKeys.remove(iteradores.indexOf(it));
 		if (!it.hasNext()) {
@@ -139,7 +168,7 @@ public class FixedLengthKeyCounter<T> implements SessionHandler, Iterable<KeyCou
 	 * Construye el archivo temporal donde almacenará las claves a contar
 	 * @return
 	 */
-	public BlockFile constructFile(Integer blockSize) {
+	protected BlockFile constructFile(Integer blockSize) {
 		return new SimpleBlockFile(blockSize);
 	}
 

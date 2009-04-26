@@ -17,8 +17,8 @@ import ar.com.datos.buffer.variableLength.SimpleArrayByte;
 import ar.com.datos.file.BlockFile;
 import ar.com.datos.file.DynamicAccesor;
 import ar.com.datos.file.address.BlockAddress;
-import ar.com.datos.file.variableLength.VariableLengthAddress;
 import ar.com.datos.file.variableLength.VariableLengthWithCache;
+import ar.com.datos.file.variableLength.address.VariableLengthAddress;
 import ar.com.datos.serializer.Serializable;
 import ar.com.datos.serializer.Serializer;
 /**

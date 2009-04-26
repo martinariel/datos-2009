@@ -1,6 +1,7 @@
-package ar.com.datos.file.variableLength;
+package ar.com.datos.file.variableLength.address;
 
 import ar.com.datos.file.address.Address;
+
 
 public class OffsetAddress implements Address {
 
@@ -13,7 +14,7 @@ public class OffsetAddress implements Address {
 
 	@Override
 	public String getUnifiedAddress() {
-		return null;
+		return String.format("%1$019d", getOffset());
 	}
 
 	public Long getOffset() {

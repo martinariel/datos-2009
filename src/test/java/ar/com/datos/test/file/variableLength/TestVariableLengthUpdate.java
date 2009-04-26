@@ -14,8 +14,8 @@ import org.jmock.lib.action.CustomAction;
 import ar.com.datos.buffer.OutputBuffer;
 import ar.com.datos.file.BlockFile;
 import ar.com.datos.file.variableLength.HydratedBlock;
-import ar.com.datos.file.variableLength.VariableLengthAddress;
 import ar.com.datos.file.variableLength.VariableLengthWithCache;
+import ar.com.datos.file.variableLength.address.VariableLengthAddress;
 import ar.com.datos.serializer.NullableSerializer;
 /**
  * Pruebas con archivo inicial vacío

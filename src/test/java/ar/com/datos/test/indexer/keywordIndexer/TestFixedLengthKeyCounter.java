@@ -19,7 +19,7 @@ public class TestFixedLengthKeyCounter extends TestCase {
 		final Map<Integer, List<BlockFileStub>> archivosCreados = new HashMap<Integer, List<BlockFileStub>>();
 		Map<Long, Integer> resultadosEsperados = new HashMap<Long, Integer>();
 		
-		FixedLengthKeyCounter<Long> contador = new FixedLengthKeyCounter<Long>() {
+		FixedLengthKeyCounter<Long> contador = new FixedLengthKeyCounter<Long>(new LongSerializer()) {
 			@Override
 			public BlockFile constructFile(Integer blockSize) {
 				if (!archivosCreados.containsKey(blockSize)) archivosCreados.put(blockSize, new ArrayList<BlockFileStub>());
@@ -27,7 +27,6 @@ public class TestFixedLengthKeyCounter extends TestCase {
 				return archivosCreados.get(blockSize).get(archivosCreados.get(blockSize).size() - 1);
 			}
 		};
-		contador.setSerializer(new LongSerializer());
 		contador.startSession();
 		contador.countKey(2L);
 		contador.countKey(1L);
@@ -52,7 +51,7 @@ public class TestFixedLengthKeyCounter extends TestCase {
 		final Map<Integer, List<BlockFileStub>> archivosCreados = new HashMap<Integer, List<BlockFileStub>>();
 		Map<Long, Integer> resultadosEsperados = new HashMap<Long, Integer>();
 		
-		FixedLengthKeyCounter<Long> contador = new FixedLengthKeyCounter<Long>() {
+		FixedLengthKeyCounter<Long> contador = new FixedLengthKeyCounter<Long>(new LongSerializer()) {
 			@Override
 			public BlockFile constructFile(Integer blockSize) {
 				if (!archivosCreados.containsKey(blockSize)) archivosCreados.put(blockSize, new ArrayList<BlockFileStub>());
@@ -60,7 +59,6 @@ public class TestFixedLengthKeyCounter extends TestCase {
 				return archivosCreados.get(blockSize).get(archivosCreados.get(blockSize).size() - 1);
 			}
 		};
-		contador.setSerializer(new LongSerializer());
 		contador.startSession();
 		Random r = new Random();
 		for (Integer i = 0; i < 1934; i++) {

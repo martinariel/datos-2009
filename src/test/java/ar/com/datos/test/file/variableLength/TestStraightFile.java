@@ -3,8 +3,8 @@ package ar.com.datos.test.file.variableLength;
 import java.util.Iterator;
 
 import junit.framework.TestCase;
-import ar.com.datos.file.variableLength.OffsetAddress;
 import ar.com.datos.file.variableLength.StraightVariableLengthFile;
+import ar.com.datos.file.variableLength.address.OffsetAddress;
 import ar.com.datos.serializer.common.StringSerializerDelimiter;
 
 public class TestStraightFile extends TestCase {
