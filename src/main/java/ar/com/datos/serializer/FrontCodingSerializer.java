@@ -35,8 +35,7 @@ public class FrontCodingSerializer implements Serializer<List<String>>{
 
 	@Override
 	public List<String> hydrate(InputBuffer input) {
-		//return this.collectionSerializer.hydrate(input);
-		return null
+		return this.decompress((List<Tuple<Short, String>>) this.collectionSerializer.hydrate(input));
 	}
 	
 	/**
@@ -90,6 +89,41 @@ public class FrontCodingSerializer implements Serializer<List<String>>{
 		}
 		return compressedWords;
 	}
+	
+	/**
+	 * Descomprime una lista de palabras comprimidas con el algoritmo de 
+	 * FrontCoding y devuelve una lista de palabras.
+	 * 
+	 * input : (0,"codazo") (3,"earse") (4,"ra") (3,"icia") (6,"r")
+	 * output: "codazo" "codearse" "codera" "codicia" "codiciar"
+	 *  
+	 * @param un listado de {@link<Short,String>} con las palabras comprimidas
+	 * @return listado de palabras descomprimidas
+	 */
+	private List<String> decompress(List<Tuple<Short,String>> compressedWords){
+		List<String> words = new LinkedList<String>();
+		Tuple<Short,String> compressedWord;
+		short characters;
+		String partialWord, previousWord = compressedWords.get(0).getSecond();
+		// obtengo la primera palabra como "previousWord"
+		words.add(previousWord);
+		
+		for (int i=1; i<compressedWords.size(); i++){
+			// obtengo los dos elementos de la tupla
+			compressedWord = compressedWords.get(i);
+			characters = compressedWord.getFirst();
+			partialWord = compressedWord.getSecond();
+			
+			// se arma la palabra en base a la palabra anterior
+			previousWord = previousWord.substring(0, characters) + partialWord;
+			
+			// se agrega a la lista de palabras descomprimidas
+			words.add(previousWord);
+		}
+		return words;
+	}
+	
+	
 }
 
 /**
