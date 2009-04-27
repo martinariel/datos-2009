@@ -10,7 +10,7 @@ import java.io.IOException;
  * @author mfernandez
  *
  */
-public class FileSystemDocument implements IDocument {
+public class FileSystemDocument implements Document {
 
     private String filePath;
     private File archivo;
