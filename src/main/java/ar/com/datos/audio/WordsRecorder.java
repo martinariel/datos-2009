@@ -12,7 +12,7 @@ import ar.com.datos.persistencia.exception.WordIsAlreadyRegisteredException;
  * @author mfernandez
  *
  */
-public class WordsRecorder {
+public class WordsRecorder implements AudioStopper{
 
     private AudioServiceHandler servicioAudio;
     private SoundPersistenceService servicioArchivos;
@@ -24,6 +24,7 @@ public class WordsRecorder {
         servicioAudio = AudioServiceHandler.getInstance();
         this.servicioArchivos = servicioArchivos;
         this.interfazUsuario = interfazUsuario;
+        this.interfazUsuario.sendStopper(this);
     }
 
     /**
@@ -41,6 +42,10 @@ public class WordsRecorder {
         }
     }
 
+    public void stop(){
+        stopRecording();
+    }
+
     /**
      * Detiene la grabacion
      *
@@ -53,16 +58,16 @@ public class WordsRecorder {
             AnotherInputStream inputAudio = new AnotherInputStream(audio.toByteArray());
             inputAudio.mark(Integer.MAX_VALUE);
             Thread reproduccion = servicioAudio.play(inputAudio);
-            
+
             try {
                 reproduccion.join();
             }
             catch(InterruptedException e){
                 System.out.println("Thread principal interrumpido");
             }
-            
+
             inputAudio.reset();
-            
+
             if (interfazUsuario.recordingWordOK()) {
                 try {
                     servicioArchivos.addWord(palabraActual, inputAudio);
@@ -72,7 +77,7 @@ public class WordsRecorder {
                 }
             }
             else {
-            	grabarPalabra();
+                grabarPalabra();
             }
         }
     }
@@ -88,11 +93,11 @@ public class WordsRecorder {
 
         for (String palabra : palabras){
 
-        	if (!servicioArchivos.isRegistered(palabra)){
-        		palabraActual = palabra;
+            if (!servicioArchivos.isRegistered(palabra)){
+                palabraActual = palabra;
                 interfazUsuario.notifyNextWord(palabraActual);
                 grabarPalabra();
-        	}
+            }
 
         }
 
