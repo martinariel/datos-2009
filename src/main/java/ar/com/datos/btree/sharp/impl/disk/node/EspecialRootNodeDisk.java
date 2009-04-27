@@ -1,5 +1,6 @@
 package ar.com.datos.btree.sharp.impl.disk.node;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import ar.com.datos.btree.elements.Element;
@@ -7,8 +8,19 @@ import ar.com.datos.btree.elements.Key;
 import ar.com.datos.btree.exception.BTreeException;
 import ar.com.datos.btree.sharp.BTreeSharp;
 import ar.com.datos.btree.sharp.impl.disk.BTreeSharpConfigurationDisk;
+import ar.com.datos.btree.sharp.impl.disk.interfaces.ListElementsSerializer;
+import ar.com.datos.btree.sharp.impl.disk.interfaces.ListKeysSerializer;
+import ar.com.datos.btree.sharp.impl.disk.serializer.EspecialRootNodeSerializer;
 import ar.com.datos.btree.sharp.impl.disk.serializer.InternalNodeSerializer;
+import ar.com.datos.btree.sharp.impl.disk.serializer.LeafNodeSerializer;
+import ar.com.datos.btree.sharp.impl.disk.serializer.RootNodeSerializer;
+import ar.com.datos.btree.sharp.impl.disk.serializer.StateInternalNodeSerializer;
 import ar.com.datos.btree.sharp.node.AbstractEspecialRootNode;
+import ar.com.datos.btree.sharp.util.ThirdPartHelper;
+import ar.com.datos.test.btree.sharp.mock.disk.ListTestElementSerializer;
+import ar.com.datos.test.btree.sharp.mock.disk.ListTestKeySerializer;
+import ar.com.datos.test.btree.sharp.mock.disk.TestElementDisk;
+import ar.com.datos.test.btree.sharp.mock.disk.TestKeyDisk;
 
 /**
  * Nodo raiz especial en disco.
@@ -84,14 +96,76 @@ public class EspecialRootNodeDisk<E extends Element<K>, K extends Key> extends A
 		myNodeReference.saveNode(this);
 	}
 
+// FIXME: Esto no va más
+//	/**
+//	 * Obtiene las terceras partes pero considerando a los elements como de un tamaño fijo.
+//	 * La lista de elementos original querará vacia.
+//	 * 
+//	 * @see #getParts()
+//	 */
+//	private List<List<E>> getPartsAsIfElementsWhereFixedLength() {
+//		int partSize = Math.round(((float)this.elements.size()) / 3F);
+//			
+//		List<E> part = new LinkedList<E>();;
+//		List<List<E>> returnValue = new LinkedList<List<E>>();
+//		for (int i = 0; i < 3; i++) {
+//			part = new LinkedList<E>();
+//			for (int j = 0; j < partSize && this.elements.size() > 0; j++) {
+//				part.add(this.elements.remove(0));
+//			}
+//			returnValue.add(part);
+//		}
+//		while (this.elements.size() > 0) {
+//			part.add(this.elements.remove(0));
+//		}
+//		
+//		return returnValue;
+//	}
+	
+//	/*
+//	 * (non-Javadoc)
+//	 * @see ar.com.datos.btree.sharp.node.AbstractEspecialRootNode#getParts()
+//	 */
+//	@Override
+//	protected List<List<E>> getParts() {
+//		ListElementsSerializer<E, K> serializer = this.bTreeSharpConfiguration.getListElementsSerializer();
+//		
+//		// Obtengo la tercara parte considerando a todos los elementos como de un tamaño fijo.
+//		List<List<E>> thirdParts = getPartsAsIfElementsWhereFixedLength();
+//
+//		// Obtengo cada una de las partes
+//		List<E> left = thirdParts.get(0);
+//		List<E> center = thirdParts.get(1);
+//		List<E> right = thirdParts.get(2);
+//		
+//		// Reacomodo lo obtenido pero ahora calculando los tamaños (sin considerar tamaño fijo).
+//		ThirdPartBalancer<E> thirdPartBalancer = new ThirdPartBalancer<E>();
+//		thirdPartBalancer.balanceThirdPart(left, center, true, serializer, serializer.getDehydrateSize(right));
+//		thirdPartBalancer.balanceThirdPart(center, right, true, serializer, serializer.getDehydrateSize(left));
+//		
+//		return thirdParts;
+//	}
+	
 	/*
 	 * (non-Javadoc)
-	 * @see ar.com.datos.btree.sharp.node.AbstractEspecialRootNode#getParts()
+	 * @see ar.com.datos.btree.sharp.node.AbstractLeafNode#getParts(java.util.List)
 	 */
 	@Override
-	protected List<List<E>> getParts() {
-		// TODO
-		return null;
+	protected List<List<E>> getParts(List<E> rightNodeElements) {
+		ListElementsSerializer<E, K> serializer = this.bTreeSharpConfiguration.getListElementsSerializer(); 
+
+		// Obtengo la tercara parte considerando a todos los elementos como de un tamaño fijo.
+		List<List<E>> parts = ThirdPartHelper.divideInThreeParts(this.elements);
+		
+		List<E> left = parts.get(0);
+		List<E> center = parts.get(1);
+		List<E> right = parts.get(2);
+		
+		// Reacomodo lo obtenido pero ahora calculando los tamaños (sin considerar tamaño fijo).
+		ThirdPartHelper.balanceThirdPart(left, center, serializer, serializer.getDehydrateSize(right));
+		ThirdPartHelper.balanceThirdPart(center, right, serializer, serializer.getDehydrateSize(left));
+		
+		return parts;
 	}
 	
 	/*
@@ -108,5 +182,50 @@ public class EspecialRootNodeDisk<E extends Element<K>, K extends Key> extends A
 	 */
 	public List<E> getElements() {
 		return this.elements;
+	}
+
+	// FIXME: Temporal. Todo lo que está abajo es para pruebas de desarrollo.
+	public void setElements(List<E> elements) {
+		this.elements = elements;
+	}
+	
+	public static void main(String[] args) {
+		List<TestElementDisk> elements = new ArrayList<TestElementDisk>();
+		
+		BTreeSharpConfigurationDisk<TestElementDisk, TestKeyDisk> bTreeSharpConfigurationDisk = new BTreeSharpConfigurationDisk<TestElementDisk, TestKeyDisk>();
+		
+		ListKeysSerializer<TestKeyDisk> listKeysSerializer = new ListTestKeySerializer();
+		ListElementsSerializer<TestElementDisk, TestKeyDisk> listElementsSerializer = new ListTestElementSerializer();
+		
+		InternalNodeSerializer<TestElementDisk, TestKeyDisk> internalNodeSerializer = new InternalNodeSerializer<TestElementDisk, TestKeyDisk>(listKeysSerializer, bTreeSharpConfigurationDisk); 
+		RootNodeSerializer<TestElementDisk, TestKeyDisk> rootNodeSerializer = new RootNodeSerializer<TestElementDisk, TestKeyDisk>(listKeysSerializer, bTreeSharpConfigurationDisk);
+		EspecialRootNodeSerializer<TestElementDisk, TestKeyDisk> especialRootNodeSerializer = new EspecialRootNodeSerializer<TestElementDisk, TestKeyDisk>(listElementsSerializer, bTreeSharpConfigurationDisk);
+		StateInternalNodeSerializer<TestElementDisk, TestKeyDisk> stateInternalNodeSerializer = new StateInternalNodeSerializer<TestElementDisk, TestKeyDisk>(internalNodeSerializer, rootNodeSerializer, especialRootNodeSerializer);
+		LeafNodeSerializer<TestElementDisk, TestKeyDisk> leafNodeSerializer = new LeafNodeSerializer<TestElementDisk, TestKeyDisk>(listElementsSerializer, bTreeSharpConfigurationDisk);
+
+		short size = 100;
+		
+		bTreeSharpConfigurationDisk.setMaxCapacityInternalNode(size);
+		bTreeSharpConfigurationDisk.setMaxCapacityLeafNode(size);
+		bTreeSharpConfigurationDisk.setMaxCapacityRootNode(size);
+		bTreeSharpConfigurationDisk.setLeafNodeSerializer(leafNodeSerializer);
+		bTreeSharpConfigurationDisk.setStateInternalNodeSerializer(stateInternalNodeSerializer);
+		bTreeSharpConfigurationDisk.setListElementsSerializer(listElementsSerializer);
+		bTreeSharpConfigurationDisk.setListKeysSerializer(listKeysSerializer);
+
+		elements.add(new TestElementDisk("Ella", 1));
+		elements.add(new TestElementDisk("está", 2));
+		elements.add(new TestElementDisk("en", 3));
+		elements.add(new TestElementDisk("el", 4));
+		elements.add(new TestElementDisk("horizonte", 5));
+		elements.add(new TestElementDisk("dice", 6));
+		elements.add(new TestElementDisk("Fernando", 7));
+		elements.add(new TestElementDisk("Birri", 8));
+		elements.add(new TestElementDisk("Me", 9));
+		
+		EspecialRootNodeDisk<TestElementDisk, TestKeyDisk> realNode = new EspecialRootNodeDisk<TestElementDisk, TestKeyDisk>(bTreeSharpConfigurationDisk, null);
+		realNode.setElements(elements);
+		
+		realNode.overflow(null, false, null);
 	}
 }

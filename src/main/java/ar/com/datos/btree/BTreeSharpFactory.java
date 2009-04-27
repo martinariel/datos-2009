@@ -100,10 +100,13 @@ public class BTreeSharpFactory<E extends Element<K>, K extends Key> {
 	 * Si se produce un problema levantando o creando el arbol.
 	 */
 	public BTreeSharp<E, K> createBTreeSharpDisk(String internalFile, String leafFile, int internalBlockSize,
-										int leafBlockSize, Class<ElementAndKeyListSerializerFactory<E, K>> serializerFactoryClass,
+										int leafBlockSize, Class serializerFactoryClass,
 										boolean overwrite) throws BTreeConfException {
 		if (!isPow(internalBlockSize, 2) || !isPow(leafBlockSize, 2) || internalBlockSize < 128 || leafBlockSize < 128) {
 			throw new BTreeConfException("El tamaño de los nodos debe ser potencia de 2 y mayor a 128.");
+		}
+		if (!ElementAndKeyListSerializerFactory.class.isAssignableFrom(serializerFactoryClass)) {
+			throw new BTreeConfException("serializerFactoryClass debe ser una implementación de " + ElementAndKeyListSerializerFactory.class.getName());
 		}
 		try {
 			File internalF = new File(internalFile);
@@ -224,6 +227,8 @@ public class BTreeSharpFactory<E extends Element<K>, K extends Key> {
 		bTreeSharpConfigurationDisk.setInternalNodesFileManager(internalNodeFile);
 		bTreeSharpConfigurationDisk.setLeafNodeSerializer(leafAndInternalNodeSerializer.getFirst());
 		bTreeSharpConfigurationDisk.setStateInternalNodeSerializer(leafAndInternalNodeSerializer.getSecond());
+		bTreeSharpConfigurationDisk.setListKeysSerializer(listKeyAndElementSerializer.getFirst());
+		bTreeSharpConfigurationDisk.setListElementsSerializer(listKeyAndElementSerializer.getSecond());
 		bTreeSharpConfigurationDisk.setMaxCapacityLeafNode(leafNodeFile.getDataSizeFor((short)1));
 		bTreeSharpConfigurationDisk.setMaxCapacityInternalNode(internalNodeFile.getDataSizeFor((short)1));
 		bTreeSharpConfigurationDisk.setMaxCapacityRootNode(internalNodeFile.getDataSizeFor((short)2));

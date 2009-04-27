@@ -46,16 +46,16 @@ public abstract class AbstractRootNode<E extends Element<K>, K extends Key> exte
 		// 1/3 del nodo (2/3 de un nodo normal) en cada uno de esos hijos y reescribir
 		// esta raiz.
 		
-		// Trabajo a los nodos como left, center y rigth.
+		// Trabajo a los nodos como left, center y right.
 		AbstractInternalNode<E, K> left = this.bTreeSharpConfiguration.getBTreeSharpFactory().createInternalNode(this.bTreeSharpConfiguration);
-		AbstractInternalNode<E, K> rigth = this.bTreeSharpConfiguration.getBTreeSharpFactory().createInternalNode(this.bTreeSharpConfiguration);
+		AbstractInternalNode<E, K> right = this.bTreeSharpConfiguration.getBTreeSharpFactory().createInternalNode(this.bTreeSharpConfiguration);
 		AbstractInternalNode<E, K> center = this.bTreeSharpConfiguration.getBTreeSharpFactory().createInternalNode(this.bTreeSharpConfiguration);
 		
 		// Extraigo los tercios 
-		List<List<KeyNodeReference<E, K>>> listParts = getParts(); // Método template.
+		List<List<KeyNodeReference<E, K>>> listParts = getParts(null, null, null); // Método template.
 		List<KeyNodeReference<E, K>> leftParts = listParts.get(0);
 		List<KeyNodeReference<E, K>> centerParts = listParts.get(1);
-		List<KeyNodeReference<E, K>> rigthParts = listParts.get(2);
+		List<KeyNodeReference<E, K>> rightParts = listParts.get(2);
 		
 		// Los meto en los nodos. 
 		K key1, key2;
@@ -66,21 +66,21 @@ public abstract class AbstractRootNode<E extends Element<K>, K extends Key> exte
 		center.firstChild = tempKeyNodeReference.getNodeReference();
 		key1 = tempKeyNodeReference.getKey();
 		center.keysNodes.addAll(centerParts);
-		tempKeyNodeReference = rigthParts.remove(0);
-		rigth.firstChild = tempKeyNodeReference.getNodeReference();
+		tempKeyNodeReference = rightParts.remove(0);
+		right.firstChild = tempKeyNodeReference.getNodeReference();
 		key2 = tempKeyNodeReference.getKey();
-		rigth.keysNodes.addAll(rigthParts);
+		right.keysNodes.addAll(rightParts);
 		
 		// Método template
 		left.postAddElement();
 		center.postAddElement();
-		rigth.postAddElement();
+		right.postAddElement();
 		
 		// Reconfiguro esta raiz para que apunte a los nuevos nodos.
 		this.firstChild = left.myNodeReference;
 		this.keysNodes.clear();
 		this.keysNodes.add(new KeyNodeReference<E, K>(key1, center.myNodeReference));
-		this.keysNodes.add(new KeyNodeReference<E, K>(key2, rigth.myNodeReference));
+		this.keysNodes.add(new KeyNodeReference<E, K>(key2, right.myNodeReference));
 	
 		return null;
 	}
@@ -94,31 +94,32 @@ public abstract class AbstractRootNode<E extends Element<K>, K extends Key> exte
 		return this.bTreeSharpConfiguration.getMaxCapacityRootNode();
 	}
 
-	/**
-	 * Permite dividir el nodo en 3 partes.
-	 * 
-	 * La primer KeyNodeReference de la primer parte contendrá a firstChild como
-	 * NodeReference (que será el firstChild del nodo creado a partir de él) y 
-	 * ninguna clave (las demás son normales).
-	 * La primer KeyNodeReference de la segunda y tercer parte contendra el
-	 * siguiente KeyNodeReference al del anterior, pero debe interpretárselo
-	 * de esta manera: el NodeReference será el firstChild del nuevo nodo (a
-	 * crear usando esta parte) y la Key será la clave que apuntará a este
-	 * nuevo nodo (los demás KeyNodeReference son normales).
-	 * 
-	 * Es indistinto el estado en que se deja el nodo original (este).
-	 * 
-	 * Patrón de diseño Template.
-	 */
-	protected abstract List<List<KeyNodeReference<E, K>>> getParts(); 
-	
-	/*
-	 * (non-Javadoc)
-	 * @see ar.com.datos.btree.sharp.node.AbstractInternalNode#getThirdPart(boolean)
-	 */
-	@Override
-	protected final List<KeyNodeReference<E, K>> getThirdPart(boolean left) {
-		// No se usa.
-		return null;
-	}
+//  FIXME: No se usa más
+//	/**
+//	 * Permite dividir el nodo en 3 partes.
+//	 * 
+//	 * La primer KeyNodeReference de la primer parte contendrá a firstChild como
+//	 * NodeReference (que será el firstChild del nodo creado a partir de él) y 
+//	 * ninguna clave (las demás son normales).
+//	 * La primer KeyNodeReference de la segunda y tercer parte contendra el
+//	 * siguiente KeyNodeReference al del anterior, pero debe interpretárselo
+//	 * de esta manera: el NodeReference será el firstChild del nuevo nodo (a
+//	 * crear usando esta parte) y la Key será la clave que apuntará a este
+//	 * nuevo nodo (los demás KeyNodeReference son normales).
+//	 * 
+//	 * Es indistinto el estado en que se deja el nodo original (este).
+//	 * 
+//	 * Patrón de diseño Template.
+//	 */
+//	protected abstract List<List<KeyNodeReference<E, K>>> getParts(); 
+//	
+//	/*
+//	 * (non-Javadoc)
+//	 * @see ar.com.datos.btree.sharp.node.AbstractInternalNode#getThirdPart(boolean)
+//	 */
+//	@Override
+//	protected final List<KeyNodeReference<E, K>> getThirdPart(boolean left) {
+//		// No se usa.
+//		return null;
+//	}
 }

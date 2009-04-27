@@ -85,25 +85,40 @@ public abstract class AbstractLeafNode<E extends Element<K>, K extends Key> exte
 	// FIXME: Este método debe ser private. Está como público para el desarrollo.
 	public KeyNodeReference<E, K> split(AbstractLeafNode<E, K> brother,
 										boolean leftBrother, WrappedParam<K> fatherKey) throws BTreeException {
-		// Trabajo a los nodos como left, center y rigth, donde center es el nuevo nodo.
+		// Trabajo a los nodos como left, center y right, donde center es el nuevo nodo.
 		AbstractLeafNode<E, K> left = (leftBrother) ? brother : this;
-		AbstractLeafNode<E, K> rigth = (leftBrother) ? this : brother;
-		// Creo una nueva hoja cuyo nodo anterior será left, y el siguiente será el rigth.
-		AbstractLeafNode<E, K> center = this.bTreeSharpConfiguration.getBTreeSharpFactory().createLeafNode(this.bTreeSharpConfiguration, left.myNodeReference, rigth.myNodeReference);
+		AbstractLeafNode<E, K> right = (leftBrother) ? this : brother;
+		// Creo una nueva hoja cuyo nodo anterior será left, y el siguiente será el right.
+		AbstractLeafNode<E, K> center = this.bTreeSharpConfiguration.getBTreeSharpFactory().createLeafNode(this.bTreeSharpConfiguration, left.myNodeReference, right.myNodeReference);
+
+// FIXME
+//		// Extraigo el último tercio de left y el primer tercio de right y con ellas armo los elements
+//		// del nuevo nodo.
+//		center.elements.addAll(left.getThirdPart(false)); // Método template.
+//		center.elements.addAll(right.getThirdPart(true)); // Método template.
 		
-		// Extraigo el último tercio de left y el primer tercio de rigth y con ellas armo los elements
-		// del nuevo nodo.
-		center.elements.addAll(left.getThirdPart(false)); // Método template.
-		center.elements.addAll(rigth.getThirdPart(true)); // Método template.
+		// Extraigo los tercios 
+		List<List<E>> listParts = left.getParts(right.elements); // Método template.
+		List<E> leftPart = listParts.get(0);
+		List<E> centerPart = listParts.get(1);
+		List<E> rightPart = listParts.get(2);
+		
+		// Pongo las listas en los nodos.
+		left.elements.clear();
+		left.elements.addAll(leftPart);
+		center.elements.clear();
+		center.elements.addAll(centerPart);
+		right.elements.clear();
+		right.elements.addAll(rightPart);		
 		
 		// Método template.
 		center.postAddElement();
 		
 		// Pongo las referencias a anterior y siguiente donde corresponde.
 		left.next = center.myNodeReference;
-		rigth.previous = center.myNodeReference;
+		right.previous = center.myNodeReference;
 		
-		fatherKey.setValue(rigth.elements.get(0).getKey());
+		fatherKey.setValue(right.elements.get(0).getKey());
 		
 		return new KeyNodeReference<E, K>(center.elements.get(0).getKey(), center.myNodeReference);
 	}
@@ -356,15 +371,25 @@ public abstract class AbstractLeafNode<E extends Element<K>, K extends Key> exte
 		return (ChainedNode<E, K>)node;
 	}
 
+//  FIXME: Esto no va más	
+//	/**
+//	 * Obtiene la tercera parte del nodo de la izquierda o de la derecha
+//	 * según el valor de left sea true o no.
+//	 * La list de elements del nodo quedará sin esa tercera parte.
+//	 * 
+//	 * Patrón de diseño Template.
+//	 */
+//	protected abstract List<E> getThirdPart(boolean left);
+
 	/**
-	 * Obtiene la tercera parte del nodo de la izquierda o de la derecha
-	 * según el valor de left sea true o no.
-	 * La list de elements del nodo quedará sin esa tercera parte.
+	 * Juntando los elements de este nodo con los del derecho que recibe, obtiene
+	 * 3 partes (3 listas) de igual tamaño (o lo más próximo posible).
+	 * Es indistinto el estado en que quedan las listas de elementos originales.
 	 * 
 	 * Patrón de diseño Template.
 	 */
-	protected abstract List<E> getThirdPart(boolean left);
-
+	protected abstract List<List<E>> getParts(List<E> rightNodeElements);
+	
 	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#toString()
