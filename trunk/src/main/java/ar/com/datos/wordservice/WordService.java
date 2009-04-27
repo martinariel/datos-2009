@@ -1,7 +1,7 @@
 package ar.com.datos.wordservice;
 import ar.com.datos.audio.DocumentPlayer;
 import ar.com.datos.audio.DocumentRecorder;
-import ar.com.datos.documentlibrary.IDocument;
+import ar.com.datos.documentlibrary.Document;
 import ar.com.datos.parser.Parser;
 import ar.com.datos.persistencia.SoundPersistenceService;
 
@@ -17,7 +17,7 @@ public class WordService {
 	private Crawler crawler;
 	private SoundPersistenceService persistenciaAudio;
 
-	public WordService {
+	public WordService (){
 		//TODO instanciar persistencia de audio
 		//TODO instanciar crawler
 	}
@@ -26,10 +26,10 @@ public class WordService {
 	 * TODO: Agrega un documento al indexador
 	 * @param document
 	 */
-	public void addDocument(IDocument document){
+	public void addDocument(Document document){
 		DocumentRecorder recorder = new DocumentRecorder(persistenciaAudio);
 		try {
-			recorder.record(documento);
+			recorder.record(document);
 		}
 		catch (Exception e){
 			sendMessage("Audio device busy");
@@ -45,7 +45,7 @@ public class WordService {
 	 * @param document
 	 * @return
 	 */
-	public Collection<IDocument> searchDocument(IDocument document){
+	public Collection<Document> searchDocument(Document document){
 		//TODO
 		return null;
 	}
@@ -55,7 +55,7 @@ public class WordService {
 	 * Reproduce un documento
 	 * @param document
 	 */
-	public void playDocument(IDocument document){
+	public void playDocument(Document document){
 		
 		DocumentPlayer player = new DocumentPlayer();
 		
