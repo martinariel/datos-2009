@@ -1,15 +1,12 @@
 package ar.com.datos;
 
+import ar.com.datos.audio.AudioStopper;
 import ar.com.datos.audio.IWordsRecorderConector;
-import ar.com.datos.audio.WordsPlayer;
-import ar.com.datos.audio.WordsRecorder;
-import ar.com.datos.persistencia.SoundPersistenceService;
-import ar.com.datos.persistencia.variableLength.SoundPersistenceServiceVariableLengthImpl;
+import ar.com.datos.wordservice.WordService;
+import ar.com.datos.documentlibrary.Document;
+import ar.com.datos.documentlibrary.FileSystemDocument;
 
-import ar.com.datos.parser.IParser;
-import ar.com.datos.parser.SimpleTextParser;
 import java.io.*;
-import java.util.Collection;
 
 /**
  *
@@ -19,12 +16,9 @@ import java.util.Collection;
 
 public class Main implements IWordsRecorderConector{
 
-    private IParser parser;
     private BufferedReader bufferReaderTeclado;
-    private WordsPlayer reproductor;
-    private WordsRecorder grabador;
-    private SoundPersistenceService servicioArchivos;
-
+    private WordService backend;
+    private AudioStopper stopper;
 
     public Main (String directorioArchivos){
 
@@ -33,15 +27,9 @@ public class Main implements IWordsRecorderConector{
         directorioArchivos +=
             ((directorioArchivos.length() > 0) && !directorioArchivos.endsWith("/"))? "/":"";
 
-        servicioArchivos = new SoundPersistenceServiceVariableLengthImpl(
-                directorioArchivos + "palabras",
-                directorioArchivos + "sonidos"
-                );
+        backend = new WordService(directorioArchivos);
 
-        parser				= new SimpleTextParser();
         bufferReaderTeclado = new BufferedReader(new InputStreamReader(System.in));
-        reproductor 		= new WordsPlayer(servicioArchivos);
-        grabador			= new WordsRecorder(this,servicioArchivos);
 
     }
 
@@ -52,20 +40,20 @@ public class Main implements IWordsRecorderConector{
 
     @Override
     public void notifyNextWord(String palabra){
-        System.out.println("Se ha encontrado la palabra: " + palabra);
+        sendMessage("Se ha encontrado la palabra: " + palabra);
     }
 
     @Override
     public boolean canStartRecording(){
-        System.out.println("Ingrese 'i' si quiere grabar la palabra.");
+        sendMessage("Ingrese 'i' si quiere grabar la palabra.");
         return readKeyBoardChar() == 'i';
     }
 
     @Override
     public boolean recordingWordOK(){
-        System.out.println("Opciones:");
-        System.out.println("s: Guardar la palabra.");
-        System.out.println("Grabar nuevamente (cualquier otra tecla).");
+        sendMessage("Opciones:");
+        sendMessage("s: Guardar la palabra.");
+        sendMessage("Grabar nuevamente (cualquier otra tecla).");
 
         return readKeyBoardChar() == 's';
     }
@@ -77,10 +65,10 @@ public class Main implements IWordsRecorderConector{
 
     @Override
     public void recordingWordStarted(){
-        System.out.println("Grabando!!!!, ingrese 'f' para finalizar la grabacion.");
+        sendMessage("Grabando!!!!, ingrese 'f' para finalizar la grabacion.");
 
         if (readKeyBoardChar() == 'f'){
-            grabador.stopRecording();
+            stopper.stop();
         }
         else {
             recordingWordStarted();
@@ -89,10 +77,19 @@ public class Main implements IWordsRecorderConector{
 
     @Override
     public void recordingAllWordsEnd(){
-        System.out.println("Grabacion de palabras finalizada!!!");
+        sendMessage("Grabacion de palabras finalizada!!!");
         showMenu();
     }
 
+    @Override
+    public void sendMessage(String message){
+        System.out.println(message);
+    }
+
+    @Override
+    public void sendStopper(AudioStopper stopper){
+        this.stopper = stopper;
+    }
 
     /**
      * @return String leido por teclado
@@ -122,21 +119,17 @@ public class Main implements IWordsRecorderConector{
      *
      */
     private void showMenu() {
-        System.out.println("Opciones:");
-        System.out.println("1 - Carga de documentos");
-        System.out.println("2 - Reproduccion de palabras");
-        System.out.println("Cualquier otra tecla: Salir");
-        System.out.println("Seleccione una opcion:");
+        sendMessage("Opciones:");
+        sendMessage("1 - Carga de documentos");
+        sendMessage("2 - Reproduccion de palabras");
+        sendMessage("Cualquier otra tecla: Salir");
+        sendMessage("Seleccione una opcion:");
 
         switch(readKeyBoardChar()){
         case '1': loadDocument();break;
         case '2': playDocument();break;
         }
-        try {
-            servicioArchivos.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        backend.end();
     }
 
 
@@ -146,20 +139,13 @@ public class Main implements IWordsRecorderConector{
      */
     private void loadDocument(){
 
-        System.out.println("Ingrese una ruta valida:");
+        sendMessage("Ingrese una ruta valida:");
 
         String ruta = readKeyboardString();
-        Collection<String> palabras = null;
 
         try {
-            palabras = parser.parseTextFile(ruta);
-
-            try {
-                grabador.recordWords(palabras);
-            }
-            catch(Exception e){
-                e.printStackTrace();
-            }
+           Document documento = new FileSystemDocument(ruta);
+           backend.addDocument(documento, this);
         }
         catch(Exception e){
             loadDocument();
@@ -173,25 +159,19 @@ public class Main implements IWordsRecorderConector{
      *
      */
     private void playDocument(){
-        System.out.println("Ingrese una ruta valida:");
+        sendMessage("Ingrese una ruta valida:");
 
         String ruta = readKeyboardString();
-        Collection<String> palabras = null;
 
         try {
-            palabras = parser.parseTextFile(ruta);
-
-            try {
-                reproductor.playWords(palabras);
-            }
-            catch(Exception e){
-                e.printStackTrace();
-            }
-            showMenu();
+            Document documento = new FileSystemDocument(ruta);
+            backend.playDocument(documento, this);
         }
         catch(Exception e){
-            playDocument();
+            e.printStackTrace();
         }
+        showMenu();
+
     }
 
     /**

@@ -40,4 +40,16 @@ public interface IWordsRecorderConector {
      * Notifica la finalizacion de grabacion de todas las palabras
      */
     void recordingAllWordsEnd();
+
+    /**
+     * Recibe un mensaje.
+     * @param message
+     */
+    void sendMessage(String message);
+
+    /**
+     * Recibe el stopper de audio
+     * @param stopper
+     */
+    void sendStopper(AudioStopper stopper);
 }
