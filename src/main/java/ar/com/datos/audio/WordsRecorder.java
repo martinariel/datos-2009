@@ -24,6 +24,8 @@ public class WordsRecorder implements AudioStopper{
         servicioAudio = AudioServiceHandler.getInstance();
         this.servicioArchivos = servicioArchivos;
         this.interfazUsuario = interfazUsuario;
+
+        //Le envio el stopper a la interfaz de usuario
         this.interfazUsuario.sendStopper(this);
     }
 
