@@ -1,4 +1,4 @@
-package ar.com.datos.indexer;
+package ar.com.datos.btree.exception;
 
 public class UncomparableException extends RuntimeException {
 

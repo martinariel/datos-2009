@@ -1,4 +1,4 @@
-package ar.com.datos.indexer.keywordIndexer;
+package ar.com.datos.utils.sort.external;
 
 import ar.com.datos.util.Tuple;
 

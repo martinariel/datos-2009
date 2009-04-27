@@ -4,7 +4,12 @@ import ar.com.datos.file.DynamicAccesor;
 import ar.com.datos.file.variableLength.StraightVariableLengthFile;
 import ar.com.datos.file.variableLength.address.OffsetAddress;
 import ar.com.datos.serializer.common.StringSerializerDelimiter;
-
+/**
+ * Administrador del léxico completo.
+ * Es un thin-Wrapper de un archivo secuencial de acceso dinámico no actualizable
+ * @author jbarreneche
+ *
+ */
 public class LexicalManager {
 
 	private DynamicAccesor<OffsetAddress, String> lexical;

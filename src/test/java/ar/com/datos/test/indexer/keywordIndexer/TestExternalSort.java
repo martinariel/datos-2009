@@ -4,8 +4,8 @@ import java.util.Collection;
 
 import junit.framework.TestCase;
 import ar.com.datos.file.BlockFile;
-import ar.com.datos.indexer.keywordIndexer.ExternalSorter;
 import ar.com.datos.test.file.variableLength.BlockFileStub;
+import ar.com.datos.utils.sort.external.ExternalSorter;
 
 public class TestExternalSort extends TestCase {
 	public void testSessionConPalabrasDeUnUnicoDocumento() throws Exception {

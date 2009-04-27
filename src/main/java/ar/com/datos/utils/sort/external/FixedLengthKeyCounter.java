@@ -1,4 +1,4 @@
-package ar.com.datos.indexer.keywordIndexer;
+package ar.com.datos.utils.sort.external;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -14,7 +14,15 @@ import ar.com.datos.serializer.common.IntegerSerializer;
 import ar.com.datos.serializer.common.SerializerCache;
 import ar.com.datos.util.ArrayOfBytesComparator;
 import ar.com.datos.wordservice.SessionHandler;
-
+/**
+ * Clase encargada de contar la cantidad de veces que se solicitó, durante la sesión,
+ * realizar un count de un objeto T. Luego se pueden recorrer todos los objetos que se
+ * pidió contar y recuperar la cantidad de ocurrencias del mismo.
+ * El orden de la iteración es por orden creciente al resultado de la serialización del objeto.
+ * @author jbarreneche
+ *
+ * @param <T>
+ */
 public class FixedLengthKeyCounter<T> implements SessionHandler, Iterable<KeyCount<T>> {
 
 	private static final Integer DEFAULT_AMMOUNT_OF_BLOCKS = 60;
@@ -140,30 +148,6 @@ public class FixedLengthKeyCounter<T> implements SessionHandler, Iterable<KeyCou
 		this.data.appendBlock(carga.getArrayByte().getArray());
 	}
 
-	@Override
-	public Iterator<KeyCount<T>> iterator() {
-		return new Iterator<KeyCount<T>>() {
-
-			private Iterator<byte[]> blockIterator = countedKeys.iterator();
-			@Override
-			public boolean hasNext() {
-				return blockIterator.hasNext();
-			}
-
-			@Override
-			public KeyCount<T> next() {
-				ArrayInputBuffer aib = new ArrayInputBuffer(new SimpleArrayByte(blockIterator.next()));
-				T key = getSerializer().hydrate(aib);
-				return new KeyCount<T>(key, countSerializer.hydrate(aib));
-			}
-
-			@Override
-			public void remove() {
-				blockIterator.remove();
-			}
-			
-		};
-	}
 	/**
 	 * Construye el archivo temporal donde almacenará las claves a contar
 	 * @return
@@ -184,4 +168,28 @@ public class FixedLengthKeyCounter<T> implements SessionHandler, Iterable<KeyCou
 		this.data = data;
 	}
 
+	@Override
+	public Iterator<KeyCount<T>> iterator() {
+		return new KeyCounterIterator();
+	}
+	protected class KeyCounterIterator implements Iterator<KeyCount<T>> {
+
+		private Iterator<byte[]> blockIterator = countedKeys.iterator();
+		@Override
+		public boolean hasNext() {
+			return blockIterator.hasNext();
+		}
+
+		@Override
+		public KeyCount<T> next() {
+			ArrayInputBuffer aib = new ArrayInputBuffer(new SimpleArrayByte(blockIterator.next()));
+			T key = getSerializer().hydrate(aib);
+			return new KeyCount<T>(key, countSerializer.hydrate(aib));
+		}
+
+		@Override
+		public void remove() {
+			blockIterator.remove();
+		}
+	}
 }

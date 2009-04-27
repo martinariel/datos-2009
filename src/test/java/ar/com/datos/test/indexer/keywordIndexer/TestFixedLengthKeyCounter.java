@@ -9,10 +9,10 @@ import java.util.Random;
 
 import junit.framework.TestCase;
 import ar.com.datos.file.BlockFile;
-import ar.com.datos.indexer.keywordIndexer.FixedLengthKeyCounter;
-import ar.com.datos.indexer.keywordIndexer.KeyCount;
 import ar.com.datos.serializer.common.LongSerializer;
 import ar.com.datos.test.file.variableLength.BlockFileStub;
+import ar.com.datos.utils.sort.external.FixedLengthKeyCounter;
+import ar.com.datos.utils.sort.external.KeyCount;
 
 public class TestFixedLengthKeyCounter extends TestCase {
 	public void testSessionConPocasPalabras() throws Exception {
