@@ -8,13 +8,28 @@ import ar.com.datos.file.variableLength.VariableLengthFileManager;
 import ar.com.datos.file.variableLength.VariableLengthWithCache;
 import ar.com.datos.file.variableLength.address.OffsetAddress;
 import ar.com.datos.file.variableLength.address.OffsetAddressSerializer;
-import ar.com.datos.indexer.keywordIndexer.FixedLengthKeyCounter;
-import ar.com.datos.indexer.keywordIndexer.KeyCount;
+import ar.com.datos.indexer.serializer.KeyCountSerializer;
+import ar.com.datos.indexer.tree.IndexerTreeElement;
+import ar.com.datos.indexer.tree.IndexerTreeKey;
 import ar.com.datos.serializer.Serializer;
 import ar.com.datos.serializer.common.CollectionSerializer;
 import ar.com.datos.serializer.common.TupleSerializer;
 import ar.com.datos.util.Tuple;
-
+import ar.com.datos.utils.sort.external.FixedLengthKeyCounter;
+import ar.com.datos.utils.sort.external.KeyCount;
+/**
+ * Implementación básica de un {@link SessionIndexer}
+ * Consta de un árbol B# para el índice de términos. El cual tiene asociada una
+ * dirección en el archivo de listas para ese término.
+ * El archivo de listas tiene la cantidad de ocurrencias del término para cada objeto T.
+ * La carga por sesiones funciona delegando en un sort externo el conteo de las ocurrencias
+ * de la tupla (offset_lexico, T). Luego, al cerrar la sesión por cada palabra del léxico
+ * carga en el elemento los objetos T y la cantidad de relaciones que tiene el objeto con
+ * el término. Para recuperar el término se utiliza un archivo que contiene todo el léxico indexado  
+ * @author jbarreneche
+ *
+ * @param <T>
+ */
 public class SimpleSessionIndexer<T> implements SessionIndexer<T> {
 
 	public static final String LEXICON_SUFFIX = ".lex"; 
@@ -30,7 +45,8 @@ public class SimpleSessionIndexer<T> implements SessionIndexer<T> {
 	private VariableLengthFileManager<Collection<KeyCount<T>>> listsForTerms;
 	private BTree<IndexerTreeElement<T>, IndexerTreeKey> indexedElements;
 
-	// Usado solamente durante la sesión de agregado de palabras 
+	// Usado solamente durante la sesión de agregado de palabras
+	// La tupla consta de la dirección en el archivo de léxico (offset_termino) y el objeto T
 	private FixedLengthKeyCounter<Tuple<OffsetAddress, T>> fixedLengthCounter = null;
 	
 	/**
@@ -54,7 +70,9 @@ public class SimpleSessionIndexer<T> implements SessionIndexer<T> {
 		this.indexedElements = constructIndexedElements(fileName);
 		this.listsForTerms = constructListForTerms(fileName);
 	}
-
+	/**
+	 * Inicia una sesión de agregado de términos
+	 */
 	@Override
 	public void startSession() {
 		this.fixedLengthCounter = constructCounter();
@@ -66,6 +84,9 @@ public class SimpleSessionIndexer<T> implements SessionIndexer<T> {
 		return fixedLengthCounter == null;
 	}
 
+	/**
+	 * Vuelca todos los términos agregados al índice
+	 */
 	@Override
 	public void endSession() {
 		this.fixedLengthCounter.endSession();
@@ -85,16 +106,9 @@ public class SimpleSessionIndexer<T> implements SessionIndexer<T> {
 		}
 		this.fixedLengthCounter = null;
 	}
-
-	/**
-	 * {@link Indexer#addTerms(Object, String...)} 
-	 * La session tiene que estar activa
-	 * <code>{@link #isActive()} == true</code>
-	 */
 	public void addTerms(T dato, String...terms) {
 		for (String term : terms) addTerm(dato, term);
 	}
-
 	protected void addTerm(T data, String term) {
 		IndexerTreeElement<T> current = this.indexedElements.findElement(new IndexerTreeKey(term));
 		if (current == null) {

@@ -11,7 +11,7 @@ import ar.com.datos.btree.exception.BTreeException;
  * @author fvalido
  * @see BTree#iterator(ar.com.datos.btree.elements.Key)
  */
-public interface BTreeIterator<E extends Element> {
+public interface BTreeIterator<E extends Element<?>> {
 	// Copiado de Iterator y ListIterator.
 	
     /**

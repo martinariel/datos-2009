@@ -8,9 +8,9 @@ import ar.com.datos.btree.BTreeSharpFactory;
 import ar.com.datos.file.variableLength.address.OffsetAddress;
 import ar.com.datos.file.variableLength.address.OffsetAddressSerializer;
 import ar.com.datos.indexer.SimpleSessionIndexer;
-import ar.com.datos.indexer.IndexerTreeElement;
-import ar.com.datos.indexer.IndexerTreeKey;
-import ar.com.datos.indexer.keywordIndexer.KeyCount;
+import ar.com.datos.indexer.tree.IndexerTreeElement;
+import ar.com.datos.indexer.tree.IndexerTreeKey;
+import ar.com.datos.utils.sort.external.KeyCount;
 
 public class TestIndexer extends TestCase {
 

@@ -3,8 +3,8 @@ package ar.com.datos.btree.exception;
 import java.util.ArrayList;
 import java.util.List;
 
-@SuppressWarnings("serial")
 public class BTreeConfException extends RuntimeException {
+	private static final long serialVersionUID = 8217213998866164619L;
 	private List<Throwable> causes;
 
 	/**
@@ -38,7 +38,7 @@ public class BTreeConfException extends RuntimeException {
 		this.causes = causes;
 	}
 
-	public List getCauses() {
+	public List<Throwable> getCauses() {
 		if(causes != null && !causes.isEmpty()) {
 			return causes;
 		} else {

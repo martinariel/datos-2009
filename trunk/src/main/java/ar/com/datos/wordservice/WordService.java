@@ -1,11 +1,10 @@
 package ar.com.datos.wordservice;
+import java.util.Collection;
+
 import ar.com.datos.audio.DocumentPlayer;
 import ar.com.datos.audio.DocumentRecorder;
 import ar.com.datos.documentlibrary.Document;
-import ar.com.datos.parser.Parser;
 import ar.com.datos.persistencia.SoundPersistenceService;
-
-import java.util.Collection;
 
 
 /**

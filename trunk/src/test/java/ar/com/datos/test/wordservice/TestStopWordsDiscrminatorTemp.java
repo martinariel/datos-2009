@@ -1,18 +1,12 @@
 package ar.com.datos.test.wordservice;
 
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
-
-import ar.com.datos.util.Tuple;
-import ar.com.datos.wordservice.stopwords.SimpleStopWordsDiscriminator;
-import ar.com.datos.wordservice.stopwords.StopWordsDiscriminator;
 import junit.framework.TestCase;
+import ar.com.datos.util.Tuple;
 
 public class TestStopWordsDiscrminatorTemp extends TestCase {
 	
