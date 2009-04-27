@@ -2,7 +2,7 @@ package ar.com.datos.audio;
 
 import java.util.Collection;
 
-import ar.com.datos.documentlibrary.IDocument;
+import ar.com.datos.documentlibrary.Document;
 import ar.com.datos.parser.Parser;
 import ar.com.datos.persistencia.SoundPersistenceService;
 
@@ -26,7 +26,7 @@ public class DocumentRecorder implements IWordsRecordConnector{
 	 * Graba un documento
 	 * @param documento
 	 */
-	public void record (IDocument documento){
+	public void record (Document documento){
 	
 		Parser parser = new Parser(documento);
 		

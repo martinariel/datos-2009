@@ -6,7 +6,7 @@ package ar.com.datos.documentlibrary;
  * @author mfernandez
  *
  */
-public interface IDocument {
+public interface Document {
     /**
      *
      * @return String linea del documento

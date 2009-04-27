@@ -1,7 +1,7 @@
 package ar.com.datos.parser;
 
 import java.util.Iterator;
-import ar.com.datos.documentlibrary.IDocument;
+import ar.com.datos.documentlibrary.Document;
 import java.util.Collection;
 import java.util.LinkedList;
 
@@ -11,7 +11,7 @@ import java.util.LinkedList;
  */
 public class Parser implements Iterable<Collection<String>> {
 
-    private IDocument documento;
+    private Document documento;
     private boolean iniciado;
     private String lineaAnterior = "";
     
@@ -29,7 +29,7 @@ public class Parser implements Iterable<Collection<String>> {
     	
     }
     
-    public Parser(IDocument documento){
+    public Parser(Document documento){
         this.documento = documento;
         iniciado = false;
     }

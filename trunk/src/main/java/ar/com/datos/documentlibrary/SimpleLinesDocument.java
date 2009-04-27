@@ -1,7 +1,7 @@
 package ar.com.datos.documentlibrary;
 import java.util.ArrayList;
 
-public class SimpleLinesDocument implements IDocument {
+public class SimpleLinesDocument implements Document {
 
 	private ArrayList<String> lineas;
 	private int pos = 0;
