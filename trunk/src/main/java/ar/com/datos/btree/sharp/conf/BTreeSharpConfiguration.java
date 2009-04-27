@@ -54,6 +54,7 @@ public abstract class BTreeSharpConfiguration<E extends Element<K>, K extends Ke
 	 * Requiere que se llame a cada uno de los #set... por separado antes de ser usado.
 	 */
 	public BTreeSharpConfiguration(BTreeSharpNodeFactory<E, K> bTreeSharpFactory) {
+		this.bTreeSharpFactory = bTreeSharpFactory;
 	}
 	
 	/**

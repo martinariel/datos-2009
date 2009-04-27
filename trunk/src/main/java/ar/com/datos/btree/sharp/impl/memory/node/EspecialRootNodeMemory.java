@@ -1,7 +1,6 @@
 package ar.com.datos.btree.sharp.impl.memory.node;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 import ar.com.datos.btree.elements.Element;
@@ -10,8 +9,9 @@ import ar.com.datos.btree.exception.BTreeException;
 import ar.com.datos.btree.sharp.BTreeSharp;
 import ar.com.datos.btree.sharp.impl.memory.BTreeSharpConfigurationMemory;
 import ar.com.datos.btree.sharp.node.AbstractEspecialRootNode;
-import ar.com.datos.test.btree.sharp.mock.TestElement;
-import ar.com.datos.test.btree.sharp.mock.TestKey;
+import ar.com.datos.btree.sharp.util.ThirdPartHelper;
+import ar.com.datos.test.btree.sharp.mock.memory.TestElementMemory;
+import ar.com.datos.test.btree.sharp.mock.memory.TestKeyMemory;
 
 /**
  * Nodo raiz especial en memoria. No existe persistencia en esta implementación.
@@ -78,23 +78,9 @@ public final class EspecialRootNodeMemory<E extends Element<K>, K extends Key> e
 	 * @see ar.com.datos.btree.sharp.node.AbstractEspecialRootNode#getParts()
 	 */
 	@Override
-	protected List<List<E>> getParts() {
-		int partSize =  Math.round(((float)this.elements.size()) / 3F);;
-		
-		List<E> part = new LinkedList<E>();;
-		List<List<E>> returnValue = new LinkedList<List<E>>();
-		for (int i = 0; i < 3; i++) {
-			part = new LinkedList<E>();
-			for (int j = 0; j < partSize && this.elements.size() > 0; j++) {
-				part.add(this.elements.remove(0));
-			}
-			returnValue.add(part);
-		}
-		while (this.elements.size() > 0) {
-			part.add(this.elements.remove(0));
-		}
-		
-		return returnValue;
+	protected List<List<E>> getParts(List<E> rightNodeElements) {
+		// Extraigo las listas separadas.
+		return ThirdPartHelper.divideInThreeParts(this.elements);
 	}
 	
 	// FIXME: Temporal. Todo lo que está abajo es para pruebas de desarrollo.
@@ -103,13 +89,13 @@ public final class EspecialRootNodeMemory<E extends Element<K>, K extends Key> e
 	}
 	
 	public static void main(String[] args) {
-		List<TestElement> elements = new ArrayList<TestElement>();
+		List<TestElementMemory> elements = new ArrayList<TestElementMemory>();
 		
 		short size = 3;
 		
-		elements.add(new TestElement(1, "1"));
-		elements.add(new TestElement(2, "2"));
-		elements.add(new TestElement(3, "3"));
+		elements.add(new TestElementMemory(1, "1"));
+		elements.add(new TestElementMemory(2, "2"));
+		elements.add(new TestElementMemory(3, "3"));
 //		elements.add(new TestElement(4, "4"));
 //		elements.add(new TestElement(5, "5"));
 //		elements.add(new TestElement(6, "6"));
@@ -117,11 +103,9 @@ public final class EspecialRootNodeMemory<E extends Element<K>, K extends Key> e
 //		elements.add(new TestElement(8, "8"));
 //		elements.add(new TestElement(9, "9"));
 		
-		EspecialRootNodeMemory<TestElement, TestKey> realNode = new EspecialRootNodeMemory<TestElement, TestKey>(new BTreeSharpConfigurationMemory<TestElement, TestKey>(size, size), null);
+		EspecialRootNodeMemory<TestElementMemory, TestKeyMemory> realNode = new EspecialRootNodeMemory<TestElementMemory, TestKeyMemory>(new BTreeSharpConfigurationMemory<TestElementMemory, TestKeyMemory>(size, size), null);
 		realNode.setElements(elements);
 		
 		realNode.overflow(null, false, null);
 	}
-	
-	
 }

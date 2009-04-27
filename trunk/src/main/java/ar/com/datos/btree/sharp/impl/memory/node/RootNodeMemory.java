@@ -1,6 +1,7 @@
 package ar.com.datos.btree.sharp.impl.memory.node;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -15,8 +16,9 @@ import ar.com.datos.btree.sharp.node.ChainedNode;
 import ar.com.datos.btree.sharp.node.KeyNodeReference;
 import ar.com.datos.btree.sharp.node.Node;
 import ar.com.datos.btree.sharp.node.NodeReference;
-import ar.com.datos.test.btree.sharp.mock.TestElement;
-import ar.com.datos.test.btree.sharp.mock.TestKey;
+import ar.com.datos.btree.sharp.util.ThirdPartHelper;
+import ar.com.datos.test.btree.sharp.mock.memory.TestElementMemory;
+import ar.com.datos.test.btree.sharp.mock.memory.TestKeyMemory;
 import ar.com.datos.util.WrappedParam;
 
 /**
@@ -76,34 +78,61 @@ public final class RootNodeMemory<E extends Element<K>, K extends Key> extends A
 //		
 //		return returnValue;
 //	}	
+
+// FIXME
+//	/*
+//	 * (non-Javadoc)
+//	 * @see ar.com.datos.btree.sharp.node.AbstractRootNode#getParts()
+//	 */
+//	@Override
+//	protected List<List<KeyNodeReference<E, K>>> getParts() {
+//		int partSize =  Math.round(((float)this.keysNodes.size()) / 3F);;
+//		if (this.keysNodes.size() % 3 == 1) {
+//			partSize++;
+//		}
+//		
+//		List<KeyNodeReference<E, K>> part = new LinkedList<KeyNodeReference<E,K>>();;
+//		List<List<KeyNodeReference<E, K>>> returnValue = new LinkedList<List<KeyNodeReference<E,K>>>();
+//		for (int i = 0; i < 3; i++) {
+//			part = new LinkedList<KeyNodeReference<E,K>>();
+//			for (int j = 0; j < partSize - ((i == 0) ? 1 : 0) && this.keysNodes.size() > 0; j++) {
+//				part.add(this.keysNodes.remove(0));
+//			}
+//			returnValue.add(part);
+//
+//		}
+//		returnValue.get(0).add(0, new KeyNodeReference<E, K>(null, this.firstChild));
+//		while (this.keysNodes.size() > 0) {
+//			part.add(this.keysNodes.remove(0));
+//		}
+//		
+//		return returnValue;
+//	}
 	
 	/*
 	 * (non-Javadoc)
-	 * @see ar.com.datos.btree.sharp.node.AbstractRootNode#getParts()
+	 * @see ar.com.datos.btree.sharp.node.AbstractInternalNode#getParts(ar.com.datos.btree.sharp.node.NodeReference, java.util.List, ar.com.datos.btree.elements.Key)
 	 */
 	@Override
-	protected List<List<KeyNodeReference<E, K>>> getParts() {
-		int partSize =  Math.round(((float)this.keysNodes.size()) / 3F);;
-		if (this.keysNodes.size() % 3 == 1) {
-			partSize++;
+	protected List<List<KeyNodeReference<E, K>>> getParts(NodeReference<E, K> firstChildRightNode, List<KeyNodeReference<E, K>> keysNodesRightNode, K fatherKeyRigthNode) {
+		// Creo una lista que incluya a firstChild.
+		List<KeyNodeReference<E, K>> sourceKeyNodeReference = new LinkedList<KeyNodeReference<E,K>>();
+		sourceKeyNodeReference.add(new KeyNodeReference<E, K>(null, this.firstChild));
+		sourceKeyNodeReference.addAll(this.keysNodes);
+		
+		// Extraigo una lista de Keys.
+		Iterator<KeyNodeReference<E, K>> itKeyNodeReference = sourceKeyNodeReference.iterator();
+		List<K> sourceKeys = new LinkedList<K>();
+		itKeyNodeReference.next();
+		while (itKeyNodeReference.hasNext()) {
+			sourceKeys.add(itKeyNodeReference.next().getKey());
 		}
 		
-		List<KeyNodeReference<E, K>> part = new LinkedList<KeyNodeReference<E,K>>();;
-		List<List<KeyNodeReference<E, K>>> returnValue = new LinkedList<List<KeyNodeReference<E,K>>>();
-		for (int i = 0; i < 3; i++) {
-			part = new LinkedList<KeyNodeReference<E,K>>();
-			for (int j = 0; j < partSize - ((i == 0) ? 1 : 0) && this.keysNodes.size() > 0; j++) {
-				part.add(this.keysNodes.remove(0));
-			}
-			returnValue.add(part);
-
-		}
-		returnValue.get(0).add(0, new KeyNodeReference<E, K>(null, this.firstChild));
-		while (this.keysNodes.size() > 0) {
-			part.add(this.keysNodes.remove(0));
-		}
+		// Divido la lista de Keys.
+		List<List<K>> keyParts = ThirdPartHelper.divideInThreePartsEspecial(sourceKeys);
 		
-		return returnValue;
+		// Recombino las listas divididas de keys con las KeyNodeReferences
+		return ThirdPartHelper.combineKeysAndNodeReferences(sourceKeyNodeReference, keyParts);
 	}
 	
 	// FIXME: Temporal. Todo lo que está abajo es para pruebas de desarrollo.
@@ -155,25 +184,25 @@ public final class RootNodeMemory<E extends Element<K>, K extends Key> extends A
 	}
 	
 	public static void main(String[] args) {
-		List<KeyNodeReference<TestElement, TestKey>> keyNodes = new ArrayList<KeyNodeReference<TestElement,TestKey>>();
+		List<KeyNodeReference<TestElementMemory, TestKeyMemory>> keyNodes = new ArrayList<KeyNodeReference<TestElementMemory,TestKeyMemory>>();
 		
 		short size = 3;
 		
-		TestKey key = new TestKey(1);
-		NodeReference<TestElement, TestKey> nodeRef = new NodeReferenceMemory<TestElement, TestKey>(new RootNodeMemory.TestNode<TestElement, TestKey>(null, "a")); 
-		KeyNodeReference<TestElement, TestKey> keyNodeReference = new KeyNodeReference<TestElement, TestKey>(key, nodeRef);
+		TestKeyMemory key = new TestKeyMemory(1);
+		NodeReference<TestElementMemory, TestKeyMemory> nodeRef = new NodeReferenceMemory<TestElementMemory, TestKeyMemory>(new RootNodeMemory.TestNode<TestElementMemory, TestKeyMemory>(null, "a")); 
+		KeyNodeReference<TestElementMemory, TestKeyMemory> keyNodeReference = new KeyNodeReference<TestElementMemory, TestKeyMemory>(key, nodeRef);
 		keyNodes.add(keyNodeReference);
 
-		key = new TestKey(2);
-		nodeRef = new NodeReferenceMemory<TestElement, TestKey>(new RootNodeMemory.TestNode<TestElement, TestKey>(null, "b")); 
-		keyNodeReference = new KeyNodeReference<TestElement, TestKey>(key, nodeRef);
+		key = new TestKeyMemory(2);
+		nodeRef = new NodeReferenceMemory<TestElementMemory, TestKeyMemory>(new RootNodeMemory.TestNode<TestElementMemory, TestKeyMemory>(null, "b")); 
+		keyNodeReference = new KeyNodeReference<TestElementMemory, TestKeyMemory>(key, nodeRef);
 		keyNodes.add(keyNodeReference);
 
-		key = new TestKey(3);
-		nodeRef = new NodeReferenceMemory<TestElement, TestKey>(new RootNodeMemory.TestNode<TestElement, TestKey>(null, "c")); 
-		keyNodeReference = new KeyNodeReference<TestElement, TestKey>(key, nodeRef);
+		key = new TestKeyMemory(3);
+		nodeRef = new NodeReferenceMemory<TestElementMemory, TestKeyMemory>(new RootNodeMemory.TestNode<TestElementMemory, TestKeyMemory>(null, "c")); 
+		keyNodeReference = new KeyNodeReference<TestElementMemory, TestKeyMemory>(key, nodeRef);
 		keyNodes.add(keyNodeReference);
-		
+//		
 //		key = new TestKey(4);
 //		nodeRef = new NodeReferenceMemory<TestElement, TestKey>(new RootNodeMemory.TestNode<TestElement, TestKey>(null, "d")); 
 //		keyNodeReference = new KeyNodeReference<TestElement, TestKey>(key, nodeRef);
@@ -204,8 +233,8 @@ public final class RootNodeMemory<E extends Element<K>, K extends Key> extends A
 //		keyNodeReference = new KeyNodeReference<TestElement, TestKey>(key, nodeRef);
 //		keyNodes.add(keyNodeReference);
 		
-		RootNodeMemory<TestElement, TestKey> realNode = new RootNodeMemory<TestElement, TestKey>(new BTreeSharpConfigurationMemory<TestElement, TestKey>(size, size));
-		realNode.setKeyNodes(keyNodes, new NodeReferenceMemory<TestElement, TestKey>(new TestNode<TestElement, TestKey>(null, "x")));
+		RootNodeMemory<TestElementMemory, TestKeyMemory> realNode = new RootNodeMemory<TestElementMemory, TestKeyMemory>(new BTreeSharpConfigurationMemory<TestElementMemory, TestKeyMemory>(size, size));
+		realNode.setKeyNodes(keyNodes, new NodeReferenceMemory<TestElementMemory, TestKeyMemory>(new TestNode<TestElementMemory, TestKeyMemory>(null, "x")));
 
 		realNode.overflow(null, false, null);
 	}

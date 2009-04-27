@@ -7,6 +7,8 @@ import ar.com.datos.btree.elements.Key;
 import ar.com.datos.btree.exception.BTreeException;
 import ar.com.datos.btree.sharp.BTreeSharp;
 import ar.com.datos.btree.sharp.conf.BTreeSharpConfiguration;
+import ar.com.datos.btree.sharp.impl.disk.interfaces.ListElementsSerializer;
+import ar.com.datos.btree.sharp.impl.disk.interfaces.ListKeysSerializer;
 import ar.com.datos.btree.sharp.impl.disk.serializer.LeafNodeSerializer;
 import ar.com.datos.btree.sharp.impl.disk.serializer.StateInternalNodeSerializer;
 import ar.com.datos.btree.sharp.node.Node;
@@ -23,6 +25,17 @@ public class BTreeSharpConfigurationDisk<E extends Element<K>, K extends Key> ex
 	private StateInternalNodeSerializer<E, K> stateInternalNodeSerializer;
 	/** Serializador para nodos hojas */
 	private LeafNodeSerializer<E, K> leafNodeSerializer;
+
+	/** 
+	 * Serializador que permite serializar una lista de {@link Element}. Es el mismo que internamente
+	 * usa leafNodeSerializer y stateInternalNodeSerializer.
+	 */
+	private ListElementsSerializer<E, K> listElementsSerializer;
+	/** 
+	 * Serializador que permite serializar una lista de {@link Key}. Es el mismo que internamente
+	 * usa stateInternalNodeSerializer.
+	 */
+	private ListKeysSerializer<K> listKeysSerializer;
 	
 	/** VLFM para el archivo que guarda nodos internos. */
 	private BlockAccessor<BlockAddress<Long, Short>, Node<E, K>> internalNodesFileManager;
@@ -35,6 +48,8 @@ public class BTreeSharpConfigurationDisk<E extends Element<K>, K extends Key> ex
 	public BTreeSharpConfigurationDisk(short maxCapacityInternalNode, short maxCapacityLeafNode, short maxCapacityRootNode, 
 									StateInternalNodeSerializer<E, K> stateInternalNodeSerializer,
 									LeafNodeSerializer<E, K> leafNodeSerializer,
+									ListElementsSerializer<E, K> listElementsSerializer,
+									ListKeysSerializer<K> listKeysSerializer,
 									BlockAccessor<BlockAddress<Long, Short>, Node<E, K>> internalNodesFileManager,
 									BlockAccessor<BlockAddress<Long, Short>, Node<E, K>> leafNodesFileManager) {
 		super(maxCapacityInternalNode, maxCapacityLeafNode, maxCapacityRootNode, new BTreeSharpNodeDiskFactory<E, K>());
@@ -78,6 +93,22 @@ public class BTreeSharpConfigurationDisk<E extends Element<K>, K extends Key> ex
 	 */
 	public LeafNodeSerializer<E, K> getLeafNodeSerializer() {
 		return this.leafNodeSerializer;
+	}
+
+	/** 
+	 * Permite obtener el serializador que permite serializar una lista de {@link Element}. 
+	 * Es el mismo que internamente usa leafNodeSerializer y stateInternalNodeSerializer.
+	 */
+	public ListElementsSerializer<E, K> getListElementsSerializer() {
+		return this.listElementsSerializer;
+	}
+	
+	/** 
+	 * Permite obtener el serializador que permite serializar una lista de {@link Key}. 
+	 * Es el mismo que internamente usa stateInternalNodeSerializer.
+	 */	
+	public ListKeysSerializer<K> getListKeysSerializer() {
+		return this.listKeysSerializer;
 	}
 	
 	/**
@@ -123,5 +154,21 @@ public class BTreeSharpConfigurationDisk<E extends Element<K>, K extends Key> ex
 	public void setStateInternalNodeSerializer(
 			StateInternalNodeSerializer<E, K> stateInternalNodeSerializer) {
 		this.stateInternalNodeSerializer = stateInternalNodeSerializer;
+	}
+
+	/** 
+	 * Permite establecer el serializador que permite serializar una lista de {@link Element}. 
+	 * Es el mismo que internamente usa leafNodeSerializer y stateInternalNodeSerializer.
+	 */	
+	public void setListElementsSerializer(ListElementsSerializer<E, K> listElementsSerializer) {
+		this.listElementsSerializer = listElementsSerializer;
+	}
+
+	/** 
+	 * Permite establecer el serializador que permite serializar una lista de {@link Key}. 
+	 * Es el mismo que internamente usa stateInternalNodeSerializer.
+	 */	
+	public void setListKeysSerializer(ListKeysSerializer<K> listKeysSerializer) {
+		this.listKeysSerializer = listKeysSerializer;
 	}
 }

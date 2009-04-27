@@ -9,8 +9,9 @@ import ar.com.datos.btree.elements.Key;
 import ar.com.datos.btree.sharp.impl.memory.BTreeSharpConfigurationMemory;
 import ar.com.datos.btree.sharp.node.AbstractLeafNode;
 import ar.com.datos.btree.sharp.node.NodeReference;
-import ar.com.datos.test.btree.sharp.mock.TestElement;
-import ar.com.datos.test.btree.sharp.mock.TestKey;
+import ar.com.datos.btree.sharp.util.ThirdPartHelper;
+import ar.com.datos.test.btree.sharp.mock.memory.TestElementMemory;
+import ar.com.datos.test.btree.sharp.mock.memory.TestKeyMemory;
 
 /**
  * Nodo hoja en memoria. No existe persistencia en esta implementación.
@@ -70,45 +71,60 @@ public final class LeafNodeMemory<E extends Element<K>, K extends Key> extends A
 //		return thirdPart;
 //	}
 	
+//	FIXME: Esto no va más.
+//	/*
+//	 * (non-Javadoc)
+//	 * @see ar.com.datos.btree.sharp.node.AbstractLeafNode#getThirdPart(boolean)
+//	 */
+//	@Override
+//	protected List<E> getThirdPart(boolean left) {
+//		List<E> thirdPart = new LinkedList<E>();
+//		
+//		int cantRemove = Math.round(((float)this.elements.size()) / 3F);
+//		int removeIndex = cantRemove * 2;
+//		if (this.elements.size() % 3 == 2) {
+//			removeIndex--;
+//		} else {
+//			if (this.elements.size() % 3 == 1) {
+//				removeIndex++;
+//			}
+//		}
+//		int removePosition = (left) ? 0 : removeIndex;
+//		int elementsInitialSize = this.elements.size();
+//		for (int i = removeIndex; i < elementsInitialSize; i++) {
+//			thirdPart.add(this.elements.remove(removePosition));
+//		}
+//
+//		return thirdPart;
+//	}
+
 	/*
 	 * (non-Javadoc)
-	 * @see ar.com.datos.btree.sharp.node.AbstractLeafNode#getThirdPart(boolean)
+	 * @see ar.com.datos.btree.sharp.node.AbstractLeafNode#getParts(java.util.List)
 	 */
 	@Override
-	protected List<E> getThirdPart(boolean left) {
-		List<E> thirdPart = new LinkedList<E>();
+	protected List<List<E>> getParts(List<E> rightNodeElements) {
+		// Uno las listas
+		List<E> source = new LinkedList<E>(this.elements);
+		source.addAll(rightNodeElements);
 		
-		int cantRemove = Math.round(((float)this.elements.size()) / 3F);;
-		int removeIndex = cantRemove * 2;
-		if (this.elements.size() % 3 == 2) {
-			removeIndex--;
-		} else {
-			if (this.elements.size() % 3 == 1) {
-				removeIndex++;
-			}
-		}
-		int removePosition = (left) ? 0 : removeIndex;
-		int elementsInitialSize = this.elements.size();
-		for (int i = removeIndex; i < elementsInitialSize; i++) {
-			thirdPart.add(this.elements.remove(removePosition));
-		}
-
-		return thirdPart;
+		// Extraigo las listas separadas.
+		return ThirdPartHelper.divideInThreeParts(source);
 	}
-
+	
 	// FIXME: Temporal. Todo lo que está abajo es para pruebas de desarrollo.
 	public void setElements(List<E> elements) {
 		this.elements = elements;
 	}
 	
 	public static void main(String[] args) {
-		List<TestElement> elements = new ArrayList<TestElement>();
+		List<TestElementMemory> elements = new ArrayList<TestElementMemory>();
 		
 		short size = 3;
 		
-		elements.add(new TestElement(1, "1"));
-		elements.add(new TestElement(2, "2"));
-		elements.add(new TestElement(3, "3"));
+		elements.add(new TestElementMemory(1, "1"));
+		elements.add(new TestElementMemory(2, "2"));
+		elements.add(new TestElementMemory(3, "3"));
 //		elements.add(new TestElement(4, "4"));
 //		elements.add(new TestElement(5, "5"));
 //		elements.add(new TestElement(6, "6"));
@@ -116,14 +132,14 @@ public final class LeafNodeMemory<E extends Element<K>, K extends Key> extends A
 //		elements.add(new TestElement(8, "8"));
 //		elements.add(new TestElement(9, "9"));
 		
-		LeafNodeMemory<TestElement, TestKey> realNode = new LeafNodeMemory<TestElement, TestKey>(new BTreeSharpConfigurationMemory<TestElement, TestKey>(size, size), null, null);
+		LeafNodeMemory<TestElementMemory, TestKeyMemory> realNode = new LeafNodeMemory<TestElementMemory, TestKeyMemory>(new BTreeSharpConfigurationMemory<TestElementMemory, TestKeyMemory>(size, size), null, null);
 		realNode.setElements(elements);
 		
-		elements = new ArrayList<TestElement>();
+		elements = new ArrayList<TestElementMemory>();
 		
-		elements.add(new TestElement(10, "10"));
-		elements.add(new TestElement(11, "11"));
-		elements.add(new TestElement(12, "12"));
+		elements.add(new TestElementMemory(10, "10"));
+		elements.add(new TestElementMemory(11, "11"));
+		elements.add(new TestElementMemory(12, "12"));
 //		elements.add(new TestElement(13, "13"));
 //		elements.add(new TestElement(14, "14"));
 //		elements.add(new TestElement(15, "15"));
@@ -131,7 +147,7 @@ public final class LeafNodeMemory<E extends Element<K>, K extends Key> extends A
 //		elements.add(new TestElement(17, "17"));
 //		elements.add(new TestElement(18, "18"));
 		
-		LeafNodeMemory<TestElement, TestKey> realNodeBrother = new LeafNodeMemory<TestElement, TestKey>(new BTreeSharpConfigurationMemory<TestElement, TestKey>(size, size), null, null);
+		LeafNodeMemory<TestElementMemory, TestKeyMemory> realNodeBrother = new LeafNodeMemory<TestElementMemory, TestKeyMemory>(new BTreeSharpConfigurationMemory<TestElementMemory, TestKeyMemory>(size, size), null, null);
 		realNodeBrother.setElements(elements);
 		
 		realNode.split(realNodeBrother, false, null);

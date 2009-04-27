@@ -1,4 +1,4 @@
-package ar.com.datos.test.btree.sharp.mock;
+package ar.com.datos.test.btree.sharp.mock.memory;
 
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -7,16 +7,16 @@ import java.util.List;
 import ar.com.datos.btree.elements.Element;
 
 /**
- * {@link Element} para tests de Árbol B# de memoria.
+ * {@link Element} para tests de Árbol B# en memoria.
  *
  * @author fvalido
  */
-public class TestElement implements Element<TestKey> {
-	private TestKey key;
+public class TestElementMemory implements Element<TestKeyMemory> {
+	private TestKeyMemory key;
 	private List<String> valuesElement;
 
-	public TestElement(int primaryKey, String chain) {
-		this.key = new TestKey(primaryKey);
+	public TestElementMemory(int key, String chain) {
+		this.key = new TestKeyMemory(key);
 		this.valuesElement = new LinkedList<String>();
 		this.valuesElement.add(chain);
 	}
@@ -26,7 +26,7 @@ public class TestElement implements Element<TestKey> {
 	 * @see ar.com.datos.btree.elements.Element#getKey()
 	 */
 	@Override
-	public TestKey getKey() {
+	public TestKeyMemory getKey() {
 		return this.key;
 	}
 
@@ -36,7 +36,7 @@ public class TestElement implements Element<TestKey> {
 	 */
 	@Override
 	public boolean updateElement(Element element) {
-		TestElement testElement = (TestElement)element;
+		TestElementMemory testElement = (TestElementMemory)element;
 		Iterator<String> it = testElement.valuesElement.iterator();
 		while (it.hasNext()) {
 			this.valuesElement.add(it.next());
@@ -53,7 +53,7 @@ public class TestElement implements Element<TestKey> {
 
 	@Override
 	public boolean equals(Object obj) {
-		TestElement o = (TestElement)obj;
+		TestElementMemory o = (TestElementMemory)obj;
 		return this.key.equals(o.key);
 	}
 

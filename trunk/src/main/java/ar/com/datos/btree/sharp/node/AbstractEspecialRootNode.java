@@ -57,38 +57,38 @@ public abstract class AbstractEspecialRootNode<E extends Element<K>, K extends K
 		// 1/3 del nodo (2/3 de un nodo normal) en cada uno de esos hijos y reescribir
 		// esta raiz.
 	
-		// Trabajo a los nodos como left, center y rigth.
+		// Trabajo a los nodos como left, center y right.
 		AbstractLeafNode<E, K> left = this.bTreeSharpConfiguration.getBTreeSharpFactory().createLeafNode(this.bTreeSharpConfiguration, null, null);
-		AbstractLeafNode<E, K> rigth = this.bTreeSharpConfiguration.getBTreeSharpFactory().createLeafNode(this.bTreeSharpConfiguration, null, null);
+		AbstractLeafNode<E, K> right = this.bTreeSharpConfiguration.getBTreeSharpFactory().createLeafNode(this.bTreeSharpConfiguration, null, null);
 		AbstractLeafNode<E, K> center = this.bTreeSharpConfiguration.getBTreeSharpFactory().createLeafNode(this.bTreeSharpConfiguration, null, null);
 
 		// Extraigo los tercios 
-		List<List<E>> listParts = getParts(); // Método template.
-		List<E> leftParts = listParts.get(0);
-		List<E> centerParts = listParts.get(1);
-		List<E> rigthParts = listParts.get(2);
+		List<List<E>> listParts = getParts(null); // Método template.
+		List<E> leftPart = listParts.get(0);
+		List<E> centerPart = listParts.get(1);
+		List<E> rightPart = listParts.get(2);
 		
 		// Los meto en los nodos. 
-		left.elements.addAll(leftParts);
-		center.elements.addAll(centerParts);
-		rigth.elements.addAll(rigthParts);
+		left.elements.addAll(leftPart);
+		center.elements.addAll(centerPart);
+		right.elements.addAll(rightPart);
 		
 		// Método template
 		left.postAddElement();
 		center.postAddElement();
-		rigth.postAddElement();
+		right.postAddElement();
 
 		// Apunto los ChainedNodes
 		left.next = center.myNodeReference;
 		center.previous = left.myNodeReference;
-		center.next = rigth.myNodeReference;
-		rigth.previous = center.myNodeReference;
+		center.next = right.myNodeReference;
+		right.previous = center.myNodeReference;
 		
 		// Creo una raiz definitiva para que apunte a los nuevos nodos.
 		AbstractRootNode<E, K> definitiveRootNode = this.bTreeSharpConfiguration.getBTreeSharpFactory().createDefinitiveRootNode(this.bTreeSharpConfiguration);
 		definitiveRootNode.firstChild = left.myNodeReference;
 		definitiveRootNode.keysNodes.add(new KeyNodeReference<E, K>(center.elements.get(0).getKey(), center.myNodeReference));
-		definitiveRootNode.keysNodes.add(new KeyNodeReference<E, K>(rigth.elements.get(0).getKey(), rigth.myNodeReference));
+		definitiveRootNode.keysNodes.add(new KeyNodeReference<E, K>(right.elements.get(0).getKey(), right.myNodeReference));
 		
 		// Método template.
 		definitiveRootNode.myNodeReference = this.myNodeReference.getSameNodeReference(definitiveRootNode, NodeType.ROOT);
@@ -100,14 +100,15 @@ public abstract class AbstractEspecialRootNode<E extends Element<K>, K extends K
 		return null;
 	}
 	
-	/**
-	 * Permite dividir el nodo en 3 partes.
-	 * 
-	 * Es indistinto el estado en que se deja el nodo original (este).
-	 * 
-	 * Patrón de diseño Template.
-	 */
-	protected abstract List<List<E>> getParts(); 
+// FIXME: Esto no va más
+//	/**
+//	 * Permite dividir el nodo en 3 partes.
+//	 * 
+//	 * Es indistinto el estado en que se deja el nodo original (este).
+//	 * 
+//	 * Patrón de diseño Template.
+//	 */
+//	protected abstract List<List<E>> getParts(); 
 	
 	/*
 	 * (non-Javadoc)
@@ -117,14 +118,15 @@ public abstract class AbstractEspecialRootNode<E extends Element<K>, K extends K
 	protected int getNodeMaxCapacity() {
 		return this.bTreeSharpConfiguration.getMaxCapacityRootNode();
 	}
-	
-	/*
-	 * (non-Javadoc)
-	 * @see ar.com.datos.btree.sharp.node.AbstractLeafNode#getThirdPart(boolean)
-	 */
-	@Override
-	protected final List<E> getThirdPart(boolean left) {
-		// No se usa.
-		return null;
-	}
+
+//  FIXME: Esto no va más
+//	/*
+//	 * (non-Javadoc)
+//	 * @see ar.com.datos.btree.sharp.node.AbstractLeafNode#getThirdPart(boolean)
+//	 */
+//	@Override
+//	protected final List<E> getThirdPart(boolean left) {
+//		// No se usa.
+//		return null;
+//	}
 }
