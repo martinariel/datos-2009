@@ -37,14 +37,15 @@ public class IndexerTreeElement<T> implements Element<IndexerTreeKey> {
 	@SuppressWarnings("unchecked")
 	@Override
 	public boolean updateElement(Element<IndexerTreeKey> element) {
-		Collection<KeyCount<T>> nuevaLista = ((IndexerTreeElement<T>)element).temporalCount;
+		IndexerTreeElement<T> newElement = (IndexerTreeElement<T>)element;
+		Collection<KeyCount<T>> nuevaLista = newElement.temporalCount;
 		BlockAddress<Long, Short> currentAddress = this.getDataCountAddress();
 		if (currentAddress == null) {
-			this.setDataCountAddress(this.indexer.getListsForTerms().addEntity(nuevaLista));
+			this.setDataCountAddress(newElement.indexer.getListsForTerms().addEntity(nuevaLista));
 		} else {
-			Collection<KeyCount<T>> previousDataCount = this.getDataCounts();
+			Collection<KeyCount<T>> previousDataCount = newElement.indexer.getListsForTerms().get(this.getDataCountAddress());
 			previousDataCount.addAll(nuevaLista);
-			this.setDataCountAddress(this.indexer.getListsForTerms().updateEntity(currentAddress, previousDataCount));
+			this.setDataCountAddress(newElement.indexer.getListsForTerms().updateEntity(currentAddress, previousDataCount));
 		}
 		return this.getDataCountAddress().equals(currentAddress);
 	}
@@ -70,14 +71,6 @@ public class IndexerTreeElement<T> implements Element<IndexerTreeKey> {
 		this.addressInLexicon = addressInLexicon;
 	}
 
-	/**
-	 * Devuelve los datos relacionados con el término actual junto con la cantidad
-	 * de relaciones para este término
-	 * @return
-	 */
-	public Collection<KeyCount<T>> getDataCounts() {
-		return this.indexer.getListsForTerms().get(getDataCountAddress());
-	}
 	/**
 	 * dirección de la lista de datos para este término 
 	 * @return
