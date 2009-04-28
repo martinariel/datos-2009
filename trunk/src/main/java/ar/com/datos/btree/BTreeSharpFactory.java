@@ -101,7 +101,7 @@ public class BTreeSharpFactory<E extends Element<K>, K extends Key> {
 	 * Si se produce un problema levantando o creando el arbol.
 	 */
 	public BTreeSharp<E, K> createBTreeSharpDisk(String internalFile, String leafFile, int internalBlockSize,
-										int leafBlockSize, Class serializerFactoryClass,
+										int leafBlockSize, Class<? extends ElementAndKeyListSerializerFactory<E, K>> serializerFactoryClass,
 										boolean overwrite) throws BTreeConfException {
 		if (!isPow(internalBlockSize, 2) || !isPow(leafBlockSize, 2) || internalBlockSize < 128 || leafBlockSize < 128) {
 			throw new BTreeConfException("El tamaño de los nodos debe ser potencia de 2 y mayor a 128.");

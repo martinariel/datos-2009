@@ -4,10 +4,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import ar.com.datos.btree.BTree;
+import ar.com.datos.btree.BTreeSharpFactory;
+import ar.com.datos.btree.sharp.impl.disk.ElementAndKeyListSerializerFactory;
 import ar.com.datos.file.variableLength.VariableLengthFileManager;
 import ar.com.datos.file.variableLength.VariableLengthWithCache;
 import ar.com.datos.file.variableLength.address.OffsetAddress;
 import ar.com.datos.file.variableLength.address.OffsetAddressSerializer;
+import ar.com.datos.indexer.serializer.IndexerSerializerFactory;
 import ar.com.datos.indexer.serializer.KeyCountSerializer;
 import ar.com.datos.indexer.tree.IndexerTreeElement;
 import ar.com.datos.indexer.tree.IndexerTreeKey;
@@ -33,10 +36,13 @@ import ar.com.datos.utils.sort.external.KeyCount;
 public class SimpleSessionIndexer<T> implements SessionIndexer<T> {
 
 	public static final String LEXICON_SUFFIX = ".lex"; 
-	public static final String INDEX_SUFFIX = ".idx"; 
+	public static final String INDEX_NODE_SUFFIX = ".idx.node"; 
+	public static final String INDEX_LEAFS_SUFFIX = ".idx.leaf"; 
 	public static final String LIST_SUFFIX = ".lst"; 
 	
-	public static final Integer LIST_BLOCK_SIZE = 1024; 
+	public static final Integer LIST_BLOCK_SIZE = 1024;
+	public static final Integer NODE_BLOCK_SIZE = 1024;
+	public static final Integer LEAF_BLOCK_SIZE = 1024; 
 
 	// Indexador del elemento al que se le cuentan las palabras
 	private Serializer<T> indexedSerializer;
@@ -118,7 +124,7 @@ public class SimpleSessionIndexer<T> implements SessionIndexer<T> {
 	}
 	@Override
 	public Collection<KeyCount<T>> findTerm(String string) {
-		return this.indexedElements.findElement(new IndexerTreeKey(string)).getDataCounts();
+		return this.listsForTerms.get(this.indexedElements.findElement(new IndexerTreeKey(string)).getDataCountAddress());
 	}
 
 	public VariableLengthFileManager<Collection<KeyCount<T>>> getListsForTerms() {
@@ -146,9 +152,11 @@ public class SimpleSessionIndexer<T> implements SessionIndexer<T> {
 		return new VariableLengthWithCache<Collection<KeyCount<T>>>(fileName + LIST_SUFFIX, LIST_BLOCK_SIZE, new CollectionSerializer<KeyCount<T>>(new KeyCountSerializer<T>(this.indexedSerializer)));
 	}
 
+	@SuppressWarnings("unchecked")
 	protected BTree<IndexerTreeElement<T>, IndexerTreeKey> constructIndexedElements(String fileName) {
-		// TODO Auto-generated method stub
-		return null;
+		Class<? extends ElementAndKeyListSerializerFactory<IndexerTreeElement<T>, IndexerTreeKey>> clazz = (Class<? extends ElementAndKeyListSerializerFactory<IndexerTreeElement<T>, IndexerTreeKey>>) IndexerSerializerFactory.class;
+		return new BTreeSharpFactory<IndexerTreeElement<T>, IndexerTreeKey>().createBTreeSharpDisk(fileName + INDEX_NODE_SUFFIX, fileName + INDEX_LEAFS_SUFFIX, 
+				NODE_BLOCK_SIZE, LEAF_BLOCK_SIZE, clazz, false);
 	}
 
 	protected FixedLengthKeyCounter<Tuple<OffsetAddress, T>> constructCounter() {
