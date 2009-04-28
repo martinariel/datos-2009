@@ -133,7 +133,7 @@ public class BlockWriter implements RestrictedBufferRealeaser {
 	private void writeExistent(Collection<ArrayByte> last, RestrictedOutputBuffer ob) {
 		Integer total = 0;
 		for (ArrayByte ab: last) total += ab.getLength();
-		if (total < getSimpleDataSize()) {
+		if (total <= getSimpleDataSize()) {
 			Deque<Collection<ArrayByte>> d = new ArrayDeque<Collection<ArrayByte>>(1);
 			d.add(last);
 			writeExistentOneBlock(d);
