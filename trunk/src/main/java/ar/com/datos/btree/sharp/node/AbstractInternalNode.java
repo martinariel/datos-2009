@@ -101,7 +101,7 @@ public abstract class AbstractInternalNode<E extends Element<K>, K extends Key> 
 		AbstractInternalNode<E, K> left = (leftBrother) ? brother : this;
 		AbstractInternalNode<E, K> right = (leftBrother) ? this : brother;
 		// Creo un nuevo nodo.
-		AbstractInternalNode<E, K> center = this.bTreeSharpConfiguration.getBTreeSharpFactory().createInternalNode(this.bTreeSharpConfiguration);
+		AbstractInternalNode<E, K> center = this.bTreeSharpConfiguration.getBTreeSharpNodeFactory().createInternalNode(this.bTreeSharpConfiguration);
 		
 //		// FIXME: Esto no va mas
 //		// Extraigo el último tercio de left y el primer tercio de right y con ellos armo los elements

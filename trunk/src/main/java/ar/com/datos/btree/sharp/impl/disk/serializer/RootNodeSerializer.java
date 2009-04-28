@@ -47,6 +47,9 @@ public class RootNodeSerializer<E extends Element<K>, K extends Key> implements 
 		this.listKeysSerializer = listKeysSerializer;
 		this.bTreeSharpConfiguration = bTreeSharpConfigurationDisk;
 		this.addressSerializer = SerializerCache.getInstance().getSerializer(AddressBlockSerializer.class);
+		if (this.addressSerializer == null) {
+			this.addressSerializer = new AddressBlockSerializer();
+		}
 		this.byteSerializer = SerializerCache.getInstance().getSerializer(ByteSerializer.class);
 	}
 

@@ -58,9 +58,9 @@ public abstract class AbstractEspecialRootNode<E extends Element<K>, K extends K
 		// esta raiz.
 	
 		// Trabajo a los nodos como left, center y right.
-		AbstractLeafNode<E, K> left = this.bTreeSharpConfiguration.getBTreeSharpFactory().createLeafNode(this.bTreeSharpConfiguration, null, null);
-		AbstractLeafNode<E, K> right = this.bTreeSharpConfiguration.getBTreeSharpFactory().createLeafNode(this.bTreeSharpConfiguration, null, null);
-		AbstractLeafNode<E, K> center = this.bTreeSharpConfiguration.getBTreeSharpFactory().createLeafNode(this.bTreeSharpConfiguration, null, null);
+		AbstractLeafNode<E, K> left = this.bTreeSharpConfiguration.getBTreeSharpNodeFactory().createLeafNode(this.bTreeSharpConfiguration, null, null);
+		AbstractLeafNode<E, K> right = this.bTreeSharpConfiguration.getBTreeSharpNodeFactory().createLeafNode(this.bTreeSharpConfiguration, null, null);
+		AbstractLeafNode<E, K> center = this.bTreeSharpConfiguration.getBTreeSharpNodeFactory().createLeafNode(this.bTreeSharpConfiguration, null, null);
 
 		// Extraigo los tercios 
 		List<List<E>> listParts = getParts(null); // Método template.
@@ -85,7 +85,7 @@ public abstract class AbstractEspecialRootNode<E extends Element<K>, K extends K
 		right.previous = center.myNodeReference;
 		
 		// Creo una raiz definitiva para que apunte a los nuevos nodos.
-		AbstractRootNode<E, K> definitiveRootNode = this.bTreeSharpConfiguration.getBTreeSharpFactory().createDefinitiveRootNode(this.bTreeSharpConfiguration);
+		AbstractRootNode<E, K> definitiveRootNode = this.bTreeSharpConfiguration.getBTreeSharpNodeFactory().createDefinitiveRootNode(this.bTreeSharpConfiguration);
 		definitiveRootNode.firstChild = left.myNodeReference;
 		definitiveRootNode.keysNodes.add(new KeyNodeReference<E, K>(center.elements.get(0).getKey(), center.myNodeReference));
 		definitiveRootNode.keysNodes.add(new KeyNodeReference<E, K>(right.elements.get(0).getKey(), right.myNodeReference));

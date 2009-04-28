@@ -23,7 +23,7 @@ public abstract class BTreeSharpConfiguration<E extends Element<K>, K extends Ke
 	private int maxCapacityRootNode;
 	
 	/** Abstract factory con las implementaciones a usar. */
-	private BTreeSharpNodeFactory<E, K> bTreeSharpFactory;
+	private BTreeSharpNodeFactory<E, K> bTreeSharpNodeFactory;
 
 	/**
 	 * Permite crear un {@link BTreeSharpConfiguration}
@@ -34,14 +34,14 @@ public abstract class BTreeSharpConfiguration<E extends Element<K>, K extends Ke
 	 * Máxima capacidad para un nodo hoja.
 	 * @param maxCapacityRootNode.
 	 * Máxima capacidad para un nodo raiz (Normalmente será 2 * maxCapacityInternalNode)
-	 * @param bTreeSharpFactory
+	 * @param bTreeSharpNodeFactory
 	 * Factory correspondiente a la implementación del árbol B# que se esté usando.
 	 */
-	public BTreeSharpConfiguration(int maxCapacityInternalNode, int maxCapacityLeafNode, int maxCapacityRootNode, BTreeSharpNodeFactory<E, K> bTreeSharpFactory) {
+	public BTreeSharpConfiguration(int maxCapacityInternalNode, int maxCapacityLeafNode, int maxCapacityRootNode, BTreeSharpNodeFactory<E, K> bTreeSharpNodeFactory) {
 		this.maxCapacityInternalNode = maxCapacityInternalNode;
 		this.maxCapacityLeafNode = maxCapacityLeafNode;
 		this.maxCapacityRootNode = maxCapacityRootNode;
-		this.bTreeSharpFactory = bTreeSharpFactory;
+		this.bTreeSharpNodeFactory = bTreeSharpNodeFactory;
 	}
 
 	/**
@@ -54,7 +54,7 @@ public abstract class BTreeSharpConfiguration<E extends Element<K>, K extends Ke
 	 * Requiere que se llame a cada uno de los #set... por separado antes de ser usado.
 	 */
 	public BTreeSharpConfiguration(BTreeSharpNodeFactory<E, K> bTreeSharpFactory) {
-		this.bTreeSharpFactory = bTreeSharpFactory;
+		this.bTreeSharpNodeFactory = bTreeSharpFactory;
 	}
 	
 	/**
@@ -81,8 +81,8 @@ public abstract class BTreeSharpConfiguration<E extends Element<K>, K extends Ke
 	 * Permite obtener el factory correspondiente a la implementación del
 	 * árbol B# que se esté usando.
 	 */
-	public BTreeSharpNodeFactory<E, K> getBTreeSharpFactory() {
-		return this.bTreeSharpFactory;
+	public BTreeSharpNodeFactory<E, K> getBTreeSharpNodeFactory() {
+		return this.bTreeSharpNodeFactory;
 	}
 
 	/**

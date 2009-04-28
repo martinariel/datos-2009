@@ -47,9 +47,9 @@ public abstract class AbstractRootNode<E extends Element<K>, K extends Key> exte
 		// esta raiz.
 		
 		// Trabajo a los nodos como left, center y right.
-		AbstractInternalNode<E, K> left = this.bTreeSharpConfiguration.getBTreeSharpFactory().createInternalNode(this.bTreeSharpConfiguration);
-		AbstractInternalNode<E, K> right = this.bTreeSharpConfiguration.getBTreeSharpFactory().createInternalNode(this.bTreeSharpConfiguration);
-		AbstractInternalNode<E, K> center = this.bTreeSharpConfiguration.getBTreeSharpFactory().createInternalNode(this.bTreeSharpConfiguration);
+		AbstractInternalNode<E, K> left = this.bTreeSharpConfiguration.getBTreeSharpNodeFactory().createInternalNode(this.bTreeSharpConfiguration);
+		AbstractInternalNode<E, K> right = this.bTreeSharpConfiguration.getBTreeSharpNodeFactory().createInternalNode(this.bTreeSharpConfiguration);
+		AbstractInternalNode<E, K> center = this.bTreeSharpConfiguration.getBTreeSharpNodeFactory().createInternalNode(this.bTreeSharpConfiguration);
 		
 		// Extraigo los tercios 
 		List<List<KeyNodeReference<E, K>>> listParts = getParts(null, null, null); // Método template.

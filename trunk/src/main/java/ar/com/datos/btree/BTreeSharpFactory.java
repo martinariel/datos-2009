@@ -26,6 +26,7 @@ import ar.com.datos.file.BlockAccessor;
 import ar.com.datos.file.address.BlockAddress;
 import ar.com.datos.file.variableLength.InvalidAddressException;
 import ar.com.datos.file.variableLength.VariableLengthFileManager;
+import ar.com.datos.serializer.Serializer;
 import ar.com.datos.util.RelativePath;
 import ar.com.datos.util.Tuple;
 
@@ -127,7 +128,7 @@ public class BTreeSharpFactory<E extends Element<K>, K extends Key> {
 
 			// Creo y guardo la configuración del nodo.
 			AdministrativeBTreeSharpSerializer<E, K> administrativeSerializer = new AdministrativeBTreeSharpSerializer<E, K>();
-			String leafFileRelativePath = RelativePath.getRelativePath(internalF, leafF);
+			String leafFileRelativePath = RelativePath.getRelativePath(internalF.getParentFile(), leafF);
 			AdministrativeBTreeSharp<E, K> administrativeBTreeSharp = new AdministrativeBTreeSharp<E, K>(leafFileRelativePath, leafBlockSize, serializerFactoryClass.getName());
 			BlockAccessor<BlockAddress<Long, Short>, AdministrativeBTreeSharp<E, K>> administrativeFile = new VariableLengthFileManager<AdministrativeBTreeSharp<E,K>>(internalFile, internalBlockSize, administrativeSerializer);
 			administrativeFile.addEntity(administrativeBTreeSharp);
@@ -220,7 +221,7 @@ public class BTreeSharpFactory<E extends Element<K>, K extends Key> {
 		String leafFile = administrativeBTreeSharp.getLeafFileName();
 		File internalF = new File(internalFile);
 		String leafFileRelative = internalF.getParent() + "/" + leafFile;
-		BlockAccessor<BlockAddress<Long,Short>, Node<E, K>> leafNodeFile = new VariableLengthFileManager<Node<E, K>>(leafFileRelative, administrativeBTreeSharp.getLeafBlockSize(), leafAndInternalNodeSerializer.getSecond());
+		BlockAccessor<BlockAddress<Long,Short>, Node<E, K>> leafNodeFile = new VariableLengthFileManager<Node<E, K>>(leafFileRelative, administrativeBTreeSharp.getLeafBlockSize(), (Serializer)leafAndInternalNodeSerializer.getFirst());
 		
 		// Establezco la información correspondiente a la configuración del árbol en el BTreeSharpConfigurationDisk
 		bTreeSharpConfigurationDisk.setLeafNodesFileManager(leafNodeFile);

@@ -69,6 +69,10 @@ public class AddressBlockSerializer implements Serializer<BlockAddress<Long, Sho
 	 */
 	@Override
 	public long getDehydrateSize(BlockAddress<Long, Short> object) {
-		return this.longSerializer.getDehydrateSize(object.getBlockNumber());
+		Long blockNumber = -1L;
+		if (object != null) {
+			blockNumber = object.getBlockNumber();
+		}
+		return this.longSerializer.getDehydrateSize(blockNumber);
 	}
 }
