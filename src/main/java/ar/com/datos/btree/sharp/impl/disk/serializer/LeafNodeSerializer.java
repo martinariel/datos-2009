@@ -12,6 +12,7 @@ import ar.com.datos.btree.sharp.impl.disk.node.NodeType;
 import ar.com.datos.btree.sharp.node.NodeReference;
 import ar.com.datos.buffer.InputBuffer;
 import ar.com.datos.buffer.OutputBuffer;
+import ar.com.datos.file.address.BlockAddress;
 import ar.com.datos.serializer.Serializer;
 import ar.com.datos.serializer.common.SerializerCache;
 
@@ -27,7 +28,7 @@ public class LeafNodeSerializer<E extends Element<K>, K extends Key> implements 
 	private AddressBlockSerializer addressSerializer;
 	/** Serializador de un listado de elementos. */
 	private ListElementsSerializer<E, K> listElementsSerializer;
-
+	
 	/**
 	 * Constructor.
 	 *
@@ -41,6 +42,9 @@ public class LeafNodeSerializer<E extends Element<K>, K extends Key> implements 
 		this.listElementsSerializer = listElementsSerializer;
 		this.bTreeSharpConfiguration = bTreeSharpConfigurationDisk;
 		this.addressSerializer = SerializerCache.getInstance().getSerializer(AddressBlockSerializer.class);
+		if (this.addressSerializer == null) {
+			this.addressSerializer = new AddressBlockSerializer();
+		}
 	}
 	
 	/*
@@ -49,9 +53,11 @@ public class LeafNodeSerializer<E extends Element<K>, K extends Key> implements 
 	 */
 	@Override
 	public void dehydrate(OutputBuffer output, LeafNodeDisk<E, K> object) {
-		this.addressSerializer.dehydrate(output, object.getPreviousNodeReference().getNodeAddress());
+		BlockAddress<Long, Short> previousAddress = (object.getPreviousNodeReference() == null) ? null : object.getPreviousNodeReference().getNodeAddress(); 
+		this.addressSerializer.dehydrate(output, previousAddress);
 		this.listElementsSerializer.dehydrate(output, object.getElements());
-		this.addressSerializer.dehydrate(output, object.getNextNodeReference().getNodeAddress());
+		BlockAddress<Long, Short> nextAddress = (object.getNextNodeReference() == null) ? null : object.getNextNodeReference().getNodeAddress();
+		this.addressSerializer.dehydrate(output, nextAddress);
 		
 		// Debo hacer que el nodo tenga el tamaño de un bloque. Le agrego basura hasta llenarlo.
 		int trashSize = (int)(this.bTreeSharpConfiguration.getMaxCapacityLeafNode() - getDehydrateSize(object));
@@ -66,11 +72,13 @@ public class LeafNodeSerializer<E extends Element<K>, K extends Key> implements 
 	 */
 	@Override
 	public LeafNodeDisk<E, K> hydrate(InputBuffer input) {
-		NodeReference<E, K> previous = new NodeReferenceDisk<E, K>(this.addressSerializer.hydrate(input), 
+		BlockAddress<Long, Short> previousAddress = this.addressSerializer.hydrate(input);
+		NodeReference<E, K> previous = (previousAddress == null) ? null : new NodeReferenceDisk<E, K>(previousAddress, 
 														this.bTreeSharpConfiguration.getLeafNodesFileManager(),
 														NodeType.LEAF);
 		List<E> elements = this.listElementsSerializer.hydrate(input);
-		NodeReference<E, K> next = new NodeReferenceDisk<E, K>(this.addressSerializer.hydrate(input), 
+		BlockAddress<Long, Short> nextAddress = this.addressSerializer.hydrate(input);
+		NodeReference<E, K> next = (nextAddress == null) ? null : new NodeReferenceDisk<E, K>(nextAddress, 
 														this.bTreeSharpConfiguration.getLeafNodesFileManager(),
 														NodeType.LEAF);
 		
@@ -91,7 +99,8 @@ public class LeafNodeSerializer<E extends Element<K>, K extends Key> implements 
 	 */
 	@Override
 	public long getDehydrateSize(LeafNodeDisk<E, K> object) {
-		return this.addressSerializer.getDehydrateSize(object.getPreviousNodeReference().getNodeAddress()) * 2 +
+		BlockAddress<Long, Short> previousAddress = (object.getPreviousNodeReference() == null) ? null : object.getPreviousNodeReference().getNodeAddress();
+		return this.addressSerializer.getDehydrateSize(previousAddress) * 2 +
 				this.listElementsSerializer.getDehydrateSize(object.getElements());
 	}
 

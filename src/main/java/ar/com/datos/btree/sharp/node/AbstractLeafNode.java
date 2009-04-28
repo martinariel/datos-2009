@@ -89,7 +89,7 @@ public abstract class AbstractLeafNode<E extends Element<K>, K extends Key> exte
 		AbstractLeafNode<E, K> left = (leftBrother) ? brother : this;
 		AbstractLeafNode<E, K> right = (leftBrother) ? this : brother;
 		// Creo una nueva hoja cuyo nodo anterior será left, y el siguiente será el right.
-		AbstractLeafNode<E, K> center = this.bTreeSharpConfiguration.getBTreeSharpFactory().createLeafNode(this.bTreeSharpConfiguration, left.myNodeReference, right.myNodeReference);
+		AbstractLeafNode<E, K> center = this.bTreeSharpConfiguration.getBTreeSharpNodeFactory().createLeafNode(this.bTreeSharpConfiguration, left.myNodeReference, right.myNodeReference);
 
 // FIXME
 //		// Extraigo el último tercio de left y el primer tercio de right y con ellas armo los elements

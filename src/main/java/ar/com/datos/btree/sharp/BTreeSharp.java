@@ -67,7 +67,7 @@ public class BTreeSharp<E extends Element<K>, K extends Key> implements BTree<E,
 		
 		try {
 			if (this.rootNode == null) {
-				this.rootNode = this.bTreeSharpConfiguration.getBTreeSharpFactory().createEspecialRootNode(this.bTreeSharpConfiguration, this);
+				this.rootNode = this.bTreeSharpConfiguration.getBTreeSharpNodeFactory().createEspecialRootNode(this.bTreeSharpConfiguration, this);
 			} 
 			this.rootNode.addElement(element, new NodeReferenceMemory<E, K>(null), false, new WrappedParam<K>());
 		} catch (BTreeException e) {
