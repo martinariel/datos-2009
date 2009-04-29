@@ -2,12 +2,14 @@ package ar.com.datos.serializer.common;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 
 import ar.com.datos.buffer.InputBuffer;
 import ar.com.datos.buffer.OutputBuffer;
+import ar.com.datos.serializer.NullableSerializer;
 import ar.com.datos.serializer.Serializer;
 
 /**
@@ -28,7 +30,7 @@ import ar.com.datos.serializer.Serializer;
  * @param <T>
  * Tipo de las colecciones a usar.
  */
-public class CollectionSerializer<T> implements Serializer<Collection<T>> {
+public class CollectionSerializer<T> implements NullableSerializer<Collection<T>> {
 	/**
 	 * {@link Serializer} a usar con el tipo T.
 	 */
@@ -167,5 +169,9 @@ public class CollectionSerializer<T> implements Serializer<Collection<T>> {
 		return size;
 	}
 
+	@Override
+	public void dehydrateNull(OutputBuffer buffer) {
+		this.dehydrate(buffer, new ArrayList<T>());
+	}
 	
 }

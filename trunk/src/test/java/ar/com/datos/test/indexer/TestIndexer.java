@@ -3,13 +3,9 @@ package ar.com.datos.test.indexer;
 import java.util.Collection;
 
 import junit.framework.TestCase;
-import ar.com.datos.btree.BTree;
-import ar.com.datos.btree.BTreeSharpFactory;
 import ar.com.datos.file.variableLength.address.OffsetAddress;
 import ar.com.datos.file.variableLength.address.OffsetAddressSerializer;
 import ar.com.datos.indexer.SimpleSessionIndexer;
-import ar.com.datos.indexer.tree.IndexerTreeElement;
-import ar.com.datos.indexer.tree.IndexerTreeKey;
 import ar.com.datos.utils.sort.external.KeyCount;
 
 public class TestIndexer extends TestCase {
@@ -18,10 +14,10 @@ public class TestIndexer extends TestCase {
 		String fileName = "blah";
 		OffsetAddress idDocumento = new OffsetAddress(23L);
 		SimpleSessionIndexer<OffsetAddress> unIndexador = new SimpleSessionIndexer<OffsetAddress>(fileName, new OffsetAddressSerializer()) {
-			@Override
-			protected BTree<IndexerTreeElement<OffsetAddress>, IndexerTreeKey> constructIndexedElements(String fileName) {
-				return new BTreeSharpFactory<IndexerTreeElement<OffsetAddress>, IndexerTreeKey>().createBTreeSharpMemory(16, 16);
-			}
+//			@Override
+//			protected BTree<IndexerTreeElement<OffsetAddress>, IndexerTreeKey> constructIndexedElements(String fileName) {
+//				return new BTreeSharpFactory<IndexerTreeElement<OffsetAddress>, IndexerTreeKey>().createBTreeSharpMemory(16, 16);
+//			}
 		};
 		unIndexador.startSession();
 		unIndexador.addTerms(idDocumento, "hola", "hola", "mano");

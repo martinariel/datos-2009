@@ -251,18 +251,18 @@ public class TestVariableLengthWithCache extends MockObjectTestCase {
 			will(returnValue(campos1));
 			atLeast(1).of(fileMock).readBlock(1L);
 			will(returnValue(bloque1));
-			// Carga del bloque final. Esta es la única lectura que no se hace en orden
-			one(fileMock).readBlock(cantidadDeBloquesEnFileMock - 1);
-			will(returnValue(bloque3));
-			one(serializerMock).hydrate(with(any(InputBuffer.class)));
-			will(returnValue(campos3));
-			allowing(serializerMock).dehydrate(with(any(OutputBuffer.class)),with(campos3));
 			one(fileMock).readBlock(2L);
 			will(returnValue(bloque2));
 			one(serializerMock).hydrate(with(any(InputBuffer.class)));
 			will(returnValue(campos2));
 			one(fileMock).readBlock(3L);
 			will(returnValue(bloque3));
+//			// Carga del bloque final. Esta es la única lectura que no se hace en orden
+			one(fileMock).readBlock(cantidadDeBloquesEnFileMock - 1);
+			will(returnValue(bloque3));
+			one(serializerMock).hydrate(with(any(InputBuffer.class)));
+			will(returnValue(campos3));
+			allowing(serializerMock).dehydrate(with(any(OutputBuffer.class)),with(campos3));
 		}});
 		assertTrue(iterador.hasNext());
 		assertEquals(campos0, iterador.next());

@@ -145,7 +145,7 @@ public class BTreeSharpFactory<E extends Element<K>, K extends Key> {
 			
 			return btree;
 		} catch (Exception e) {
-			throw new BTreeConfException();
+			throw new BTreeConfException(e);
 		}
 	}
 
