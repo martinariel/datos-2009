@@ -1,7 +1,5 @@
 package ar.com.datos.btree.sharp.node;
 
-import java.util.List;
-
 import ar.com.datos.btree.elements.Element;
 import ar.com.datos.btree.elements.Key;
 import ar.com.datos.btree.exception.BTreeException;
@@ -51,26 +49,32 @@ public abstract class AbstractRootNode<E extends Element<K>, K extends Key> exte
 		AbstractInternalNode<E, K> right = this.bTreeSharpConfiguration.getBTreeSharpNodeFactory().createInternalNode(this.bTreeSharpConfiguration);
 		AbstractInternalNode<E, K> center = this.bTreeSharpConfiguration.getBTreeSharpNodeFactory().createInternalNode(this.bTreeSharpConfiguration);
 		
-		// Extraigo los tercios 
-		List<List<KeyNodeReference<E, K>>> listParts = getParts(null, null, null); // Método template.
-		List<KeyNodeReference<E, K>> leftParts = listParts.get(0);
-		List<KeyNodeReference<E, K>> centerParts = listParts.get(1);
-		List<KeyNodeReference<E, K>> rightParts = listParts.get(2);
+		// Extraigo los tercios
+		WrappedParam<K> overflowKey1 = new WrappedParam<K>();
+		WrappedParam<K> overflowKey2 = new WrappedParam<K>();
+		getParts(null, null, null, left, center, right, overflowKey1, overflowKey2); // Método template.
 		
-		// Los meto en los nodos. 
-		K key1, key2;
-		KeyNodeReference<E, K> tempKeyNodeReference = leftParts.remove(0);
-		left.firstChild = tempKeyNodeReference.getNodeReference();
-		left.keysNodes.addAll(leftParts);
-		tempKeyNodeReference = centerParts.remove(0);
-		center.firstChild = tempKeyNodeReference.getNodeReference();
-		key1 = tempKeyNodeReference.getKey();
-		center.keysNodes.addAll(centerParts);
-		tempKeyNodeReference = rightParts.remove(0);
-		right.firstChild = tempKeyNodeReference.getNodeReference();
-		key2 = tempKeyNodeReference.getKey();
-		right.keysNodes.addAll(rightParts);
-		
+//		FIXME
+//		// Extraigo los tercios 
+//		List<List<KeyNodeReference<E, K>>> listParts = getParts(null, null, null); // Método template.
+//		List<KeyNodeReference<E, K>> leftParts = listParts.get(0);
+//		List<KeyNodeReference<E, K>> centerParts = listParts.get(1);
+//		List<KeyNodeReference<E, K>> rightParts = listParts.get(2);
+//		
+//		// Los meto en los nodos. 
+//		K key1, key2;
+//		KeyNodeReference<E, K> tempKeyNodeReference = leftParts.remove(0);
+//		left.firstChild = tempKeyNodeReference.getNodeReference();
+//		left.keysNodes.addAll(leftParts);
+//		tempKeyNodeReference = centerParts.remove(0);
+//		center.firstChild = tempKeyNodeReference.getNodeReference();
+//		key1 = tempKeyNodeReference.getKey();
+//		center.keysNodes.addAll(centerParts);
+//		tempKeyNodeReference = rightParts.remove(0);
+//		right.firstChild = tempKeyNodeReference.getNodeReference();
+//		key2 = tempKeyNodeReference.getKey();
+//		right.keysNodes.addAll(rightParts);
+//		
 		// Método template
 		left.postAddElement();
 		center.postAddElement();
@@ -79,8 +83,8 @@ public abstract class AbstractRootNode<E extends Element<K>, K extends Key> exte
 		// Reconfiguro esta raiz para que apunte a los nuevos nodos.
 		this.firstChild = left.myNodeReference;
 		this.keysNodes.clear();
-		this.keysNodes.add(new KeyNodeReference<E, K>(key1, center.myNodeReference));
-		this.keysNodes.add(new KeyNodeReference<E, K>(key2, right.myNodeReference));
+		this.keysNodes.add(new KeyNodeReference<E, K>(overflowKey1.getValue(), center.myNodeReference));
+		this.keysNodes.add(new KeyNodeReference<E, K>(overflowKey2.getValue(), right.myNodeReference));
 	
 		return null;
 	}

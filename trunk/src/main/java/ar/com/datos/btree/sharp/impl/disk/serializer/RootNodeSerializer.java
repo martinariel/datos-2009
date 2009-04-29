@@ -18,6 +18,7 @@ import ar.com.datos.buffer.OutputBuffer;
 import ar.com.datos.serializer.Serializer;
 import ar.com.datos.serializer.common.ByteSerializer;
 import ar.com.datos.serializer.common.SerializerCache;
+import ar.com.datos.serializer.exception.SerializerException;
 
 /**
  * Serializador de un nodo raiz.
@@ -58,12 +59,21 @@ public class RootNodeSerializer<E extends Element<K>, K extends Key> implements 
 	 * @see ar.com.datos.serializer.Serializer#dehydrate(ar.com.datos.buffer.OutputBuffer, java.lang.Object)
 	 */
 	@Override
-	public void dehydrate(OutputBuffer output, RootNodeDisk<E, K> object) {
+	public void dehydrate(OutputBuffer output, RootNodeDisk<E, K> object) throws SerializerException {
+		// Debo hacer que el nodo tenga el tamaño de un bloque. Le agregaré al final basura hasta llenarlo.
+		int trashSize = (int)(this.bTreeSharpConfiguration.getMaxCapacityRootNode() - 1 - getDehydrateSize(object));
+		
+		if (trashSize < 0) {
+			throw new SerializerException(this.getClass().getCanonicalName() + ": Se intenta grabar un nodo de un " +
+					"tamaño mayor al permitido. Esto se debe a que la key puede ser demasiado grande para el" +
+					"tamaño que se definió para el nodo.");
+		}
+		
 		// Primero armo listas por separado de Keys y NodeReferences
 		List<K> keys = new LinkedList<K>();
 		List<NodeReferenceDisk<E, K>> nodeReferences = new LinkedList<NodeReferenceDisk<E,K>>();
-		nodeReferences.add(object.getFirstNodeReference()); // Agrego el primer hijo.
-		Iterator<KeyNodeReference<E, K>> it = object.getKeysNodeReferences().iterator();
+		nodeReferences.add((NodeReferenceDisk<E, K>)object.getFirstChild()); // Agrego el primer hijo.
+		Iterator<KeyNodeReference<E, K>> it = object.getKeysNodes().iterator();
 		KeyNodeReference<E, K> currentKeyNodeReference;
 		while (it.hasNext()) {
 			currentKeyNodeReference = it.next();
@@ -77,7 +87,7 @@ public class RootNodeSerializer<E extends Element<K>, K extends Key> implements 
 		// Serializo los NodeReference.
 		// En primer lugar debo marcar que tipo de nodos son. Para saber que tipo de de referencias
 		// contiene tomo cualquier referencia y me fijo el tipo.
-		Byte nodeType = object.getFirstNodeReference().getNodeType().getType();
+		Byte nodeType = ((NodeReferenceDisk<E, K>)object.getFirstChild()).getNodeType().getType();
 		this.byteSerializer.dehydrate(output, nodeType);
 		// Ahora serializo todos los KeysNodeReference. No hace falta que ponga la cantidad porque
 		// se que es la cantidad de Keys + 1.
@@ -86,8 +96,6 @@ public class RootNodeSerializer<E extends Element<K>, K extends Key> implements 
 			this.addressSerializer.dehydrate(output, itNodeReferences.next().getNodeAddress());
 		}
 		
-		// Debo hacer que el nodo tenga el tamaño de un bloque. Le agrego basura hasta llenarlo.
-		int trashSize = (int)(this.bTreeSharpConfiguration.getMaxCapacityRootNode() - getDehydrateSize(object));
 		if (trashSize > 0) {
 			output.write(new byte[trashSize]);
 		}
@@ -127,7 +135,7 @@ public class RootNodeSerializer<E extends Element<K>, K extends Key> implements 
 		RootNodeDisk<E, K> returnValue = new RootNodeDisk<E, K>(this.bTreeSharpConfiguration, firstChild, keysNodes);
 		
 		// Vacio el buffer de información basura que había dejado al final.
-		int trashSize = (int)(this.bTreeSharpConfiguration.getMaxCapacityRootNode() - getDehydrateSize(returnValue));
+		int trashSize = (int)(this.bTreeSharpConfiguration.getMaxCapacityRootNode() - 1 - getDehydrateSize(returnValue));
 		if (trashSize > 0) {
 			input.read(new byte[trashSize]);
 		}
@@ -143,12 +151,12 @@ public class RootNodeSerializer<E extends Element<K>, K extends Key> implements 
 	public long getDehydrateSize(RootNodeDisk<E, K> object) {
 		// Primero armo una lista de keys.
 		List<K> keys = new LinkedList<K>();
-		Iterator<KeyNodeReference<E, K>> it = object.getKeysNodeReferences().iterator();
+		Iterator<KeyNodeReference<E, K>> it = object.getKeysNodes().iterator();
 		while (it.hasNext()) {
 			keys.add(it.next().getKey());
 		}
 
 		return this.listKeysSerializer.getDehydrateSize(keys) + this.byteSerializer.getDehydrateSize(null) +
-				(object.getKeysNodeReferences().size() + 1) * this.addressSerializer.getDehydrateSize(object.getFirstNodeReference().getNodeAddress());
+				(object.getKeysNodes().size() + 1) * this.addressSerializer.getDehydrateSize(null);
 	}
 }

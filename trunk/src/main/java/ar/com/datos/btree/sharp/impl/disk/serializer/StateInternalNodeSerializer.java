@@ -10,6 +10,7 @@ import ar.com.datos.buffer.OutputBuffer;
 import ar.com.datos.serializer.Serializer;
 import ar.com.datos.serializer.common.ByteSerializer;
 import ar.com.datos.serializer.common.SerializerCache;
+import ar.com.datos.serializer.exception.SerializerException;
 
 /**
  * Serializador que permite serializar diferentes tipos de nodos Internos, es decir nodos que
@@ -63,7 +64,7 @@ public class StateInternalNodeSerializer<E extends Element<K>, K extends Key> im
 	 * @see ar.com.datos.serializer.Serializer#dehydrate(ar.com.datos.buffer.OutputBuffer, java.lang.Object)
 	 */
 	@Override
-	public void dehydrate(OutputBuffer output, Node<E, K> object) {
+	public void dehydrate(OutputBuffer output, Node<E, K> object) throws SerializerException {
 		// Primero pongo el tipo de nodo.
 		this.byteSerializer.dehydrate(output, object.getNodeType().getType());
 		// Y ahora serializo el nodo usando el serializador correspondiente al tipo.

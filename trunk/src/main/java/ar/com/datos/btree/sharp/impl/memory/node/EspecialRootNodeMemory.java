@@ -9,6 +9,7 @@ import ar.com.datos.btree.exception.BTreeException;
 import ar.com.datos.btree.sharp.BTreeSharp;
 import ar.com.datos.btree.sharp.impl.memory.BTreeSharpConfigurationMemory;
 import ar.com.datos.btree.sharp.node.AbstractEspecialRootNode;
+import ar.com.datos.btree.sharp.node.AbstractLeafNode;
 import ar.com.datos.btree.sharp.util.ThirdPartHelper;
 import ar.com.datos.test.btree.sharp.mock.memory.TestElementMemory;
 import ar.com.datos.test.btree.sharp.mock.memory.TestKeyMemory;
@@ -72,16 +73,38 @@ public final class EspecialRootNodeMemory<E extends Element<K>, K extends Key> e
 //		
 //		return returnValue;
 //	}
-	
+
 	/*
 	 * (non-Javadoc)
-	 * @see ar.com.datos.btree.sharp.node.AbstractEspecialRootNode#getParts()
+	 * @see ar.com.datos.btree.sharp.node.AbstractLeafNode#getParts(java.util.List, ar.com.datos.btree.sharp.node.AbstractLeafNode, ar.com.datos.btree.sharp.node.AbstractLeafNode, ar.com.datos.btree.sharp.node.AbstractLeafNode)
 	 */
 	@Override
-	protected List<List<E>> getParts(List<E> rightNodeElements) {
+	protected void getParts(List<E> rightNodeElements, AbstractLeafNode<E, K> leftNode, AbstractLeafNode<E, K> centerNode, AbstractLeafNode<E, K> rightNode) {
 		// Extraigo las listas separadas.
-		return ThirdPartHelper.divideInThreeParts(this.elements);
+		List<List<E>> parts = ThirdPartHelper.divideInThreeParts(this.elements);
+		List<E> left = parts.remove(0);
+		List<E> center = parts.remove(0);
+		List<E> right = parts.remove(0);
+		
+		// Configuro los nodos con las partes que obtuve.
+		leftNode.getElements().clear();
+		leftNode.getElements().addAll(left);
+		centerNode.getElements().clear();
+		centerNode.getElements().addAll(center);
+		rightNode.getElements().clear();
+		rightNode.getElements().addAll(right);
 	}
+
+// FIXME: No se usa más
+//	/*
+//	 * (non-Javadoc)
+//	 * @see ar.com.datos.btree.sharp.node.AbstractEspecialRootNode#getParts()
+//	 */
+//	@Override
+//	protected List<List<E>> getParts(List<E> rightNodeElements) {
+//		// Extraigo las listas separadas.
+//		return ThirdPartHelper.divideInThreeParts(this.elements);
+//	}
 	
 	// FIXME: Temporal. Todo lo que está abajo es para pruebas de desarrollo.
 	public void setElements(List<E> elements) {

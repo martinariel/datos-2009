@@ -1,5 +1,6 @@
 package ar.com.datos.test.btree.sharp;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -44,8 +45,10 @@ public class TestBTreeSharpDisk extends ExtendedTestCase {
 	public void testHiperPedorro() {
 		try {
 			BTree<TestElementDisk, TestKeyDisk> btree = this.bTreeSharp;
-			String[] lista = new String[] {"522630", "925861336572", "940027", "12275214072481695", "676159818757214", "635144937520", "343025", "885287", "855731162813196136"};
+//			String[] lista = new String[] {"522630", "925861336572", "940027", "12275214072481695", "676159818757214", "635144937520", "343025", "885287", "855731162813196136"};
+			String[] lista = new String[] {"990707", "814561", "893024", "95592444739", "655170748521613866", "57971836335", "7775729897", "669833", "864004652398", "563959408814957898", "286823968160", "793501205650896534", "164502591619", "451579837255", "911722453988197619", "978636376735", "932372780949243559", "201413492933922261", "316785921097439538", "119584708352261883", "365493879233", "869601452491", "755771699631354201", "536773693357", "545499"};
 			for (int i = 0; i < lista.length; i++) {
+				System.out.println(i);
 				btree.addElement(new TestElementDisk(lista[i], new Integer(1)));
 			}
 			

@@ -97,19 +97,21 @@ public abstract class AbstractLeafNode<E extends Element<K>, K extends Key> exte
 //		center.elements.addAll(left.getThirdPart(false)); // Método template.
 //		center.elements.addAll(right.getThirdPart(true)); // Método template.
 		
-		// Extraigo los tercios 
-		List<List<E>> listParts = left.getParts(right.elements); // Método template.
-		List<E> leftPart = listParts.get(0);
-		List<E> centerPart = listParts.get(1);
-		List<E> rightPart = listParts.get(2);
-		
-		// Pongo las listas en los nodos.
-		left.elements.clear();
-		left.elements.addAll(leftPart);
-		center.elements.clear();
-		center.elements.addAll(centerPart);
-		right.elements.clear();
-		right.elements.addAll(rightPart);		
+		// Extraigo los tercios
+		left.getParts(right.elements, left, center, right); // Método template.
+// FIXME
+//		List<List<E>> listParts = left.getParts(right.elements); // Método template.
+//		List<E> leftPart = listParts.get(0);
+//		List<E> centerPart = listParts.get(1);
+//		List<E> rightPart = listParts.get(2);
+//		
+//		// Pongo las listas en los nodos.
+//		left.elements.clear();
+//		left.elements.addAll(leftPart);
+//		center.elements.clear();
+//		center.elements.addAll(centerPart);
+//		right.elements.clear();
+//		right.elements.addAll(rightPart);		
 		
 		// Método template.
 		center.postAddElement();
@@ -382,13 +384,21 @@ public abstract class AbstractLeafNode<E extends Element<K>, K extends Key> exte
 //	protected abstract List<E> getThirdPart(boolean left);
 
 	/**
+	 * Método para ser usado por la implementación de {@link #getParts(List, AbstractLeafNode, AbstractLeafNode, AbstractLeafNode)}
+	 */
+	public List<E> getElements() {
+		return this.elements;
+	}
+	
+	/**
 	 * Juntando los elements de este nodo con los del derecho que recibe, obtiene
-	 * 3 partes (3 listas) de igual tamaño (o lo más próximo posible).
-	 * Es indistinto el estado en que quedan las listas de elementos originales.
+	 * 3 partes (3 listas) de igual tamaño (o lo más próximo posible). Con ellas
+	 * terminará de construir los nodos pasados.
 	 * 
 	 * Patrón de diseño Template.
 	 */
-	protected abstract List<List<E>> getParts(List<E> rightNodeElements);
+	protected abstract void getParts(List<E> rightNodeElements, AbstractLeafNode<E, K> leftNode,
+									AbstractLeafNode<E, K> centerNode, AbstractLeafNode<E, K> rightNode);
 	
 	/*
 	 * (non-Javadoc)

@@ -51,7 +51,7 @@ public final class LeafNodeMemory<E extends Element<K>, K extends Key> extends A
 	protected long calculateNodeSize() {
 		return this.elements.size();
 	}
-
+	
 //	 FIXME: Temporal. Seguramente va a quedar la versión de más abajo.	
 //	/*
 //	 * (non-Javadoc)
@@ -100,17 +100,43 @@ public final class LeafNodeMemory<E extends Element<K>, K extends Key> extends A
 
 	/*
 	 * (non-Javadoc)
-	 * @see ar.com.datos.btree.sharp.node.AbstractLeafNode#getParts(java.util.List)
+	 * @see ar.com.datos.btree.sharp.node.AbstractLeafNode#getParts(java.util.List, ar.com.datos.btree.sharp.node.AbstractLeafNode, ar.com.datos.btree.sharp.node.AbstractLeafNode, ar.com.datos.btree.sharp.node.AbstractLeafNode)
 	 */
 	@Override
-	protected List<List<E>> getParts(List<E> rightNodeElements) {
+	protected void getParts(List<E> rightNodeElements, AbstractLeafNode<E, K> leftNode, AbstractLeafNode<E, K> centerNode, AbstractLeafNode<E, K> rightNode) {
 		// Uno las listas
 		List<E> source = new LinkedList<E>(this.elements);
 		source.addAll(rightNodeElements);
 		
 		// Extraigo las listas separadas.
-		return ThirdPartHelper.divideInThreeParts(source);
+		List<List<E>> parts = ThirdPartHelper.divideInThreeParts(source);
+		List<E> left = parts.remove(0);
+		List<E> center = parts.remove(0);
+		List<E> right = parts.remove(0);
+		
+		// Configuro los nodos con las partes que obtuve.
+		leftNode.getElements().clear();
+		leftNode.getElements().addAll(left);
+		centerNode.getElements().clear();
+		centerNode.getElements().addAll(center);
+		rightNode.getElements().clear();
+		rightNode.getElements().addAll(right);
 	}
+	
+// FIXME  No se usa más
+//	/*
+//	 * (non-Javadoc)
+//	 * @see ar.com.datos.btree.sharp.node.AbstractLeafNode#getParts(java.util.List)
+//	 */
+//	@Override
+//	protected List<List<E>> getParts(List<E> rightNodeElements) {
+//		// Uno las listas
+//		List<E> source = new LinkedList<E>(this.elements);
+//		source.addAll(rightNodeElements);
+//		
+//		// Extraigo las listas separadas.
+//		return ThirdPartHelper.divideInThreeParts(source);
+//	}
 	
 	// FIXME: Temporal. Todo lo que está abajo es para pruebas de desarrollo.
 	public void setElements(List<E> elements) {

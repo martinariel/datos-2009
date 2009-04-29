@@ -9,11 +9,13 @@ import ar.com.datos.btree.elements.Key;
 import ar.com.datos.btree.exception.BTreeException;
 import ar.com.datos.btree.sharp.impl.disk.BTreeSharpConfigurationDisk;
 import ar.com.datos.btree.sharp.impl.disk.interfaces.ListKeysSerializer;
-import ar.com.datos.btree.sharp.impl.disk.serializer.InternalNodeSerializer;
+import ar.com.datos.btree.sharp.impl.disk.serializer.StateInternalNodeSerializer;
 import ar.com.datos.btree.sharp.node.AbstractInternalNode;
 import ar.com.datos.btree.sharp.node.KeyNodeReference;
 import ar.com.datos.btree.sharp.node.NodeReference;
+import ar.com.datos.btree.sharp.util.EspecialListForThirdPart;
 import ar.com.datos.btree.sharp.util.ThirdPartHelper;
+import ar.com.datos.util.WrappedParam;
 
 /**
  * Nodo interno en disco.
@@ -139,25 +141,36 @@ public final class InternalNodeDisk<E extends Element<K>, K extends Key> extends
 
 	/*
 	 * (non-Javadoc)
-	 * @see ar.com.datos.btree.sharp.node.AbstractInternalNode#getParts(ar.com.datos.btree.sharp.node.NodeReference, java.util.List, ar.com.datos.btree.elements.Key)
+	 * @see ar.com.datos.btree.sharp.node.AbstractInternalNode#getParts(ar.com.datos.btree.sharp.node.NodeReference, java.util.List, ar.com.datos.btree.elements.Key, ar.com.datos.btree.sharp.node.AbstractInternalNode, ar.com.datos.btree.sharp.node.AbstractInternalNode, ar.com.datos.btree.sharp.node.AbstractInternalNode, ar.com.datos.util.WrappedParam, ar.com.datos.util.WrappedParam)
 	 */
 	@Override
-	protected List<List<KeyNodeReference<E, K>>> getParts(NodeReference<E, K> firstChildRightNode, List<KeyNodeReference<E, K>> keysNodesRightNode, K fatherKeyRigthNode) {
+	protected void getParts(NodeReference<E, K> firstChildRightNode, List<KeyNodeReference<E, K>> keysNodesRightNode, K fatherKeyRigthNode, AbstractInternalNode<E, K> leftNode, AbstractInternalNode<E, K> centerNode, AbstractInternalNode<E, K> rightNode, WrappedParam<K> overflowKeyCenter, WrappedParam<K> overflowKeyRight) {
 		ListKeysSerializer<K> serializer = this.bTreeSharpConfiguration.getListKeysSerializer(); 
 		
-		// Creo una sola lista.
-		List<KeyNodeReference<E, K>> sourceKeyNodeReference = new LinkedList<KeyNodeReference<E,K>>();
-		sourceKeyNodeReference.add(new KeyNodeReference<E, K>(null, this.firstChild));
-		sourceKeyNodeReference.addAll(this.keysNodes);
-		sourceKeyNodeReference.add(new KeyNodeReference<E, K>(fatherKeyRigthNode, firstChildRightNode));
-		sourceKeyNodeReference.addAll(keysNodesRightNode);
-		
-		// Extraigo una lista de Keys.
-		Iterator<KeyNodeReference<E, K>> itKeyNodeReference = sourceKeyNodeReference.iterator();
+		// Creo una lista de NodeReferences y otra de Keys
+		List<NodeReference<E, K>> sourceNodeReferences = new LinkedList<NodeReference<E, K>>();
 		List<K> sourceKeys = new LinkedList<K>();
-		itKeyNodeReference.next();
-		while (itKeyNodeReference.hasNext()) {
-			sourceKeys.add(itKeyNodeReference.next().getKey());
+		
+		sourceNodeReferences.add(this.firstChild); // Agrego la primer referencia de este nodo.
+		Iterator<KeyNodeReference<E, K>> keyNodeReferenceIt;
+		KeyNodeReference<E, K> currentKeyNodeReference;
+		
+		// Agrego claves de este nodo y resto de las referencias.
+		keyNodeReferenceIt = this.keysNodes.iterator();
+		while (keyNodeReferenceIt.hasNext()) {
+			currentKeyNodeReference = keyNodeReferenceIt.next();
+			sourceNodeReferences.add(currentKeyNodeReference.getNodeReference());
+			sourceKeys.add(currentKeyNodeReference.getKey());
+		}
+		// Agrego la primer referencia del nodo derecho y la clave del padre del nodo derecho. 
+		sourceNodeReferences.add(firstChildRightNode);
+		sourceKeys.add(fatherKeyRigthNode);
+		// Agrego claves del nodo derecho y resto de las referencias.
+		keyNodeReferenceIt = keysNodesRightNode.iterator();
+		while (keyNodeReferenceIt.hasNext()) {
+			currentKeyNodeReference = keyNodeReferenceIt.next();
+			sourceNodeReferences.add(currentKeyNodeReference.getNodeReference());
+			sourceKeys.add(currentKeyNodeReference.getKey());
 		}
 		
 		// Divido la lista de Keys.
@@ -167,13 +180,102 @@ public final class InternalNodeDisk<E extends Element<K>, K extends Key> extends
 		List<K> center = keyParts.get(1);
 		List<K> right = keyParts.get(2);
 		
-		// Reacomodo lo obtenido pero ahora calculando los tamaños (sin considerar tamaño fijo).
-		ThirdPartHelper.balanceThirdPart(left, center, serializer, serializer.getDehydrateSize(right));
-		ThirdPartHelper.balanceThirdPart(center, right, serializer, serializer.getDehydrateSize(left));
+		EspecialListForThirdPart<K> eLeft = new EspecialListForThirdPart<K>(left, serializer, false);
+		EspecialListForThirdPart<K> eCenterForLeft = new EspecialListForThirdPart<K>(center, serializer, true);
+		EspecialListForThirdPart<K> eCenterForRight = new EspecialListForThirdPart<K>(center, serializer, false);
+		EspecialListForThirdPart<K> eRight = new EspecialListForThirdPart<K>(right, serializer, true);
 		
-		// Recombino las listas divididas de keys con las KeyNodeReferences
-		return ThirdPartHelper.combineKeysAndNodeReferences(sourceKeyNodeReference, keyParts);
+		// Reacomodo lo obtenido pero ahora calculando los tamaños (sin considerar tamaño fijo).
+		ThirdPartHelper.balanceThirdPart(eLeft, eCenterForLeft, eRight.size(), 1, 2);
+		ThirdPartHelper.balanceThirdPart(eCenterForRight, eRight, eLeft.size(), 2, 2);
+		
+		// Recombino las listas divididas de keys con las KeyNodeReferences armando los nodos.
+		ThirdPartHelper.combineKeysAndNodeReferences(sourceNodeReferences, keyParts, leftNode, centerNode, rightNode, overflowKeyCenter, overflowKeyRight);
+		
+		// Como el balanceo es hacia la derecha, puede pasar (difícil, pero puede) que el nodo derecho
+		// quede en overflow. Si es así, trato de compensarlo hacia la izquierda.
+		StateInternalNodeSerializer<E, K> stateInternalNodeSerializer = this.bTreeSharpConfiguration.getStateInternalNodeSerializer();
+		KeyNodeReference<E, K> tempKeyNodeReference;
+		while (stateInternalNodeSerializer.getDehydrateSize((InternalNodeDisk<E, K>)rightNode) > this.bTreeSharpConfiguration.getMaxCapacityInternalNode() 
+				&& rightNode.getKeysNodes().size() > 1) {
+			centerNode.getKeysNodes().add(new KeyNodeReference<E, K>(overflowKeyRight.getValue(), rightNode.getFirstChild()));
+			tempKeyNodeReference = rightNode.getKeysNodes().remove(0);
+			rightNode.setFirstChild(tempKeyNodeReference.getNodeReference());
+			overflowKeyRight.setValue(tempKeyNodeReference.getKey());
+		}
+		
+		// Ahora me puede haber quedado overflow en center (más difícil aún).
+		while (stateInternalNodeSerializer.getDehydrateSize((InternalNodeDisk<E, K>)centerNode) > this.bTreeSharpConfiguration.getMaxCapacityInternalNode()
+				&& centerNode.getKeysNodes().size() > 1) {
+			leftNode.getKeysNodes().add(new KeyNodeReference<E, K>(overflowKeyCenter.getValue(), centerNode.getFirstChild()));
+			tempKeyNodeReference = centerNode.getKeysNodes().remove(0);
+			centerNode.setFirstChild(tempKeyNodeReference.getNodeReference());
+			overflowKeyCenter.setValue(tempKeyNodeReference.getKey());
+		}
+		
+		// Si left quedó también en overflow es porque el tamaño de los nodos fue mal definido
+		// para los elementos que se quieren guardar. Se tirará una excepción en el serializer
+		// correspondiente (no se trata el caso aquí).
 	}
+
+// FIXME
+//	/*
+//	 * (non-Javadoc)
+//	 * @see ar.com.datos.btree.sharp.node.AbstractInternalNode#getParts(ar.com.datos.btree.sharp.node.NodeReference, java.util.List, ar.com.datos.btree.elements.Key)
+//	 */
+//	@Override
+//	protected List<List<KeyNodeReference<E, K>>> getParts(NodeReference<E, K> firstChildRightNode, List<KeyNodeReference<E, K>> keysNodesRightNode, K fatherKeyRigthNode) {
+//		ListKeysSerializer<K> serializer = this.bTreeSharpConfiguration.getListKeysSerializer(); 
+//		
+//		// Creo una sola lista.
+//		List<KeyNodeReference<E, K>> sourceKeyNodeReference = new LinkedList<KeyNodeReference<E,K>>();
+//		sourceKeyNodeReference.add(new KeyNodeReference<E, K>(null, this.firstChild));
+//		sourceKeyNodeReference.addAll(this.keysNodes);
+//		sourceKeyNodeReference.add(new KeyNodeReference<E, K>(fatherKeyRigthNode, firstChildRightNode));
+//		sourceKeyNodeReference.addAll(keysNodesRightNode);
+//		
+//		// Extraigo una lista de Keys.
+//		Iterator<KeyNodeReference<E, K>> itKeyNodeReference = sourceKeyNodeReference.iterator();
+//		List<K> sourceKeys = new LinkedList<K>();
+//		itKeyNodeReference.next();
+//		while (itKeyNodeReference.hasNext()) {
+//			sourceKeys.add(itKeyNodeReference.next().getKey());
+//		}
+//		
+//		// Divido la lista de Keys.
+//		List<List<K>> keyParts = ThirdPartHelper.divideInThreePartsEspecial(sourceKeys);
+//		
+//		List<K> left = keyParts.get(0);
+//		List<K> center = keyParts.get(1);
+//		List<K> right = keyParts.get(2);
+//		
+//		EspecialListForThirdPart<K> eLeft = new EspecialListForThirdPart<K>(left, serializer, false);
+//		EspecialListForThirdPart<K> eCenterForLeft = new EspecialListForThirdPart<K>(center, serializer, true);
+//		EspecialListForThirdPart<K> eCenterForRight = new EspecialListForThirdPart<K>(center, serializer, false);
+//		EspecialListForThirdPart<K> eRight = new EspecialListForThirdPart<K>(right, serializer, true);
+//		
+//		// Reacomodo lo obtenido pero ahora calculando los tamaños (sin considerar tamaño fijo).
+//		ThirdPartHelper.balanceThirdPart(eLeft, eCenterForLeft, eRight.size());
+//		ThirdPartHelper.balanceThirdPart(eCenterForRight, eRight, eLeft.size());
+//		
+//		// Como el balanceo es hacia la derecha, puede pasar (difícil, pero puede) que el nodo derecho
+//		// quede en overflow. Si es así, trato de compensarlo hacia la izquierda.
+//		while (eRight.size() + 1 > this.bTreeSharpConfiguration.getMaxCapacityInternalNode()) {
+//			eRight.giveOneElementTo(eCenterForRight);
+//		}
+//		
+//		// Ahora me puede haber quedado overflow en center (más dificil aún).
+//		while (eCenterForLeft.size() + 1 > this.bTreeSharpConfiguration.getMaxCapacityInternalNode()) {
+//			eCenterForLeft.giveOneElementTo(eLeft);
+//		}
+//		
+//		// Si left quedó también en overflow es porque el tamaño de los nodos fue mal definido
+//		// para los elementos que se quieren guardar. Se tirará una excepción en el serializer
+//		// correspondiente (no se trata el caso aquí).
+//		
+//		// Recombino las listas divididas de keys con las KeyNodeReferences
+//		return ThirdPartHelper.combineKeysAndNodeReferences(sourceKeyNodeReference, keyParts);
+//	}
 	
 	/*
 	 * (non-Javadoc)
@@ -182,20 +284,6 @@ public final class InternalNodeDisk<E extends Element<K>, K extends Key> extends
 	@Override
 	public void setNodeReference(NodeReferenceDisk<E, K> nodeReference) {
 		this.myNodeReference = nodeReference;
-	}
-	
-	/**
-	 * Elemento visible para su uso desde {@link InternalNodeSerializer}
-	 */
-	public NodeReferenceDisk<E, K> getFirstNodeReference() {
-		return (NodeReferenceDisk<E, K>)this.firstChild;
-	}
-
-	/**
-	 * Elemento visible para su uso desde {@link InternalNodeSerializer}
-	 */
-	public List<KeyNodeReference<E, K>> getKeysNodeReferences() {
-		return this.keysNodes;
 	}
 
 //	// FIXME: Temporal. Todo lo que está abajo es para pruebas de desarrollo.

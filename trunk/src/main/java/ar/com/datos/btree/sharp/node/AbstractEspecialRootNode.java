@@ -1,7 +1,5 @@
 package ar.com.datos.btree.sharp.node;
 
-import java.util.List;
-
 import ar.com.datos.btree.elements.Element;
 import ar.com.datos.btree.elements.Key;
 import ar.com.datos.btree.exception.BTreeException;
@@ -63,15 +61,17 @@ public abstract class AbstractEspecialRootNode<E extends Element<K>, K extends K
 		AbstractLeafNode<E, K> center = this.bTreeSharpConfiguration.getBTreeSharpNodeFactory().createLeafNode(this.bTreeSharpConfiguration, null, null);
 
 		// Extraigo los tercios 
-		List<List<E>> listParts = getParts(null); // Método template.
-		List<E> leftPart = listParts.get(0);
-		List<E> centerPart = listParts.get(1);
-		List<E> rightPart = listParts.get(2);
-		
-		// Los meto en los nodos. 
-		left.elements.addAll(leftPart);
-		center.elements.addAll(centerPart);
-		right.elements.addAll(rightPart);
+		getParts(null, left, center, right); // Método template.
+// FIXME
+//		List<List<E>> listParts = getParts(null); // Método template.
+//		List<E> leftPart = listParts.get(0);
+//		List<E> centerPart = listParts.get(1);
+//		List<E> rightPart = listParts.get(2);
+//		
+//		// Los meto en los nodos. 
+//		left.elements.addAll(leftPart);
+//		center.elements.addAll(centerPart);
+//		right.elements.addAll(rightPart);
 		
 		// Método template
 		left.postAddElement();
