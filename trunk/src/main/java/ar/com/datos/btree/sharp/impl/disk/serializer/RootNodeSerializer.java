@@ -12,9 +12,12 @@ import ar.com.datos.btree.sharp.impl.disk.node.NodeReferenceDisk;
 import ar.com.datos.btree.sharp.impl.disk.node.NodeType;
 import ar.com.datos.btree.sharp.impl.disk.node.RootNodeDisk;
 import ar.com.datos.btree.sharp.node.KeyNodeReference;
+import ar.com.datos.btree.sharp.node.Node;
 import ar.com.datos.btree.sharp.node.NodeReference;
 import ar.com.datos.buffer.InputBuffer;
 import ar.com.datos.buffer.OutputBuffer;
+import ar.com.datos.file.BlockAccessor;
+import ar.com.datos.file.address.BlockAddress;
 import ar.com.datos.serializer.Serializer;
 import ar.com.datos.serializer.common.ByteSerializer;
 import ar.com.datos.serializer.common.SerializerCache;
@@ -119,7 +122,7 @@ public class RootNodeSerializer<E extends Element<K>, K extends Key> implements 
 		List<NodeReference<E, K>> nodeReferences = new LinkedList<NodeReference<E, K>>();
 		for (int i = 0; i < keys.size() + 1; i++) {
 			nodeReferences.add(new NodeReferenceDisk<E, K>(this.addressSerializer.hydrate(input),
-															this.bTreeSharpConfiguration.getInternalNodesFileManager(),
+															getFileManagerFor(nodeType),
 															nodeType));
 		}
 		
@@ -158,5 +161,22 @@ public class RootNodeSerializer<E extends Element<K>, K extends Key> implements 
 
 		return this.listKeysSerializer.getDehydrateSize(keys) + this.byteSerializer.getDehydrateSize(null) +
 				(object.getKeysNodes().size() + 1) * this.addressSerializer.getDehydrateSize(null);
+	}
+	
+
+	/**
+	 * Permite saber el archivo a usar para el tipo de nodo pasado.
+	 */
+	@SuppressWarnings("unchecked")
+	private BlockAccessor<BlockAddress<Long, Short>, Node<E, K>> getFileManagerFor(NodeType nodeType) {
+		BlockAccessor<BlockAddress<Long, Short>, Node<E, K>> returnValue = null;
+		switch (nodeType) {
+			case LEAF: returnValue = this.bTreeSharpConfiguration.getLeafNodesFileManager(); break;
+			case INTERNAL: returnValue = this.bTreeSharpConfiguration.getInternalNodesFileManager(); break;
+			case ROOT: returnValue = this.bTreeSharpConfiguration.getInternalNodesFileManager(); break;
+			case ESPECIALROOT: returnValue = this.bTreeSharpConfiguration.getInternalNodesFileManager(); break;
+		}
+		
+		return returnValue;
 	}
 }
