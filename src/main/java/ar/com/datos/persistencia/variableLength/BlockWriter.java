@@ -9,12 +9,15 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import ar.com.datos.buffer.EntityOutputBuffer;
+import ar.com.datos.buffer.OutputBuffer;
 import ar.com.datos.buffer.blockWriter.RestrictedBufferRealeaser;
 import ar.com.datos.buffer.blockWriter.RestrictedOutputBuffer;
 import ar.com.datos.buffer.blockWriter.SimpleRestrictedOutputBuffer;
 import ar.com.datos.buffer.variableLength.ArrayByte;
 import ar.com.datos.buffer.variableLength.SimpleArrayByte;
 import ar.com.datos.file.BlockFile;
+import ar.com.datos.file.address.BlockAddress;
+import ar.com.datos.file.variableLength.address.VariableLengthAddress;
 import ar.com.datos.serializer.PrimitiveTypeSerializer;
 import ar.com.datos.serializer.common.LongSerializer;
 import ar.com.datos.serializer.common.SerializerCache;
@@ -24,7 +27,7 @@ import ar.com.datos.serializer.common.ShortSerializer;
  * @author dev
  *
  */
-public class BlockWriter implements RestrictedBufferRealeaser {
+public class BlockWriter implements RestrictedBufferRealeaser, OutputBuffer {
 
 	private static final LongSerializer LONG_SERIALIZER = SerializerCache.getInstance().getSerializer(LongSerializer.class);
 	private static final ShortSerializer SHORT_SERIALIZER = SerializerCache.getInstance().getSerializer(ShortSerializer.class);
@@ -45,8 +48,9 @@ public class BlockWriter implements RestrictedBufferRealeaser {
 
 	public void addAvailableBlock(Long blockNumber) {
 		this.availableBlocks.add(blockNumber);
+		this.lastHeadWritten = this.availableBlocks.first(); 
 	}
-	public EntityOutputBuffer getOutputBuffer() {
+	protected EntityOutputBuffer getOutputBuffer() {
 		return this.simpleRestrictedOutputBuffer;
 	}
 	public Integer getSimpleDataSize() {
@@ -56,21 +60,6 @@ public class BlockWriter implements RestrictedBufferRealeaser {
 		return getSimpleDataSize() - INNER_BLOCK_POINTER_SIZE;
 	}
 
-
-	public Long getCurrentWrittingBlock() {
-		if (lastHeadWritten.equals(BlockFile.END_BLOCK)) {
-			if (availableBlocks.isEmpty()) {
-				flush();
-			} else {
-				lastHeadWritten = availableBlocks.first();
-			}
-		}
-		return this.lastHeadWritten;
-	}
-	public Short getCurrentWrittingEntityNumber() {
-		Short entitiesCount = this.getOutputBuffer().getEntitiesCount();
-		return (entitiesCount == 0)? 1 : entitiesCount;
-	}
 	public void flush() {
 		// Nothing to flush
 		if (this.getOutputBuffer().getEntitiesCount() == 0) return;
@@ -87,7 +76,7 @@ public class BlockWriter implements RestrictedBufferRealeaser {
 	public void requireReplaceTo(ReplaceResponsable replaceResponsable) {
 		this.replaceResponsable = replaceResponsable;
 	}
-	public ReplaceResponsable getRequierResponsable() {
+	public ReplaceResponsable getRequireResponsable() {
 		return this.replaceResponsable;
 	}
 	public void unsetRequireReplace() {
@@ -237,6 +226,48 @@ public class BlockWriter implements RestrictedBufferRealeaser {
 
 	public void addFlushListener(FlushListener flushListener) {
 		this.flushListener = flushListener;
+	}
+
+	@Override
+	public void write(byte[] data) {
+		this.getOutputBuffer().write(data);
+	}
+
+	@Override
+	public void write(byte data) {
+		this.getOutputBuffer().write(data);
+	}
+
+	public BlockAddress<Long, Short> closeEntity() {
+		this.getOutputBuffer().closeEntity();
+		if (availableBlocks.isEmpty() && this.getOutputBuffer().getEntitiesCount() > 0) {
+			flush();
+		}
+		Short entitiesCount = this.getOutputBuffer().getEntitiesCount();
+		return new VariableLengthAddress(this.lastHeadWritten, (entitiesCount == 0)? 0 : --entitiesCount);
+	}
+//	public Long getCurrentWrittingBlock() {
+//		if (lastHeadWritten.equals(BlockFile.END_BLOCK)) {
+//			if (availableBlocks.isEmpty()) {
+//				flush();
+//			} else {
+//				lastHeadWritten = availableBlocks.first();
+//			}
+//		}
+//		return this.lastHeadWritten;
+//	}
+//	public Short getCurrentWrittingEntityNumber() {
+//		Short entitiesCount = this.getOutputBuffer().getEntitiesCount();
+//		return (entitiesCount == 0)? 1 : entitiesCount;
+//	}
+//	
+
+	public Integer getEntitiesCount() {
+		return this.simpleRestrictedOutputBuffer.getEntitiesCount().intValue();
+	}
+
+	public Long getCurrentWrittingBlock() {
+		return this.lastHeadWritten;
 	}
 
 }

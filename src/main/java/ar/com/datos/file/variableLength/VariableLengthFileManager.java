@@ -12,7 +12,6 @@ import ar.com.datos.file.BlockFile;
 import ar.com.datos.file.SimpleBlockFile;
 import ar.com.datos.file.address.BlockAddress;
 import ar.com.datos.file.exception.OutOfBoundsException;
-import ar.com.datos.file.variableLength.address.VariableLengthAddress;
 import ar.com.datos.persistencia.variableLength.BlockMetaData;
 import ar.com.datos.persistencia.variableLength.BlockReader;
 import ar.com.datos.persistencia.variableLength.BlockWriter;
@@ -56,8 +55,8 @@ public class VariableLengthFileManager<T> implements BlockAccessor<BlockAddress<
      * @see ar.com.datos.file.DynamicAccesor#addEntity(Object)
      */
     @Override
-	public VariableLengthAddress addEntity(T data) {
-    	VariableLengthAddress retorno = addEntityNoFlush(data);
+	public BlockAddress<Long, Short> addEntity(T data) {
+    	BlockAddress<Long, Short> retorno = addEntityNoFlush(data);
     	getLastBlockWriter().flush();
 		return retorno;
 	}
@@ -65,11 +64,9 @@ public class VariableLengthFileManager<T> implements BlockAccessor<BlockAddress<
     /**
      * Hace un addEntity pero sin hacer flush (requerido para las versiones con caché)
      */
-	protected VariableLengthAddress addEntityNoFlush(T data) {
-		getSerializador().dehydrate(getLastBlockWriter().getOutputBuffer(), data);
-		getLastBlockWriter().getOutputBuffer().closeEntity();
-		Short currentWrittingEntityNumber = getLastBlockWriter().getCurrentWrittingEntityNumber();
-		return new VariableLengthAddress(getLastBlockWriter().getCurrentWrittingBlock(),--currentWrittingEntityNumber);
+	protected BlockAddress<Long, Short> addEntityNoFlush(T data) {
+		getSerializador().dehydrate(getLastBlockWriter(), data);
+		return getLastBlockWriter().closeEntity();
 	}
 
 	@Override
@@ -89,11 +86,11 @@ public class VariableLengthFileManager<T> implements BlockAccessor<BlockAddress<
 			}
 		}
 		for (T data : bloque.getData()) {
-			getSerializador().dehydrate(writer.getOutputBuffer(), data);
-			writer.getOutputBuffer().closeEntity();
+			getSerializador().dehydrate(writer, data);
+			writer.closeEntity();
 		}
 		writer.flush();
-		if (writer.isReplaceRequiredEnabled() && writer.getRequierResponsable().hasReplacedOccurred()) return addEntity(entity); 
+		if (writer.isReplaceRequiredEnabled() && writer.getRequireResponsable().hasReplacedOccurred()) return addEntity(entity); 
 		
 		return direccion;
 		

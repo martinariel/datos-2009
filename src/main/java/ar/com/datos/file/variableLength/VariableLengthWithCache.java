@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 import ar.com.datos.buffer.InputBuffer;
 import ar.com.datos.file.BlockFile;
-import ar.com.datos.file.variableLength.address.VariableLengthAddress;
+import ar.com.datos.file.address.BlockAddress;
 import ar.com.datos.persistencia.variableLength.BlockReader;
 import ar.com.datos.persistencia.variableLength.FlushListener;
 import ar.com.datos.serializer.Serializer;
@@ -37,9 +37,9 @@ public class VariableLengthWithCache<T> extends VariableLengthFileManager<T> {
      * @see ar.com.datos.file.DynamicAccesor#addEntity(Object)
      */
     @Override
-	public VariableLengthAddress addEntity(T data) {
+	public BlockAddress<Long, Short> addEntity(T data) {
 		getCachedLastBlock().getData().add(data);
-		return super.addEntityNoFlush(data);
+		return addEntityNoFlush(data);
 	}
 
 	/**
@@ -106,7 +106,7 @@ public class VariableLengthWithCache<T> extends VariableLengthFileManager<T> {
 
 			@Override
 			public void flushed() {
-				while (getLastBlockWriter().getOutputBuffer().getEntitiesCount() < cachedLastBlock.getData().size()) {
+				while (getLastBlockWriter().getEntitiesCount() < cachedLastBlock.getData().size()) {
 					cachedLastBlock.getData().remove(0);
 				}
 				if (cachedLastBlock.getData().isEmpty()) cachedLastBlock.setBlock(BlockFile.END_BLOCK);
@@ -126,13 +126,13 @@ public class VariableLengthWithCache<T> extends VariableLengthFileManager<T> {
 	private void fillLastBlockBufferWith(InputBuffer iBuffer, Long lastBlockNumber, Integer cantidadRegistros) {
 		this.setCachedLastBlock(new HydratedBlock<T>(new ArrayList<T>(), lastBlockNumber, BlockFile.END_BLOCK));
 		if (lastBlockNumber != BlockFile.END_BLOCK) {
+			this.getLastBlockWriter().addAvailableBlock(lastBlockNumber);
 			for (Integer i = 0; i < cantidadRegistros; i++) {
 				T hydrate = this.getSerializador().hydrate(iBuffer);
 				this.getCachedLastBlock().getData().add(hydrate);
-				this.getSerializador().dehydrate(this.getLastBlockWriter().getOutputBuffer(), hydrate);
-				this.getLastBlockWriter().getOutputBuffer().closeEntity();
+				this.getSerializador().dehydrate(this.getLastBlockWriter(), hydrate);
+				this.getLastBlockWriter().closeEntity();
 			}
-			this.getLastBlockWriter().addAvailableBlock(lastBlockNumber);
 		}
 	}
 	@Override
@@ -146,7 +146,8 @@ public class VariableLengthWithCache<T> extends VariableLengthFileManager<T> {
 	protected void updateInformation(VLFMIterator iterator) {
 		if (iterator.getNextBlock() == BlockFile.END_BLOCK) return;
 		super.updateInformation(iterator);
-		if (iterator.getNextBlock().equals(this.getCachedLastBlock().getBlockNumber()) && this.getCachedLastBlock().getData().size() ==  0) 
+		// Si tengo cacheado el último bloque y no tengo nada entonces no hay un siguiente bloque
+		if (this.cachedLastBlock != null && iterator.getNextBlock().equals(this.getCachedLastBlock().getBlockNumber()) && this.getCachedLastBlock().getData().size() ==  0) 
 			iterator.setNextBlock(BlockFile.END_BLOCK);
 		
 	}

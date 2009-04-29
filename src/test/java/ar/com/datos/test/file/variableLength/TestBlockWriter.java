@@ -8,10 +8,10 @@ import org.jmock.api.Invocation;
 import org.jmock.integration.junit3.MockObjectTestCase;
 import org.jmock.lib.action.CustomAction;
 
-import ar.com.datos.buffer.EntityOutputBuffer;
 import ar.com.datos.buffer.variableLength.ArrayByte;
 import ar.com.datos.buffer.variableLength.SimpleArrayByte;
 import ar.com.datos.file.BlockFile;
+import ar.com.datos.file.address.BlockAddress;
 import ar.com.datos.persistencia.variableLength.BlockWriter;
 
 public class TestBlockWriter extends MockObjectTestCase {
@@ -42,25 +42,23 @@ public class TestBlockWriter extends MockObjectTestCase {
 		this.blockWriter = new BlockWriter(this.mockFileBlock);
 	}
 	public void testWrite() throws Exception {
-		EntityOutputBuffer outputBuffer = this.blockWriter.getOutputBuffer();
-		assertNotNull(outputBuffer);
 		byte[] data = new byte[] {1,2,3,4,5};
 		byte[] data2 = new byte[] {6,5,4,3,2,1};
-		outputBuffer.write(data);
-		outputBuffer.closeEntity();
+		this.blockWriter.write(data);
 		final Collection<ArrayByte> block = new ArrayList<ArrayByte>();
 		block.add(new SimpleArrayByte(data));
 		block.add(new SimpleArrayByte(new byte[510 - 5]));
 		block.add(new SimpleArrayByte(new byte[]{0,1}));
 		
 		checking(new Expectations(){{
-			one(mockFileBlock).writeBlock(cantidadDeBloquesEnFileMock, block);
+			one(mockFileBlock).writeBlock(0L, block);
 			will(writeAction);
 		}});
-		assertEquals(1, this.blockWriter.getCurrentWrittingEntityNumber().intValue());
-		assertEquals(0L, this.blockWriter.getCurrentWrittingBlock().longValue());
-		outputBuffer.write(data2);
-		outputBuffer.closeEntity();
+		BlockAddress<Long, Short> address = this.blockWriter.closeEntity();
+		assertEquals(0, address.getObjectNumber().intValue());
+		assertEquals(0L, address.getBlockNumber().longValue());
+		
+		this.blockWriter.write(data2);
 		block.clear();
 		block.add(new SimpleArrayByte(data));
 		block.add(new SimpleArrayByte(data2));
@@ -70,15 +68,18 @@ public class TestBlockWriter extends MockObjectTestCase {
 			one(mockFileBlock).writeBlock(0L, block);
 			will(writeAction);
 		}});
-		assertEquals(2, this.blockWriter.getCurrentWrittingEntityNumber().intValue());
-		assertEquals(0L, this.blockWriter.getCurrentWrittingBlock().longValue());
+		BlockAddress<Long, Short> address2 = this.blockWriter.closeEntity();
+		assertEquals(1, address2.getObjectNumber().intValue());
+		assertEquals(0L, address2.getBlockNumber().longValue());
 		this.blockWriter.flush();
 	}
 	private CustomAction getWriteAction() {
 		return new CustomAction("writeBlock1") {
 			@Override
 			public Object invoke(Invocation invocation) throws Throwable {
-				cantidadDeBloquesEnFileMock += 1;
+				Long numeroTarget = (Long) invocation.getParameter(0);
+				if (numeroTarget > cantidadDeBloquesEnFileMock)
+					cantidadDeBloquesEnFileMock = numeroTarget;
 				return null;
 			}
 		};

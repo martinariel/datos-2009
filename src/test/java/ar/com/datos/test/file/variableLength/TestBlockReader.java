@@ -22,6 +22,8 @@ public class TestBlockReader extends MockObjectTestCase {
 		checking(new Expectations(){{
 			allowing(mockFileBlock).getBlockSize();
 			will(returnValue(BLOCK_SIZE));
+			allowing(mockFileBlock).getTotalBlocks();
+			will(returnValue(1020L));
 		}});
 		this.blockReader = new BlockReader(this.mockFileBlock);
 	}

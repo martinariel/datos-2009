@@ -23,8 +23,8 @@ public class ReplaceResponsableWithNull<T> implements ReplaceResponsable {
 		if (!(getSerializador() instanceof NullableSerializer)) throw new NullableSerializerRequiredException();
 		NullableSerializer<T> serializer = (NullableSerializer<T>) getSerializador();
 
-		serializer.dehydrateNull(blockWriter.getOutputBuffer());
-		blockWriter.getOutputBuffer().closeEntity();
+		serializer.dehydrateNull(blockWriter);
+		blockWriter.closeEntity();
 
 		replacedOccurred = true;
 	}
