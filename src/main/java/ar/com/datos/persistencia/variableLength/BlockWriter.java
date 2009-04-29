@@ -126,6 +126,7 @@ public class BlockWriter implements RestrictedBufferRealeaser, OutputBuffer {
 			Deque<Collection<ArrayByte>> d = new ArrayDeque<Collection<ArrayByte>>(1);
 			d.add(last);
 			writeExistentOneBlock(d);
+			this.availableBlocks.add(this.lastHeadWritten);
 			ob.addEntity(last);
 		} else {
 			writeExistentMultipleBlock(last);
