@@ -46,7 +46,8 @@ public class BlockReader {
 	 * @param blockNumber
 	 */
 	public void readBlock(Long blockNumber) throws OutOfBoundsException{
-		if (!this.fullBlockData.isEmpty() && getCurrentBlockData().getBlockNumber().equals(blockNumber)) return;
+		//XXX se eliminó esta verificación y cada read fuerza una lectura real del archivo porque los blockWriter ni el archivo me avisan cuando se modifican
+//		if (!this.fullBlockData.isEmpty() && getCurrentBlockData().getBlockNumber().equals(blockNumber)) return;
 		if (this.blockFile.getTotalBlocks() <= blockNumber) throw new OutOfBoundsException();
 		clearBlockInformation();
 		retrieveBlockDataAndMeta(blockNumber);
