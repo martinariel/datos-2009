@@ -6,9 +6,10 @@ import java.util.List;
 
 import ar.com.datos.btree.elements.Element;
 import ar.com.datos.btree.elements.Key;
-import ar.com.datos.btree.sharp.util.EspecialListForThirdPart;
+import ar.com.datos.btree.sharp.node.AbstractInternalNode;
 import ar.com.datos.btree.sharp.node.KeyNodeReference;
-import ar.com.datos.serializer.Serializer;
+import ar.com.datos.btree.sharp.node.NodeReference;
+import ar.com.datos.util.WrappedParam;
 
 /**
  * Operaciones de utilidad relacionadas con la división en tercios.
@@ -77,87 +78,123 @@ public class ThirdPartHelper {
 	}
 
 	/**
-	 * Combina 3 listados de Keys con un listado de KeyNodeReference, dejando como resultado
-	 * 3 listados de KeyNodeReference. La combinación la realiza tomando en orden la Key de los
-	 * 3 listados de Keys y el NodeReference del listado de KeyNodeReference.
-	 * La primer KeyNodeReference será la primer KeyNodeReference del listado de KeyNodeReference
-	 * sin combinar con el listado de Keys.
-	 * 
-	 * PRE: Sumatoria(keyParts(i).size()) == keyNodeReferences.size() - 1
+	 * Combina 3 listados de Keys con un listado de NodeReferences. 
+	 * Con esa combinación configura los nodos pasados, además establece los valores para las claves
+	 * que deben apuntar a center y a right en las overflowKey correspondiente.
 	 */
-	public static <E extends Element<K>, K extends Key> List<List<KeyNodeReference<E, K>>> combineKeysAndNodeReferences(List<KeyNodeReference<E, K>> keyNodeReferences, List<List<K>> keyParts) {
-		List<List<KeyNodeReference<E, K>>> returnValue = new LinkedList<List<KeyNodeReference<E,K>>>();
-		List<KeyNodeReference<E, K>> part; 
+	public static <E extends Element<K>, K extends Key> void combineKeysAndNodeReferences(List<NodeReference<E, K>> nodeReferences, 
+							List<List<K>> keyParts, AbstractInternalNode<E, K> leftNode,
+							AbstractInternalNode<E, K> centerNode, AbstractInternalNode<E, K> rightNode,
+							WrappedParam<K> overflowKeyCenter, WrappedParam<K> overflowKeyRight) {
+		List<AbstractInternalNode<E, K>> nodes = new LinkedList<AbstractInternalNode<E,K>>();
+		nodes.add(leftNode);
+		nodes.add(centerNode);
+		nodes.add(rightNode);
 		
-		Iterator<KeyNodeReference<E, K>>itKeyNodeReference = keyNodeReferences.iterator();
+		Iterator<NodeReference<E, K>>itNodeReference = nodeReferences.iterator();
 		Iterator<K> itKey;
+		AbstractInternalNode<E, K> currentNode;
 		for (int i = 0; i < 3; i++) {
-			part = new LinkedList<KeyNodeReference<E,K>>();
-			if (i == 0) {
-				part.add(itKeyNodeReference.next());
-			}
-			itKey = keyParts.get(i).iterator();
-			while (itKey.hasNext()) {
-				part.add(new KeyNodeReference<E, K>(itKey.next(), itKeyNodeReference.next().getNodeReference()));
-			}
-			returnValue.add(part);
-		}
+			currentNode = nodes.remove(0);
+			itKey = keyParts.remove(0).iterator();
+			
+			currentNode.getKeysNodes().clear();
+			currentNode.setFirstChild(itNodeReference.next());
 		
-		return returnValue;
+			if (i == 1) {
+				overflowKeyCenter.setValue(itKey.next());
+			}
+			if (i == 2) {
+				overflowKeyRight.setValue(itKey.next());
+			}
+			while (itKey.hasNext()) {
+				currentNode.getKeysNodes().add(new KeyNodeReference<E, K>(itKey.next(), itNodeReference.next()));
+			}
+		}
 	}
+	
+//	FIXME No va más
+//	/**
+//	 * Combina 3 listados de Keys con un listado de KeyNodeReference, dejando como resultado
+//	 * 3 listados de KeyNodeReference. La combinación la realiza tomando en orden la Key de los
+//	 * 3 listados de Keys y el NodeReference del listado de KeyNodeReference.
+//	 * La primer KeyNodeReference será la primer KeyNodeReference del listado de KeyNodeReference
+//	 * sin combinar con el listado de Keys.
+//	 * 
+//	 * PRE: Sumatoria(keyParts(i).size()) == keyNodeReferences.size() - 1
+//	 */
+//	public static <E extends Element<K>, K extends Key> List<List<KeyNodeReference<E, K>>> combineKeysAndNodeReferences(List<KeyNodeReference<E, K>> keyNodeReferences, List<List<K>> keyParts) {
+//		List<List<KeyNodeReference<E, K>>> returnValue = new LinkedList<List<KeyNodeReference<E,K>>>();
+//		List<KeyNodeReference<E, K>> part; 
+//		
+//		Iterator<KeyNodeReference<E, K>>itKeyNodeReference = keyNodeReferences.iterator();
+//		Iterator<K> itKey;
+//		for (int i = 0; i < 3; i++) {
+//			part = new LinkedList<KeyNodeReference<E,K>>();
+//			if (i == 0) {
+//				part.add(itKeyNodeReference.next());
+//			}
+//			itKey = keyParts.get(i).iterator();
+//			while (itKey.hasNext()) {
+//				part.add(new KeyNodeReference<E, K>(itKey.next(), itKeyNodeReference.next().getNodeReference()));
+//			}
+//			returnValue.add(part);
+//		}
+//		
+//		return returnValue;
+//	}
 	
 	/**
 	 * Pasa elementos desde thirdPart hacia mainPart o viceversa hasta ajustarse lo mejor posible
 	 * a un tamaño tal que thirdPart sea un tercio de la suma del tamaño de thirdPart y mainPart.
-	 * Left indica si la tercera parte es la de la izquierda de mainPart o de su derecha.
-	 * Para el cálculo del tamaño de las partes se usa serializer.
 	 * El parametro mainPartExtraSize se le suma al tamaño de mainPart al hacer los cálculos.
+	 * min*PartCount indica la cantidad mínima de elementos que puede tener la lista correspondiente.
 	 */
-	public static <T> void balanceThirdPart(List<T> thirdPart, List<T> mainPart, Serializer<List<T>> serializer, long mainPartExtraSize) {
-		// Abstracción para facilitar el cálculo de los tamaños y pasaje de elementos.
-		EspecialListForThirdPart<T> eThirdPart = new EspecialListForThirdPart<T>(thirdPart, serializer, false);
-		EspecialListForThirdPart<T> eMainPart = new EspecialListForThirdPart<T>(mainPart, serializer, true);
-		
+	public static <T> void balanceThirdPart(EspecialListForThirdPart<T> thirdPart, EspecialListForThirdPart<T> mainPart, long mainPartExtraSize, int minThirdPartCount, int minMainPartCount) {
 		long thirdPartSize, mainPartSize, optimalThirdPartSize;
 
 		// Si tengo exactamente el 1/3 (poco probable), terminé...
-		thirdPartSize = eThirdPart.size();
-		mainPartSize = eMainPart.size() + mainPartExtraSize;
+		thirdPartSize = thirdPart.size();
+		mainPartSize = mainPart.size() + mainPartExtraSize;
 		optimalThirdPartSize =  Math.round(((float)thirdPartSize + mainPartSize) / 3F);
 		if (thirdPartSize == optimalThirdPartSize) {
 			return;
 		}
 		
 		// En lo que sigue, además de lo que dicen los comentarios, siempre verifico
-		// que en las partes quede al menos un elemento.
+		// que en las partes quede al menos min*PartCount elementos.
 		
 		// Si es mayor que 1/3 paso elementos desde thirdPart hacia mainPart
 		// hasta que deje de serlo. Sino la viceversa:
-		EspecialListForThirdPart<T> source = eThirdPart;
-		EspecialListForThirdPart<T> end = eMainPart;
+		EspecialListForThirdPart<T> source = thirdPart;
+		int sourceMinCount = minThirdPartCount;
+		EspecialListForThirdPart<T> end = mainPart;
+		int endMinCount = minMainPartCount;
 		boolean exceeds = (thirdPartSize > optimalThirdPartSize);
 		if (!exceeds) {
-			source = eMainPart; 
-			end = eThirdPart;
+			source = mainPart;
+			sourceMinCount = minMainPartCount;
+			end = thirdPart;
+			endMinCount = minThirdPartCount;
 		}
-		while ((exceeds == (thirdPartSize > optimalThirdPartSize)) && source.listSize() > 1) {
+		while ((exceeds == (thirdPartSize > optimalThirdPartSize)) && source.listSize() > sourceMinCount) {
 			source.giveOneElementTo(end);
 			// Recalculo los tamaños de las partes (puesto que no puedo saber como serializa
 			// el serializador).
-			thirdPartSize = eThirdPart.size();
-			mainPartSize = eMainPart.size() + mainPartExtraSize;
+			thirdPartSize = thirdPart.size();
+			mainPartSize = mainPart.size() + mainPartExtraSize;
 			optimalThirdPartSize =  Math.round(((float)thirdPartSize + mainPartSize) / 3F);
 		}
 		// Tomo la diferencia actual con el tamaño óptimo.
 		long firstDifference = Math.abs(optimalThirdPartSize - thirdPartSize);
 		
 		// Paso un elemento al revés que antes.
-		if (end.listSize() > 1) {
+		if (end.listSize() > endMinCount) {
 			end.giveOneElementTo(source);
 		}
 		// Tomo de nuevo la diferencia actual con el tamaño óptimo.
-		thirdPartSize = eThirdPart.size();
-		mainPartSize = eMainPart.size() + mainPartExtraSize;
+		thirdPartSize = thirdPart.size();
+		mainPartSize = mainPart.size() + mainPartExtraSize;
 		optimalThirdPartSize =  Math.round(((float)thirdPartSize + mainPartSize) / 3F);
 		long secondDifference = Math.abs(optimalThirdPartSize - thirdPartSize);
 		

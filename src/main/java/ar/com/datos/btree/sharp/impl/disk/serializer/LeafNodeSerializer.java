@@ -15,6 +15,7 @@ import ar.com.datos.buffer.OutputBuffer;
 import ar.com.datos.file.address.BlockAddress;
 import ar.com.datos.serializer.Serializer;
 import ar.com.datos.serializer.common.SerializerCache;
+import ar.com.datos.serializer.exception.SerializerException;
 
 /**
  * Serializador de un nodo hoja.
@@ -52,15 +53,22 @@ public class LeafNodeSerializer<E extends Element<K>, K extends Key> implements 
 	 * @see ar.com.datos.serializer.Serializer#dehydrate(ar.com.datos.buffer.OutputBuffer, java.lang.Object)
 	 */
 	@Override
-	public void dehydrate(OutputBuffer output, LeafNodeDisk<E, K> object) {
+	public void dehydrate(OutputBuffer output, LeafNodeDisk<E, K> object) throws SerializerException {
+		// Debo hacer que el nodo tenga el tamaño de un bloque. Le agregaré al final basura hasta llenarlo.
+		int trashSize = (int)(this.bTreeSharpConfiguration.getMaxCapacityLeafNode() - getDehydrateSize(object));
+		
+		if (trashSize < 0) {
+			throw new SerializerException(this.getClass().getCanonicalName() + ": Se intenta grabar un nodo de un " +
+					"tamaño mayor al permitido. Esto se debe a que el elemento puede ser demasiado grande para el" +
+					"tamaño que se definió para el nodo.");
+		}
+		
 		BlockAddress<Long, Short> previousAddress = (object.getPreviousNodeReference() == null) ? null : object.getPreviousNodeReference().getNodeAddress(); 
 		this.addressSerializer.dehydrate(output, previousAddress);
 		this.listElementsSerializer.dehydrate(output, object.getElements());
 		BlockAddress<Long, Short> nextAddress = (object.getNextNodeReference() == null) ? null : object.getNextNodeReference().getNodeAddress();
 		this.addressSerializer.dehydrate(output, nextAddress);
-		
-		// Debo hacer que el nodo tenga el tamaño de un bloque. Le agrego basura hasta llenarlo.
-		int trashSize = (int)(this.bTreeSharpConfiguration.getMaxCapacityLeafNode() - getDehydrateSize(object));
+
 		if (trashSize > 0) {
 			output.write(new byte[trashSize]);
 		}

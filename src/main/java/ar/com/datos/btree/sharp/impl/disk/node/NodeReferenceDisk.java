@@ -58,7 +58,11 @@ public class NodeReferenceDisk<E extends Element<K>, K extends Key> implements N
 	public final Node<E, K> getNode() throws BTreeException {
 		Node<E, K> node = null;
 		if (this.nodeAddress != null) {
-			node = this.nodeFileManager.get(nodeAddress);
+			try {
+				node = this.nodeFileManager.get(nodeAddress);
+			} catch (Exception e) {
+				throw new BTreeException(e);
+			}
 			DiskNode<E, K> nodeDisk = (DiskNode<E, K>)node;
 			nodeDisk.setNodeReference(this);
 		}
@@ -108,5 +112,15 @@ public class NodeReferenceDisk<E extends Element<K>, K extends Key> implements N
 	 */
 	public NodeType getNodeType() {
 		return nodeType;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		String node = (this.nodeAddress == null) ? "null" : getNode().toString();
+		return "*" + node + "*";
 	}
 }

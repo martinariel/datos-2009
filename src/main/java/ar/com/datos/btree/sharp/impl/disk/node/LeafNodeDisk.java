@@ -17,6 +17,7 @@ import ar.com.datos.btree.sharp.impl.disk.serializer.RootNodeSerializer;
 import ar.com.datos.btree.sharp.impl.disk.serializer.StateInternalNodeSerializer;
 import ar.com.datos.btree.sharp.node.AbstractLeafNode;
 import ar.com.datos.btree.sharp.node.NodeReference;
+import ar.com.datos.btree.sharp.util.EspecialListForThirdPart;
 import ar.com.datos.btree.sharp.util.ThirdPartHelper;
 import ar.com.datos.test.btree.sharp.mock.disk.ListTestElementSerializer;
 import ar.com.datos.test.btree.sharp.mock.disk.ListTestKeySerializer;
@@ -134,10 +135,10 @@ public class LeafNodeDisk<E extends Element<K>, K extends Key> extends AbstractL
 	
 	/*
 	 * (non-Javadoc)
-	 * @see ar.com.datos.btree.sharp.node.AbstractLeafNode#getParts(java.util.List)
+	 * @see ar.com.datos.btree.sharp.node.AbstractLeafNode#getParts(java.util.List, ar.com.datos.btree.sharp.node.AbstractLeafNode, ar.com.datos.btree.sharp.node.AbstractLeafNode, ar.com.datos.btree.sharp.node.AbstractLeafNode)
 	 */
 	@Override
-	protected List<List<E>> getParts(List<E> rightNodeElements) {
+	protected void getParts(List<E> rightNodeElements, AbstractLeafNode<E, K> leftNode, AbstractLeafNode<E, K> centerNode, AbstractLeafNode<E, K> rightNode) {
 		ListElementsSerializer<E, K> serializer = this.bTreeSharpConfiguration.getListElementsSerializer(); 
 
 		// Uno las listas
@@ -147,16 +148,92 @@ public class LeafNodeDisk<E extends Element<K>, K extends Key> extends AbstractL
 		// Obtengo la tercara parte considerando a todos los elementos como de un tamaño fijo.
 		List<List<E>> parts = ThirdPartHelper.divideInThreeParts(source);
 		
-		List<E> left = parts.get(0);
-		List<E> center = parts.get(1);
-		List<E> right = parts.get(2);
+		List<E> left = parts.remove(0);
+		List<E> center = parts.remove(0);
+		List<E> right = parts.remove(0);
+		
+		EspecialListForThirdPart<E> eLeft = new EspecialListForThirdPart<E>(left, serializer, false);
+		EspecialListForThirdPart<E> eCenterForLeft = new EspecialListForThirdPart<E>(center, serializer, true);
+		EspecialListForThirdPart<E> eCenterForRight = new EspecialListForThirdPart<E>(center, serializer, false);
+		EspecialListForThirdPart<E> eRight = new EspecialListForThirdPart<E>(right, serializer, true);
 		
 		// Reacomodo lo obtenido pero ahora calculando los tamaños (sin considerar tamaño fijo).
-		ThirdPartHelper.balanceThirdPart(left, center, serializer, serializer.getDehydrateSize(right));
-		ThirdPartHelper.balanceThirdPart(center, right, serializer, serializer.getDehydrateSize(left));
+		ThirdPartHelper.balanceThirdPart(eLeft, eCenterForLeft, eRight.size(), 1, 2);
+		ThirdPartHelper.balanceThirdPart(eCenterForRight, eRight, eLeft.size(), 2, 2);
 		
-		return parts;
+		// Configuro los nodos con las partes que obtuve.
+		leftNode.getElements().clear();
+		leftNode.getElements().addAll(left);
+		centerNode.getElements().clear();
+		centerNode.getElements().addAll(center);
+		rightNode.getElements().clear();
+		rightNode.getElements().addAll(right);
+		
+		// Como el balanceo es hacia la derecha, puede pasar (difícil, pero puede) que el nodo derecho
+		// quede en overflow. Si es así, trato de compensarlo hacia la izquierda.
+		LeafNodeSerializer<E, K> leafNodeSerializer = this.bTreeSharpConfiguration.getLeafNodeSerializer();
+		while (leafNodeSerializer.getDehydrateSize((LeafNodeDisk<E, K>)rightNode) > this.bTreeSharpConfiguration.getMaxCapacityLeafNode() 
+				&& rightNode.getElements().size() > 1) {
+			centerNode.getElements().add(rightNode.getElements().remove(0));
+		}
+		
+		// Ahora me puede haber quedado overflow en center (más difícil aún).
+		while (leafNodeSerializer.getDehydrateSize((LeafNodeDisk<E, K>)centerNode) > this.bTreeSharpConfiguration.getMaxCapacityLeafNode()
+				&& centerNode.getElements().size() > 1) {
+			leftNode.getElements().add(centerNode.getElements().remove(0));
+		}
+		
+		// Si left quedó también en overflow es porque el tamaño de los nodos fue mal definido
+		// para los elementos que se quieren guardar. Se tirará una excepción en el serializer
+		// correspondiente (no se trata el caso aquí).
 	}
+	
+// FIXME
+//	/*
+//	 * (non-Javadoc)
+//	 * @see ar.com.datos.btree.sharp.node.AbstractLeafNode#getParts(java.util.List)
+//	 */
+//	@Override
+//	protected List<List<E>> getParts(List<E> rightNodeElements) {
+//		ListElementsSerializer<E, K> serializer = this.bTreeSharpConfiguration.getListElementsSerializer(); 
+//
+//		// Uno las listas
+//		List<E> source = new LinkedList<E>(this.elements);
+//		source.addAll(rightNodeElements);
+//		
+//		// Obtengo la tercara parte considerando a todos los elementos como de un tamaño fijo.
+//		List<List<E>> parts = ThirdPartHelper.divideInThreeParts(source);
+//		
+//		List<E> left = parts.get(0);
+//		List<E> center = parts.get(1);
+//		List<E> right = parts.get(2);
+//		
+//		EspecialListForThirdPart<E> eLeft = new EspecialListForThirdPart<E>(left, serializer, false);
+//		EspecialListForThirdPart<E> eCenterForLeft = new EspecialListForThirdPart<E>(center, serializer, true);
+//		EspecialListForThirdPart<E> eCenterForRight = new EspecialListForThirdPart<E>(center, serializer, false);
+//		EspecialListForThirdPart<E> eRight = new EspecialListForThirdPart<E>(right, serializer, true);
+//		
+//		// Reacomodo lo obtenido pero ahora calculando los tamaños (sin considerar tamaño fijo).
+//		ThirdPartHelper.balanceThirdPart(eLeft, eCenterForLeft, eRight.size());
+//		ThirdPartHelper.balanceThirdPart(eCenterForRight, eRight, eLeft.size());
+//		
+//		// Como el balanceo es hacia la derecha, puede pasar (difícil, pero puede) que el nodo derecho
+//		// quede en overflow. Si es así, trato de compensarlo hacia la izquierda.
+//		while (eRight.size() > this.bTreeSharpConfiguration.getMaxCapacityLeafNode()) {
+//			eRight.giveOneElementTo(eCenterForRight);
+//		}
+//		
+//		// Ahora me puede haber quedado overflow en center (más dificil aún).
+//		while (eCenterForLeft.size() > this.bTreeSharpConfiguration.getMaxCapacityLeafNode()) {
+//			eCenterForLeft.giveOneElementTo(eLeft);
+//		}
+//		
+//		// Si left quedó también en overflow es porque el tamaño de los nodos fue mal definido
+//		// para los elementos que se quieren guardar. Se tirará una excepción en el serializer
+//		// correspondiente (no se trata el caso aquí).
+//		
+//		return parts;
+//	}
 
 // FIXME: Esto no va más
 //	/*
@@ -197,12 +274,6 @@ public class LeafNodeDisk<E extends Element<K>, K extends Key> extends AbstractL
 	 */
 	public NodeReferenceDisk<E, K> getPreviousNodeReference() {
 		return (NodeReferenceDisk<E, K>)this.previous;
-	}
-	/**
-	 * Elemento visible para su uso desde {@link LeafNodeSerializer}
-	 */
-	public List<E> getElements() {
-		return this.elements;
 	}
 	
 	// FIXME: Temporal. Todo lo que está abajo es para pruebas de desarrollo.

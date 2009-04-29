@@ -11,6 +11,7 @@ import ar.com.datos.btree.sharp.impl.disk.node.EspecialRootNodeDisk;
 import ar.com.datos.buffer.InputBuffer;
 import ar.com.datos.buffer.OutputBuffer;
 import ar.com.datos.serializer.Serializer;
+import ar.com.datos.serializer.exception.SerializerException;
 
 /**
  * Serializador de un nodo raiz especial.
@@ -53,11 +54,18 @@ public class EspecialRootNodeSerializer<E extends Element<K>, K extends Key> imp
 	 * @see ar.com.datos.serializer.Serializer#dehydrate(ar.com.datos.buffer.OutputBuffer, java.lang.Object)
 	 */
 	@Override
-	public void dehydrate(OutputBuffer output, EspecialRootNodeDisk<E, K> object) {
+	public void dehydrate(OutputBuffer output, EspecialRootNodeDisk<E, K> object) throws SerializerException {
+		// Debo hacer que el nodo tenga el tamaño de un bloque. Le agregaré al final basura hasta llenarlo.
+		int trashSize = (int)(this.bTreeSharpConfiguration.getMaxCapacityRootNode() - 1 - getDehydrateSize(object));
+		
+		if (trashSize < 0) {
+			throw new SerializerException(this.getClass().getCanonicalName() + ": Se intenta grabar un nodo de un " +
+					"tamaño mayor al permitido. Esto se debe a que el elemento puede ser demasiado grande para el" +
+					"tamaño que se definió para el nodo.");
+		}
+		
 		this.listElementsSerializer.dehydrate(output, object.getElements());
 		
-		// Debo hacer que el nodo tenga el tamaño de dos bloques. Le agrego basura hasta llenarlo.
-		int trashSize = (int)(this.bTreeSharpConfiguration.getMaxCapacityRootNode() - getDehydrateSize(object));
 		if (trashSize > 0) {
 			output.write(new byte[trashSize]);
 		}
@@ -74,7 +82,7 @@ public class EspecialRootNodeSerializer<E extends Element<K>, K extends Key> imp
 		EspecialRootNodeDisk<E, K> returnValue = new EspecialRootNodeDisk<E, K>(this.bTreeSharpConfiguration, this.btree, elements);
 		
 		// Vacio el buffer de información basura que había dejado al final.
-		int trashSize = (int)(this.bTreeSharpConfiguration.getMaxCapacityRootNode() - getDehydrateSize(returnValue));
+		int trashSize = (int)(this.bTreeSharpConfiguration.getMaxCapacityRootNode() - 1 - getDehydrateSize(returnValue));
 		if (trashSize > 0) {
 			input.read(new byte[trashSize]);
 		}
