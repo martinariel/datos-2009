@@ -59,7 +59,7 @@ public class NodeReferenceDisk<E extends Element<K>, K extends Key> implements N
 		Node<E, K> node = null;
 		if (this.nodeAddress != null) {
 			try {
-				node = this.nodeFileManager.get(nodeAddress);
+				node = this.nodeFileManager.get(this.nodeAddress);
 			} catch (Exception e) {
 				throw new BTreeException(e);
 			}
@@ -111,7 +111,7 @@ public class NodeReferenceDisk<E extends Element<K>, K extends Key> implements N
 	 * Permite obtener el tipo de nodo que refiere esta {@link NodeReferenceDisk}.
 	 */
 	public NodeType getNodeType() {
-		return nodeType;
+		return this.nodeType;
 	}
 
 	/*

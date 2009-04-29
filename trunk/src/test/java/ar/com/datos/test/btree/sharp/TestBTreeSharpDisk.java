@@ -39,6 +39,9 @@ public class TestBTreeSharpDisk extends ExtendedTestCase {
 		this.bTreeSharp.destroy();
 	}
 
+	private void nada() {
+		
+	}
 	/**
 	 * Test así nomás. Si alguna vez se rompe todo se puede usar como base para ver que pasa...
 	 */
@@ -46,16 +49,19 @@ public class TestBTreeSharpDisk extends ExtendedTestCase {
 		try {
 			BTree<TestElementDisk, TestKeyDisk> btree = this.bTreeSharp;
 //			String[] lista = new String[] {"522630", "925861336572", "940027", "12275214072481695", "676159818757214", "635144937520", "343025", "885287", "855731162813196136"};
-			String[] lista = new String[] {"990707", "814561", "893024", "95592444739", "655170748521613866", "57971836335", "7775729897", "669833", "864004652398", "563959408814957898", "286823968160", "793501205650896534", "164502591619", "451579837255", "911722453988197619", "978636376735", "932372780949243559", "201413492933922261", "316785921097439538", "119584708352261883", "365493879233", "869601452491", "755771699631354201", "536773693357", "545499"};
+			String[] lista = new String[] {"990707", "814561", "893024", "95592444739", "655170748521613866", "57971836335", "7775729897", "669833", "864004652398", "563959408814957898", "286823968160", "793501205650896534", "164502591619", "451579837255", "911722453988197619", "978636376735", "932372780949243559", "201413492933922261",  "316785921097439538", "119584708352261883", "365493879233", "869601452491", "755771699631354201", "536773693357", "545499"};
 			for (int i = 0; i < lista.length; i++) {
-				System.out.println(i);
-				btree.addElement(new TestElementDisk(lista[i], new Integer(1)));
+				if (i == 13) {
+					nada();
+				}
+				btree.addElement(new TestElementDisk(lista[i], 1));
 			}
 			
 			TestElementDisk element = null;
 			TestKeyDisk key;
 			for (int i = 0; i < lista.length; i++) {
 				key = new TestKeyDisk(lista[i]);
+				System.out.println(key);
 				element = btree.findElement(key);
 				assertNotNull(element);
 				assertEquals(key, element.getKey());
