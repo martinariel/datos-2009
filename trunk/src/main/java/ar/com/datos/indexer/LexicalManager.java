@@ -1,5 +1,8 @@
 package ar.com.datos.indexer;
 
+import java.io.Closeable;
+import java.io.IOException;
+
 import ar.com.datos.file.exception.OutOfBoundsException;
 import ar.com.datos.file.variableLength.StraightVariableLengthFile;
 import ar.com.datos.file.variableLength.address.OffsetAddress;
@@ -10,7 +13,7 @@ import ar.com.datos.indexer.serializer.LexicalSerializer;
  * @author jbarreneche
  *
  */
-public class LexicalManager {
+public class LexicalManager implements Closeable {
 
 	private StraightVariableLengthFile<LexicalData> lexical;
 	private LexicalSerializer serializer = new LexicalSerializer();
@@ -55,5 +58,9 @@ public class LexicalManager {
 	}
 	protected LexicalSerializer getSerializer() {
 		return this.serializer;
+	}
+	@Override
+	public void close() throws IOException {
+		this.lexical.close();
 	}
 }

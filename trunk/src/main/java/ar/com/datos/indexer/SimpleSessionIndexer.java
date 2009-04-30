@@ -1,5 +1,7 @@
 package ar.com.datos.indexer;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -33,15 +35,15 @@ import ar.com.datos.utils.sort.external.KeyCount;
  *
  * @param <T>
  */
-public class SimpleSessionIndexer<T> implements SessionIndexer<T> {
+public class SimpleSessionIndexer<T> implements SessionIndexer<T>, Closeable {
 
 	public static final String LEXICON_SUFFIX = ".lex"; 
 	public static final String INDEX_NODE_SUFFIX = ".idx.node"; 
 	public static final String INDEX_LEAFS_SUFFIX = ".idx.leaf"; 
 	public static final String LIST_SUFFIX = ".lst"; 
 	
-	public static final Integer LIST_BLOCK_SIZE = 1024;
-	public static final Integer NODE_BLOCK_SIZE = 1024;
+	public static final Integer LIST_BLOCK_SIZE = 512;
+	public static final Integer NODE_BLOCK_SIZE = 512;
 
 	// Indexador del elemento al que se le cuentan las palabras
 	private Serializer<T> indexedSerializer;
@@ -104,6 +106,7 @@ public class SimpleSessionIndexer<T> implements SessionIndexer<T> {
 				currentElement = new IndexerTreeElement<T>(new IndexerTreeKey(this.lexicon.get(currentWord)));
 				elements.add(currentElement);
 			}
+			currentElement.setIndexer(this);
 			currentElement.addTemporalDataCount(newCountForWord.getKey().getSecond(), newCountForWord.getCount());
 		}
 		for (IndexerTreeElement<T> element: elements) {
@@ -160,6 +163,12 @@ public class SimpleSessionIndexer<T> implements SessionIndexer<T> {
 
 	protected FixedLengthKeyCounter<Tuple<OffsetAddress, T>> constructCounter() {
 		 return new FixedLengthKeyCounter<Tuple<OffsetAddress, T>>(new TupleSerializer<OffsetAddress, T>(new OffsetAddressSerializer(),this.indexedSerializer));
+	}
+	@Override
+	public void close() throws IOException {
+		this.indexedElements.close();
+		this.lexicon.close();
+		this.listsForTerms.close();
 	}
 
 }

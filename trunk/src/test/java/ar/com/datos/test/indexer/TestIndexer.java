@@ -1,5 +1,7 @@
 package ar.com.datos.test.indexer;
 
+import java.io.File;
+import java.io.FileFilter;
 import java.util.Collection;
 
 import junit.framework.TestCase;
@@ -10,15 +12,28 @@ import ar.com.datos.utils.sort.external.KeyCount;
 
 public class TestIndexer extends TestCase {
 
+	private static String pathName = "./resources/temp/";
+	private static String filePreffix = "TestIndexer";
+	private static String fileName =  pathName + filePreffix ;
+
+	@Override
+	protected void setUp() throws Exception {
+		super.setUp();
+		// Limpio todos los archivos que genera el test
+		File dir = new File(pathName);
+		File[] files = dir.listFiles(new FileFilter(){
+
+			@Override
+			public boolean accept(File pathname) {
+				return pathname.getName().startsWith(filePreffix);
+			}
+			
+		});
+		for (File f: files) f.delete();
+	}
 	public void testIndexacionInicial() throws Exception {
-		String fileName = "blah";
 		OffsetAddress idDocumento = new OffsetAddress(23L);
-		SimpleSessionIndexer<OffsetAddress> unIndexador = new SimpleSessionIndexer<OffsetAddress>(fileName, new OffsetAddressSerializer()) {
-//			@Override
-//			protected BTree<IndexerTreeElement<OffsetAddress>, IndexerTreeKey> constructIndexedElements(String fileName) {
-//				return new BTreeSharpFactory<IndexerTreeElement<OffsetAddress>, IndexerTreeKey>().createBTreeSharpMemory(16, 16);
-//			}
-		};
+		SimpleSessionIndexer<OffsetAddress> unIndexador = new SimpleSessionIndexer<OffsetAddress>(fileName, new OffsetAddressSerializer());
 		unIndexador.startSession();
 		unIndexador.addTerms(idDocumento, "hola", "hola", "mano");
 		unIndexador.addTerms(idDocumento, "bueno", "chau");
@@ -45,5 +60,6 @@ public class TestIndexer extends TestCase {
 		for (KeyCount<OffsetAddress> cuenta: documentosRecuperados) {
 			assertEquals(1, cuenta.getCount().intValue());
 		}
+		unIndexador.close();
 	}
 }

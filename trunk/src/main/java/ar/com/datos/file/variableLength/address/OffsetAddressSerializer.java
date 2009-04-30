@@ -11,18 +11,20 @@ public class OffsetAddressSerializer implements Serializer<OffsetAddress> {
 	private static LongSerializer longSerializer = SerializerCache.getInstance().getSerializer(LongSerializer.class);
 	@Override
 	public void dehydrate(OutputBuffer output, OffsetAddress object) {
-		longSerializer.dehydrate(output, object.getOffset());
+		Long offset = object == null? -1L : object.getOffset();
+		longSerializer.dehydrate(output, offset);
 	}
 
 	@Override
 	public long getDehydrateSize(OffsetAddress object) {
-		if (object == null) return longSerializer.getDehydrateSize(null);
+		if (object == null) return longSerializer.getDehydrateSize(0L);
 		return longSerializer.getDehydrateSize(object.getOffset());
 	}
 
 	@Override
 	public OffsetAddress hydrate(InputBuffer input) {
-		return new OffsetAddress(longSerializer.hydrate(input));
+		Long hydrate = longSerializer.hydrate(input);
+		return (hydrate.equals(-1L))? null : new OffsetAddress(hydrate);
 	}
 
 }

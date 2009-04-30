@@ -47,7 +47,7 @@ public class IndexerTreeElement<T> implements Element<IndexerTreeKey> {
 			previousDataCount.addAll(nuevaLista);
 			this.setDataCountAddress(newElement.indexer.getListsForTerms().updateEntity(currentAddress, previousDataCount));
 		}
-		return this.getDataCountAddress().equals(currentAddress);
+		return !this.getDataCountAddress().equals(currentAddress);
 	}
 
 	/**
