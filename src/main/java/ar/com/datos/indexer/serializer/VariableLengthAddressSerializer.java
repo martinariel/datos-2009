@@ -15,13 +15,19 @@ public class VariableLengthAddressSerializer implements Serializer<BlockAddress<
 	private ShortSerializer shortserializer = SerializerCache.getInstance().getSerializer(ShortSerializer.class);
 	@Override
 	public void dehydrate(OutputBuffer output, BlockAddress<Long, Short> object) {
-		longserializer.dehydrate(output, object.getBlockNumber());
-		shortserializer.dehydrate(output, object.getObjectNumber());
+		Long blockNumber = -1L;
+		Short objectNumber = -1;
+		if (object != null) {
+			blockNumber = object.getBlockNumber();
+			objectNumber = object.getObjectNumber();
+		}
+		longserializer.dehydrate(output, blockNumber);
+		shortserializer.dehydrate(output, objectNumber);
 	}
 
 	@Override
 	public long getDehydrateSize(BlockAddress<Long, Short> object) {
-		if (object == null) return longserializer.getDehydrateSize(null) + shortserializer.getDehydrateSize(null);
+		if (object == null) return longserializer.getDehydrateSize(0L) + shortserializer.getDehydrateSize((short)0);
 		return longserializer.getDehydrateSize(object.getBlockNumber()) + shortserializer.getDehydrateSize(object.getObjectNumber());
 	}
 
@@ -29,7 +35,7 @@ public class VariableLengthAddressSerializer implements Serializer<BlockAddress<
 	public BlockAddress<Long, Short> hydrate(InputBuffer input) {
 		Long blockNumber = longserializer.hydrate(input);
 		Short objectNumber = shortserializer.hydrate(input);
-		return new VariableLengthAddress(blockNumber, objectNumber);
+		return (blockNumber.equals(-1L))? null : new VariableLengthAddress(blockNumber, objectNumber);
 	}
 
 }
