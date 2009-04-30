@@ -2,6 +2,7 @@ package ar.com.datos.test.indexer;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.util.ArrayList;
 import java.util.Collection;
 
 import junit.framework.TestCase;
@@ -59,6 +60,28 @@ public class TestIndexer extends TestCase {
 		assertEquals(1, documentosRecuperados.size());
 		for (KeyCount<OffsetAddress> cuenta: documentosRecuperados) {
 			assertEquals(1, cuenta.getCount().intValue());
+		}
+		unIndexador.close();
+		
+		unIndexador = new SimpleSessionIndexer<OffsetAddress>(fileName, new OffsetAddressSerializer());
+		OffsetAddress idDocumento2 = new OffsetAddress(55L);
+		unIndexador.startSession();
+		unIndexador.addTerms(idDocumento2, "hola", "hola");
+		unIndexador.addTerms(idDocumento2, "otra palabra");
+		unIndexador.addTerms(idDocumento2, "otra palabra", "y otra mas");
+		unIndexador.endSession();
+
+		documentosRecuperados = unIndexador.findTerm("hola");
+		assertEquals(2, documentosRecuperados.size());
+		ArrayList<KeyCount<OffsetAddress>> docs = new ArrayList<KeyCount<OffsetAddress>>(documentosRecuperados);
+		assertEquals(idDocumento, docs.get(0).getKey());
+		assertEquals(3, docs.get(0).getCount().intValue());
+		assertEquals(idDocumento2, docs.get(1).getKey());
+		assertEquals(2, docs.get(1).getCount().intValue());
+		documentosRecuperados = unIndexador.findTerm("otra palabra");
+		assertEquals(1, documentosRecuperados.size());
+		for (KeyCount<OffsetAddress> cuenta: documentosRecuperados) {
+			assertEquals(2, cuenta.getCount().intValue());
 		}
 		unIndexador.close();
 	}
