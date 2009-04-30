@@ -1,9 +1,9 @@
 package ar.com.datos.indexer;
 
-import ar.com.datos.file.DynamicAccesor;
+import ar.com.datos.file.exception.OutOfBoundsException;
 import ar.com.datos.file.variableLength.StraightVariableLengthFile;
 import ar.com.datos.file.variableLength.address.OffsetAddress;
-import ar.com.datos.serializer.common.StringSerializerDelimiter;
+import ar.com.datos.indexer.serializer.LexicalSerializer;
 /**
  * Administrador del léxico completo.
  * Es un thin-Wrapper de un archivo secuencial de acceso dinámico no actualizable
@@ -12,18 +12,48 @@ import ar.com.datos.serializer.common.StringSerializerDelimiter;
  */
 public class LexicalManager {
 
-	private DynamicAccesor<OffsetAddress, String> lexical;
-	private StringSerializerDelimiter serializer = new StringSerializerDelimiter();
+	private StraightVariableLengthFile<LexicalData> lexical;
+	private LexicalSerializer serializer = new LexicalSerializer();
 	public LexicalManager(String fileName) {
 		this.lexical = constructFile(fileName);
 	}
 	public String get(OffsetAddress address) {
-		return this.lexical.get(address);
+		return this.lexical.get(address).toString();
 	}
 	public OffsetAddress add(String token) {
-		return this.lexical.addEntity(token);
+		incrementarContadorDeTerminos();
+		OffsetAddress nuevoOffset = this.lexical.addEntity(new LexicalTermData(token));
+		return nuevoOffset;
 	}
-	protected DynamicAccesor<OffsetAddress, String> constructFile(String fileName) {
-		return new StraightVariableLengthFile<String>(fileName, this.serializer);
+	protected void incrementarContadorDeTerminos() {
+		getSerializer().setCurrentToCounter();
+		try {
+			OffsetAddress counterAddress = new OffsetAddress(0L);
+			LexicalCounterData lcd = (LexicalCounterData) this.lexical.get(counterAddress);
+			lcd.increment();
+			this.lexical.updateEntity(counterAddress, lcd);
+		} catch (OutOfBoundsException obe) {
+			this.lexical.addEntity(new LexicalCounterData(1L));
+		}
+		getSerializer().setCurrentToTerm();
+		
+	}
+	public Long getNumberOfTerms() {
+		try {
+			getSerializer().setCurrentToCounter();
+			OffsetAddress counterAddress = new OffsetAddress(0L);
+			LexicalCounterData lcd = (LexicalCounterData) this.lexical.get(counterAddress);
+			return lcd.getCurrentCount();
+		} catch (OutOfBoundsException obe) {
+			return 0L;
+		} finally {
+			getSerializer().setCurrentToTerm();
+		}
+	}
+	protected StraightVariableLengthFile<LexicalData> constructFile(String fileName) {
+		return new StraightVariableLengthFile<LexicalData>(fileName, getSerializer());
+	}
+	protected LexicalSerializer getSerializer() {
+		return this.serializer;
 	}
 }

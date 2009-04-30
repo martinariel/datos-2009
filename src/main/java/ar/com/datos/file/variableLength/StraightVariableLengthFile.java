@@ -7,7 +7,9 @@ import ar.com.datos.buffer.FileInputBuffer;
 import ar.com.datos.buffer.FileOutputBuffer;
 import ar.com.datos.file.DynamicAccesor;
 import ar.com.datos.file.StandardFileWrapper;
+import ar.com.datos.file.exception.OutOfBoundsException;
 import ar.com.datos.file.variableLength.address.OffsetAddress;
+import ar.com.datos.file.variableLength.exception.InvalidUpdateException;
 import ar.com.datos.serializer.Serializer;
 
 public class StraightVariableLengthFile<T> implements DynamicAccesor<OffsetAddress, T> {
@@ -22,8 +24,20 @@ public class StraightVariableLengthFile<T> implements DynamicAccesor<OffsetAddre
 		this.file = constructTempFile();
 		this.serializer = serializer;
     }
+	/**
+	 * Para que la actualización se pueda realizar, la longitud de la entidad existente debe
+	 * ser idéntica a la longitud de la entidad por la cual se la va a actualizar
+	 */
+	public void updateEntity(OffsetAddress address, T updatedEntity) {
+		
+		T existent = get(address);
+		if (this.serializer.getDehydrateSize(updatedEntity) != this.serializer.getDehydrateSize(existent)) throw new InvalidUpdateException();
+		getSerializer().dehydrate(new FileOutputBuffer(this.getFile(),address.getOffset()), updatedEntity);
+		
+	}
 	@Override
 	public T get(OffsetAddress address) {
+		if (address.getOffset() >= this.file.getSize()) throw new OutOfBoundsException();
 		return getFromBuffer(new FileInputBuffer(this.getFile(), address.getOffset()));
 	}
 	protected T getFromBuffer(FileInputBuffer input) {
