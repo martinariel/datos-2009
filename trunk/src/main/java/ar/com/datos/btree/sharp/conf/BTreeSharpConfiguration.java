@@ -13,11 +13,8 @@ import ar.com.datos.btree.sharp.BTreeSharp;
  * @author fvalido
  */
 public abstract class BTreeSharpConfiguration<E extends Element<K>, K extends Key> {
-	/** Máxima capacidad de un nodo interno. */
-	private int maxCapacityInternalNode;
-	
-	/** Máxima capacidad de un nodo hoja. */
-	private int maxCapacityLeafNode;
+	/** Máxima capacidad de un nodo. */
+	private int maxCapacityNode;
 	
 	/** Máxima capacidad de un nodo raiz */
 	private int maxCapacityRootNode;
@@ -28,18 +25,15 @@ public abstract class BTreeSharpConfiguration<E extends Element<K>, K extends Ke
 	/**
 	 * Permite crear un {@link BTreeSharpConfiguration}
 	 *
-	 * @param maxCapacityInternalNode
-	 * Máxima capacidad para un nodo interno.
-	 * @param maxCapacityLeafNode
-	 * Máxima capacidad para un nodo hoja.
+	 * @param maxCapacityNode
+	 * Máxima capacidad para un nodo.
 	 * @param maxCapacityRootNode.
-	 * Máxima capacidad para un nodo raiz (Normalmente será 2 * maxCapacityInternalNode)
+	 * Máxima capacidad para un nodo raiz (Normalmente será 2 * maxCapacityNode)
 	 * @param bTreeSharpNodeFactory
 	 * Factory correspondiente a la implementación del árbol B# que se esté usando.
 	 */
-	public BTreeSharpConfiguration(int maxCapacityInternalNode, int maxCapacityLeafNode, int maxCapacityRootNode, BTreeSharpNodeFactory<E, K> bTreeSharpNodeFactory) {
-		this.maxCapacityInternalNode = maxCapacityInternalNode;
-		this.maxCapacityLeafNode = maxCapacityLeafNode;
+	public BTreeSharpConfiguration(int maxCapacityNode, int maxCapacityRootNode, BTreeSharpNodeFactory<E, K> bTreeSharpNodeFactory) {
+		this.maxCapacityNode = maxCapacityNode;
 		this.maxCapacityRootNode = maxCapacityRootNode;
 		this.bTreeSharpNodeFactory = bTreeSharpNodeFactory;
 	}
@@ -58,16 +52,10 @@ public abstract class BTreeSharpConfiguration<E extends Element<K>, K extends Ke
 	}
 	
 	/**
-	 * Permite obtener la máxima capacidad de un nodo interno.
+	 * Permite obtener la máxima capacidad de un nodo.
 	 */
-	public int getMaxCapacityInternalNode() {
-		return this.maxCapacityInternalNode;
-	}
-	/**
-	 * Permite obtener la máxima capacidad de un nodo hoja.
-	 */
-	public int getMaxCapacityLeafNode() {
-		return this.maxCapacityLeafNode;
+	public int getMaxCapacityNode() {
+		return this.maxCapacityNode;
 	}
 
 	/**
@@ -88,15 +76,8 @@ public abstract class BTreeSharpConfiguration<E extends Element<K>, K extends Ke
 	/**
 	 * Permite establecer la máxima capacidad de un nodo interno.
 	 */
-	public void setMaxCapacityInternalNode(int maxCapacityInternalNode) {
-		this.maxCapacityInternalNode = maxCapacityInternalNode;
-	}
-
-	/**
-	 * Permite establecer la máxima capacidad de un nodo hoja.
-	 */
-	public void setMaxCapacityLeafNode(int maxCapacityLeafNode) {
-		this.maxCapacityLeafNode = maxCapacityLeafNode;
+	public void setMaxCapacityNode(int maxCapacityNode) {
+		this.maxCapacityNode = maxCapacityNode;
 	}
 
 	/**

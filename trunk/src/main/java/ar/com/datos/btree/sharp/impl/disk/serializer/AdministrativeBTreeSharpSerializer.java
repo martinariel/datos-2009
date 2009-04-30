@@ -6,8 +6,6 @@ import ar.com.datos.btree.sharp.impl.disk.AdministrativeBTreeSharp;
 import ar.com.datos.buffer.InputBuffer;
 import ar.com.datos.buffer.OutputBuffer;
 import ar.com.datos.serializer.Serializer;
-import ar.com.datos.serializer.common.IntegerSerializer;
-import ar.com.datos.serializer.common.SerializerCache;
 import ar.com.datos.serializer.common.StringSerializerDelimiter;
 
 /**
@@ -16,8 +14,6 @@ import ar.com.datos.serializer.common.StringSerializerDelimiter;
  * @author fvalido
  */
 public class AdministrativeBTreeSharpSerializer<E extends Element<K>, K extends Key> implements Serializer<AdministrativeBTreeSharp<E, K>> {
-	/** Serializador para el tamaño del bloque del archivo de las hojas. */
-	private IntegerSerializer integerSerializer;
 	/** 
 	 * Serializador para el nombre del archivo de las hojas y para el nombre de la clase factory de los
 	 * serializadores de listas de {@link Element} y de {@link Key}. 
@@ -28,7 +24,6 @@ public class AdministrativeBTreeSharpSerializer<E extends Element<K>, K extends 
 	 * Construye una instancia.
 	 */
 	public AdministrativeBTreeSharpSerializer() {
-		this.integerSerializer = SerializerCache.getInstance().getSerializer(IntegerSerializer.class);
 		this.stringSerializer = new StringSerializerDelimiter();
 	}
 
@@ -39,7 +34,6 @@ public class AdministrativeBTreeSharpSerializer<E extends Element<K>, K extends 
 	@Override
 	public void dehydrate(OutputBuffer output, AdministrativeBTreeSharp<E, K> object) {
 		this.stringSerializer.dehydrate(output, object.getLeafFileName());
-		this.integerSerializer.dehydrate(output, object.getLeafBlockSize());
 		this.stringSerializer.dehydrate(output, object.getElementAndKeyListSerializerFactoryClassFQDN());
 	}
 
@@ -50,10 +44,9 @@ public class AdministrativeBTreeSharpSerializer<E extends Element<K>, K extends 
 	@Override
 	public AdministrativeBTreeSharp<E, K> hydrate(InputBuffer input) {
 		String leafFileName = this.stringSerializer.hydrate(input);
-		Integer leafBlockSize = this.integerSerializer.hydrate(input);
 		String elementAndKeyListSerializerFactoryClassFQDN = this.stringSerializer.hydrate(input);
 		
-		return new AdministrativeBTreeSharp<E, K>(leafFileName, leafBlockSize, elementAndKeyListSerializerFactoryClassFQDN);
+		return new AdministrativeBTreeSharp<E, K>(leafFileName, elementAndKeyListSerializerFactoryClassFQDN);
 	}
 
 	/*
@@ -63,7 +56,6 @@ public class AdministrativeBTreeSharpSerializer<E extends Element<K>, K extends 
 	@Override
 	public long getDehydrateSize(AdministrativeBTreeSharp<E, K> object) {
 		return this.stringSerializer.getDehydrateSize(object.getLeafFileName()) +
-				this.integerSerializer.getDehydrateSize(object.getLeafBlockSize()) +
 				this.stringSerializer.getDehydrateSize(object.getElementAndKeyListSerializerFactoryClassFQDN());
 	}
 }

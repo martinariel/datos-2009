@@ -1,5 +1,7 @@
 package ar.com.datos.btree;
 
+import java.io.Closeable;
+
 import ar.com.datos.btree.elements.Element;
 import ar.com.datos.btree.elements.Key;
 import ar.com.datos.btree.exception.BTreeException;
@@ -9,7 +11,7 @@ import ar.com.datos.btree.exception.BTreeException;
  * 
  * @author fvalido
  */
-public interface BTree<E extends Element<K>, K extends Key> {
+public interface BTree<E extends Element<K>, K extends Key> extends Closeable {
 	/**
 	 * Permite agregar un elemento.
 	 */
@@ -35,5 +37,5 @@ public interface BTree<E extends Element<K>, K extends Key> {
 	 * Permite especificar que el árbol no será usado más.
 	 * Deja la instancia no usable, pero si existia alguna forma de persistencia podrá ser recuperado.
 	 */
-	public void destroy();
+	public void close() throws BTreeException;
 }

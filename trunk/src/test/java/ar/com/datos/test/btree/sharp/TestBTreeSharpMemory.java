@@ -25,13 +25,13 @@ public class TestBTreeSharpMemory extends ExtendedTestCase {
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
-		this.bTreeSharp = new BTreeSharpFactory<TestElementMemory, TestKeyMemory>().createBTreeSharpMemory(9, 9);
+		this.bTreeSharp = new BTreeSharpFactory<TestElementMemory, TestKeyMemory>().createBTreeSharpMemory(9);
 	}
 
 	@Override
 	protected void tearDown() throws Exception {
 		super.tearDown();
-		this.bTreeSharp.destroy();
+		this.bTreeSharp.close();
 	}
 
 //	/**
@@ -65,20 +65,18 @@ public class TestBTreeSharpMemory extends ExtendedTestCase {
 //		}
 //	}
 	
-//	/**
-//	 * Test intensivo. Puede tardar MUCHO (más de 40 minutos).
-//	 */
-//	public void testIntensivo() {
-//		BTreeSharpFactory<TestElementMemory, TestKeyMemory> bTreeSharpFactory = new BTreeSharpFactory<TestElementMemory, TestKeyMemory>();
-//		for (int i = 3; i < 12; i++) { // Tamaño nodo interno
-//			for (int j = 3; j < 12; j++) { // Tamaño nodo hoja
-//				for (int k = 0; k < 3; k++) { // Número de pruebas por tamaño.
-//					this.bTreeSharp = bTreeSharpFactory.createBTreeSharpMemory(i, j); 
-//					testRandomInsertion();
-//				}
-//			}
-//		}
-//	}
+	/**
+	 * Test intensivo. Puede tardar MUCHO (más de 40 minutos).
+	 */
+	public void testIntensivo() {
+		BTreeSharpFactory<TestElementMemory, TestKeyMemory> bTreeSharpFactory = new BTreeSharpFactory<TestElementMemory, TestKeyMemory>();
+		for (int i = 3; i < 12; i++) { // Tamaño nodo
+			for (int j = 0; j < 3; j++) { // Número de pruebas por tamaño.
+				this.bTreeSharp = bTreeSharpFactory.createBTreeSharpMemory(i); 
+				testRandomInsertion();
+			}
+		}
+	}
 	
 	/**
 	 * Test completo. Agrega una serie de elementos al azar, se fija uno por uno
@@ -94,21 +92,22 @@ public class TestBTreeSharpMemory extends ExtendedTestCase {
 			
 			// Inserto elementos al azar en el árbol.
 			int j;
-			List<Integer> inserted = new ArrayList<Integer>();
+			List<TestKeyMemory> inserted = new ArrayList<TestKeyMemory>();
+			TestKeyMemory key;
+			TestElementMemory element;
 			for(int i = 0; i < 100000; i++){
 				j = (int) (Math.random()*maxKeyValue);
-				bTreeSharp.addElement(new TestElementMemory(j, new Integer(j).toString()));
-				inserted.add(j);
+				element = new TestElementMemory(j, new Integer(j).toString());
+				bTreeSharp.addElement(element);
+				inserted.add(element.getKey());
 			}
 			// Me quedo con una colección desordenada de esos elementos al azar.
 			Collections.shuffle(inserted);
 
 			// Reviso que cada uno de los elementos que agregué se encuentre en el árbol.
-			Iterator<Integer> it = inserted.iterator();
-			TestElementMemory element = null;
-			TestKeyMemory key;
+			Iterator<TestKeyMemory> it = inserted.iterator();
 			while (it.hasNext()) {
-				key = new TestKeyMemory(it.next());
+				key = it.next();
 				element = bTreeSharp.findElement(key);
 				assertNotNull(element);
 				assertEquals(key, element.getKey());
@@ -117,10 +116,10 @@ public class TestBTreeSharpMemory extends ExtendedTestCase {
 			// Recorro las hojas hacia adelante viendo que los elementos estén ordenados y que
 			// haya tantos elementos como los que inserté.
 			int cantElementos = 0;
-			TestElementMemory minorElement = new TestElementMemory(-1, "");
+			TestKeyMemory lowestKey = new TestKeyMemory(-1);
 			element = null;
 			TestElementMemory previousElement;
-			BTreeIterator<TestElementMemory> bTreeIterator = bTreeSharp.iterator(minorElement.getKey());
+			BTreeIterator<TestElementMemory> bTreeIterator = bTreeSharp.iterator(lowestKey);
 			while (bTreeIterator.hasNext()) {
 				previousElement = element;
 				element = bTreeIterator.next();
@@ -129,14 +128,14 @@ public class TestBTreeSharpMemory extends ExtendedTestCase {
 					assertLower(previousElement.getKey(), element.getKey());
 				}
 			}
-			assertEquals(cantElementos, new HashSet<Integer>(inserted).size());
+			assertEquals(cantElementos, new HashSet<TestKeyMemory>(inserted).size());
 				
 			// Recorro al vesre (NOTA: Es un test, por eso repito código a lo pavote)
 			cantElementos = 0;
-			TestElementMemory biggestElement = new TestElementMemory(maxKeyValue + 1, "");
+			TestKeyMemory biggestKey = new TestKeyMemory(maxKeyValue + 1);
 			element = null;
 			TestElementMemory nextElement;
-			bTreeIterator = bTreeSharp.iterator(biggestElement.getKey());
+			bTreeIterator = bTreeSharp.iterator(biggestKey);
 			while (bTreeIterator.hasPrevious()) {
 				nextElement = element;
 				element = bTreeIterator.previous();
@@ -145,7 +144,7 @@ public class TestBTreeSharpMemory extends ExtendedTestCase {
 					assertBigger(nextElement.getKey(), element.getKey());
 				}
 			}
-			assertEquals(cantElementos, new HashSet<Integer>(inserted).size());
+			assertEquals(cantElementos, new HashSet<TestKeyMemory>(inserted).size());
 		} catch (BTreeException e) {
 			// No deberia ocurrir.
 			e.printStackTrace();

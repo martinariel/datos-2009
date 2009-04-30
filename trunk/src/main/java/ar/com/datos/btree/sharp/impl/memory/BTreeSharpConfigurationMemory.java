@@ -15,13 +15,11 @@ public class BTreeSharpConfigurationMemory<E extends Element<K>, K extends Key> 
 	/**
 	 * Permite crear un {@link BTreeSharpConfigurationMemory}
 	 *
-	 * @param maxCapacityInternalNode
-	 * Máxima capacidad para un nodo interno.
-	 * @param maxCapacityLeafNode
-	 * Máxima capacidad para un nodo hoja.
+	 * @param maxCapacityNode
+	 * Máxima capacidad para un nodo.
 	 */
-	public BTreeSharpConfigurationMemory(int maxCapacityInternalNode, int maxCapacityLeafNode) throws BTreeConfException {
-			super(maxCapacityInternalNode, maxCapacityLeafNode, (short)(2 * maxCapacityInternalNode), new BTreeSharpNodeMemoryFactory<E, K>());
+	public BTreeSharpConfigurationMemory(int maxCapacityNode) throws BTreeConfException {
+			super(maxCapacityNode, 2 * maxCapacityNode, new BTreeSharpNodeMemoryFactory<E, K>());
 	}
 
 	/*

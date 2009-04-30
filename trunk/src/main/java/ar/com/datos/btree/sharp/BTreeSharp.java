@@ -73,7 +73,7 @@ public class BTreeSharp<E extends Element<K>, K extends Key> implements BTree<E,
 		} catch (BTreeException e) {
 			throw e;
 		} catch (Exception e) {
-			e.printStackTrace();
+			throw new BTreeException(e);
 		}
 	}
 
@@ -119,14 +119,10 @@ public class BTreeSharp<E extends Element<K>, K extends Key> implements BTree<E,
 	 * @see ar.com.datos.btree.BTree#destroy()
 	 */
 	@Override
-	public void destroy() {
+	public void close() {
 		if (!this.destroyed) {
-			try {
-				this.bTreeSharpConfiguration.closeTree();
-				this.destroyed = true;
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+			this.bTreeSharpConfiguration.closeTree();
+			this.destroyed = true;
 		}
 	}
 
@@ -137,7 +133,7 @@ public class BTreeSharp<E extends Element<K>, K extends Key> implements BTree<E,
 	@Override
 	protected void finalize() throws Throwable {
 		super.finalize();
-		destroy();
+		close();
 	}
 	
 	/**

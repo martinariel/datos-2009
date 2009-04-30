@@ -62,27 +62,20 @@ public abstract class AbstractEspecialRootNode<E extends Element<K>, K extends K
 
 		// Extraigo los tercios 
 		getParts(null, left, center, right); // Método template.
-// FIXME
-//		List<List<E>> listParts = getParts(null); // Método template.
-//		List<E> leftPart = listParts.get(0);
-//		List<E> centerPart = listParts.get(1);
-//		List<E> rightPart = listParts.get(2);
-//		
-//		// Los meto en los nodos. 
-//		left.elements.addAll(leftPart);
-//		center.elements.addAll(centerPart);
-//		right.elements.addAll(rightPart);
 		
-		// Método template
+		// Método template (En este caso particular no me queda otra que llamarlo 2 veces para 2 de los nodos)
 		left.postAddElement();
 		center.postAddElement();
+
+		left.next = center.myNodeReference;
+		left.postAddElement(); // Acabo de modificar left.
+		
+		right.previous = center.myNodeReference;
 		right.postAddElement();
 
-		// Apunto los ChainedNodes
-		left.next = center.myNodeReference;
 		center.previous = left.myNodeReference;
 		center.next = right.myNodeReference;
-		right.previous = center.myNodeReference;
+		center.postAddElement(); // Acabo de modificar center.
 		
 		// Creo una raiz definitiva para que apunte a los nuevos nodos.
 		AbstractRootNode<E, K> definitiveRootNode = this.bTreeSharpConfiguration.getBTreeSharpNodeFactory().createDefinitiveRootNode(this.bTreeSharpConfiguration);
@@ -100,16 +93,6 @@ public abstract class AbstractEspecialRootNode<E extends Element<K>, K extends K
 		return null;
 	}
 	
-// FIXME: Esto no va más
-//	/**
-//	 * Permite dividir el nodo en 3 partes.
-//	 * 
-//	 * Es indistinto el estado en que se deja el nodo original (este).
-//	 * 
-//	 * Patrón de diseño Template.
-//	 */
-//	protected abstract List<List<E>> getParts(); 
-	
 	/*
 	 * (non-Javadoc)
 	 * @see ar.com.datos.btree.sharp.node.AbstractLeafNode#getNodeMaxCapacity()
@@ -118,15 +101,4 @@ public abstract class AbstractEspecialRootNode<E extends Element<K>, K extends K
 	protected int getNodeMaxCapacity() {
 		return this.bTreeSharpConfiguration.getMaxCapacityRootNode();
 	}
-
-//  FIXME: Esto no va más
-//	/*
-//	 * (non-Javadoc)
-//	 * @see ar.com.datos.btree.sharp.node.AbstractLeafNode#getThirdPart(boolean)
-//	 */
-//	@Override
-//	protected final List<E> getThirdPart(boolean left) {
-//		// No se usa.
-//		return null;
-//	}
 }

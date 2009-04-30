@@ -42,7 +42,6 @@ public class SimpleSessionIndexer<T> implements SessionIndexer<T> {
 	
 	public static final Integer LIST_BLOCK_SIZE = 1024;
 	public static final Integer NODE_BLOCK_SIZE = 1024;
-	public static final Integer LEAF_BLOCK_SIZE = 1024; 
 
 	// Indexador del elemento al que se le cuentan las palabras
 	private Serializer<T> indexedSerializer;
@@ -156,7 +155,7 @@ public class SimpleSessionIndexer<T> implements SessionIndexer<T> {
 	protected BTree<IndexerTreeElement<T>, IndexerTreeKey> constructIndexedElements(String fileName) {
 		Class<? extends ElementAndKeyListSerializerFactory<IndexerTreeElement<T>, IndexerTreeKey>> clazz = (Class<? extends ElementAndKeyListSerializerFactory<IndexerTreeElement<T>, IndexerTreeKey>>) IndexerSerializerFactory.class;
 		return new BTreeSharpFactory<IndexerTreeElement<T>, IndexerTreeKey>().createBTreeSharpDisk(fileName + INDEX_NODE_SUFFIX, fileName + INDEX_LEAFS_SUFFIX, 
-				NODE_BLOCK_SIZE, LEAF_BLOCK_SIZE, clazz, false);
+				NODE_BLOCK_SIZE, clazz, false);
 	}
 
 	protected FixedLengthKeyCounter<Tuple<OffsetAddress, T>> constructCounter() {

@@ -94,61 +94,17 @@ public abstract class AbstractInternalNode<E extends Element<K>, K extends Key> 
 	 * Un {@link KeyNodeReference} cuya clave será la correspondiente al primer
 	 * {@link Element} del nodo creado, y el NodeReference apuntará al nodo creado.
 	 */
-	// FIXME: Este método debe ser private. Está como público para el desarrollo.
-	public KeyNodeReference<E, K> split(AbstractInternalNode<E, K> brother,
+	private KeyNodeReference<E, K> split(AbstractInternalNode<E, K> brother,
 										boolean leftBrother, WrappedParam<K> fatherKey) throws BTreeException {
 		// Trabajo a los nodos como left, center y right, donde center es el nuevo nodo.
 		AbstractInternalNode<E, K> left = (leftBrother) ? brother : this;
 		AbstractInternalNode<E, K> right = (leftBrother) ? this : brother;
 		// Creo un nuevo nodo.
 		AbstractInternalNode<E, K> center = this.bTreeSharpConfiguration.getBTreeSharpNodeFactory().createInternalNode(this.bTreeSharpConfiguration);
-		
-//		// FIXME: Esto no va mas
-//		// Extraigo el último tercio de left y el primer tercio de right y con ellos armo los elements
-//		// del nuevo nodo.
-//		List<KeyNodeReference<E, K>> leftParts = left.getThirdPart(false); // Método template.
-//		List<KeyNodeReference<E, K>> rightParts = right.getThirdPart(true); // Método template.
 
 		// Extraigo los tercios
 		WrappedParam<K> overflowKey = new WrappedParam<K>();
 		left.getParts(right.firstChild, right.keysNodes, fatherKey.getValue(), left, center, right, overflowKey, fatherKey); // Método template.
-		
-//		// Extraigo los tercios 
-//		List<List<KeyNodeReference<E, K>>> listParts = left.getParts(right.firstChild, right.keysNodes, fatherKey.getValue()); // Método template.
-//		List<KeyNodeReference<E, K>> leftPart = listParts.get(0);
-//		List<KeyNodeReference<E, K>> centerPart = listParts.get(1);
-//		List<KeyNodeReference<E, K>> rightPart = listParts.get(2);
-//		
-//		// Armo los nodos.
-//		KeyNodeReference<E, K> tempKeyNodeReference;
-//		
-//		tempKeyNodeReference = leftPart.remove(0);
-//		left.firstChild = tempKeyNodeReference.getNodeReference();
-//		left.keysNodes.clear();
-//		left.keysNodes.addAll(leftPart);
-//		
-//		tempKeyNodeReference = centerPart.remove(0);
-//		K overflowKey = tempKeyNodeReference.getKey();
-//		center.firstChild = tempKeyNodeReference.getNodeReference();
-//		center.keysNodes.clear();
-//		center.keysNodes.addAll(centerPart);
-//		
-//		tempKeyNodeReference = rightPart.remove(0);
-//		fatherKey.setValue(tempKeyNodeReference.getKey());
-//		right.firstChild = tempKeyNodeReference.getNodeReference();
-//		right.keysNodes.clear();
-//		right.keysNodes.addAll(rightPart);
-		
-		// FIXME
-//		KeyNodeReference<E, K> tempKeyNodeReference = leftParts.remove(0);
-//		K overflowKey = tempKeyNodeReference.getKey();
-//		center.firstChild = tempKeyNodeReference.getNodeReference();
-//		center.keysNodes.addAll(leftParts);
-//		tempKeyNodeReference = rightParts.remove(0);
-//		center.keysNodes.add(new KeyNodeReference<E, K>(fatherKey.getValue(), tempKeyNodeReference.getNodeReference()));
-//		center.keysNodes.addAll(rightParts);
-
-//		fatherKey.setValue(center.keysNodes.remove(center.keysNodes.size() - 1).getKey());
 		
 		// Método template
 		center.postAddElement();
@@ -244,7 +200,7 @@ public abstract class AbstractInternalNode<E extends Element<K>, K extends Key> 
 		}
 		
 		// Si sigue habiendo overflow, sigo pasando contenido.
-		if (calculateNodeSize() > this.bTreeSharpConfiguration.getMaxCapacityLeafNode()) {
+		if (calculateNodeSize() > this.bTreeSharpConfiguration.getMaxCapacityNode()) {
 			overflowKey = giveOverflowToBrother(brother, leftBrother, overflowKey);
 		}
 		
@@ -281,7 +237,7 @@ public abstract class AbstractInternalNode<E extends Element<K>, K extends Key> 
 		K overflowKey = giveOverflowToBrother(brother, leftBrother, fatherKey.getValue());
 		
 		// Si hubo overflow en el hermano, esta vez hago un split
-		if (brother.calculateNodeSize() > this.bTreeSharpConfiguration.getMaxCapacityLeafNode()) {
+		if (brother.calculateNodeSize() > this.bTreeSharpConfiguration.getMaxCapacityNode()) {
 			fatherKey.setValue(overflowKey);
 			returnValue = split(brother, leftBrother, fatherKey);
 		} else {
@@ -300,7 +256,7 @@ public abstract class AbstractInternalNode<E extends Element<K>, K extends Key> 
 	 * Obtiene la capacidad máxima del nodo.
 	 */
 	protected int getNodeMaxCapacity() {
-		return this.bTreeSharpConfiguration.getMaxCapacityInternalNode();
+		return this.bTreeSharpConfiguration.getMaxCapacityNode();
 	}
 	
 	/*
@@ -396,20 +352,6 @@ public abstract class AbstractInternalNode<E extends Element<K>, K extends Key> 
 		return NodeType.INTERNAL;
 	}
 	
-//  FIXME: No se usa.
-//	/**
-//	 * Obtiene la tercera parte del nodo de la izquierda o de la derecha
-//	 * según el valor de left sea true o no.
-//	 * La list de {@link KeyNodeReference} del nodo quedará sin esa tercera parte.
-//	 * Si left es true, la primer KeyNodeReference de la lista no tendrá Key
-//	 * (será null) y se corresponderá con firstChild; y la última KeyNodeReference
-//	 * no tendrá NodeReference (será null) y se corresponderá con la clave que
-//	 * debe apuntar a lo que resta del nodo.
-//	 * 
-//	 * Patrón de diseño Template.
-//	 */
-//	protected abstract List<KeyNodeReference<E, K>> getThirdPart(boolean left);
-
 	/**
 	 * Método para ser usado por la implementación de {@link #getParts(NodeReference, List, Key, AbstractInternalNode, AbstractInternalNode, AbstractInternalNode, WrappedParam, WrappedParam)}
 	 */
@@ -447,52 +389,13 @@ public abstract class AbstractInternalNode<E extends Element<K>, K extends Key> 
 										AbstractInternalNode<E, K> rightNode, WrappedParam<K> overflowKeyCenter,
 										WrappedParam<K> overflowKeyRight);
 	
-//	/**
-//	 * Juntanto las {@link KeyNodeReference} de este nodo con los del derecho que recibe,
-//	 * obtiene 3 partes (3 listas) de igual tamaño (o lo más próximo posible).
-//	 * Para hacer la unión junta el firstChild del rightNode con la rigthNodeFatherKey.
-//	 *
-//	 * @return
-//	 * La primer KeyNodeReference de la primer parte contendrá al firstChild (de this)
-//	 * como NodeReference (y debe interpretárselo como firstChild de la primer parte) y 
-//	 * ninguna clave (las demás {@link KeyNodeReference} son normales).
-//	 * La primer KeyNodeReference de la segunda y tercer parte contendrá el
-//	 * siguiente KeyNodeReference al del anterior, pero debe interpretárselo
-//	 * de esta manera: el NodeReference será el firstChild del nuevo nodo (a
-//	 * crear usando esa parte) y la Key será la clave que apuntará a ese
-//	 * nuevo nodo (los demás KeyNodeReference son normales).
-//	 * 
-//	 * Es indistinto el estado en que quedan las listas de {@link KeyNodeReference}
-//	 * originales.
-//	 * 
-//	 * Patrón de diseño Template.
-//	 */
-//	protected abstract List<List<KeyNodeReference<E, K>>> getParts(NodeReference<E, K> firstChildRightNode, List<KeyNodeReference<E, K>> keysNodesRightNode, K fatherKeyRigthNode); 
-	
-//	@Override
-//	public String toString() {
-//		String returnValue = "<<" + this.firstChild.toString() + "||";
-//		Iterator<KeyNodeReference<E, K>> it = this.keysNodes.iterator();
-//		while (it.hasNext()) {
-//			returnValue += it.next().toString();
-//			if (it.hasNext()) {
-//				returnValue += "||";
-//			}
-//		}
-//		returnValue += ">>";
-//
-//		return returnValue;
-//	}
-
-	// FIXME: Este toString() debe ser reemplazado por el de arriba. Solo está para desarrollo.
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
 	@Override
 	public String toString() {
-		String returnValue;
-		if (this.firstChild == null) {
-			returnValue = "<<" + "((N:null))" + "||";
-		} else {
-			returnValue = "<<" + this.firstChild.toString() + "||";
-		}
+		String returnValue = "<<" + this.firstChild.toString() + "||";
 		Iterator<KeyNodeReference<E, K>> it = this.keysNodes.iterator();
 		while (it.hasNext()) {
 			returnValue += it.next().toString();
