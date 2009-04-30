@@ -13,10 +13,14 @@ import org.jmock.lib.action.CustomAction;
 
 import ar.com.datos.buffer.OutputBuffer;
 import ar.com.datos.file.BlockFile;
+import ar.com.datos.file.address.BlockAddress;
 import ar.com.datos.file.variableLength.HydratedBlock;
+import ar.com.datos.file.variableLength.VariableLengthFileManager;
 import ar.com.datos.file.variableLength.VariableLengthWithCache;
 import ar.com.datos.file.variableLength.address.VariableLengthAddress;
 import ar.com.datos.serializer.NullableSerializer;
+import ar.com.datos.serializer.Serializer;
+import ar.com.datos.serializer.common.StringSerializerDelimiter;
 /**
  * Pruebas con archivo inicial vacÃ­o
  * @author Juan Manuel Barreneche
@@ -40,7 +44,6 @@ public class TestVariableLengthUpdate extends MockObjectTestCase {
 		serializerMock = this.mock(NullableSerializer.class);
 		cantidadDeVecesCreado = 0;
 		blockSize = 512;
-		dynamicAccessor = crearArchivo(); 
 		bloquesHidratados = new HashMap<Integer, HydratedBlock<String>>();
 	}
 	@Override
@@ -55,6 +58,7 @@ public class TestVariableLengthUpdate extends MockObjectTestCase {
 	 * @throws Exception
 	 */
 	public void testActualizacionSimple() throws Exception {
+		dynamicAccessor = crearArchivo(serializerMock); 
 		final Integer cuartosDeBloque = blockSize / 4 - 50;
 		configuracionVariosEnUnBloque();
 		checking(new Expectations(){{
@@ -78,6 +82,7 @@ public class TestVariableLengthUpdate extends MockObjectTestCase {
 	 * @throws Exception
 	 */
 	public void testActualizacionQueExcedeTamanio() throws Exception {
+		dynamicAccessor = crearArchivo(serializerMock); 
 		final Integer cuartosDeBloque = blockSize / 4;
 		configuracionVariosEnUnBloque();
 		checking(new Expectations(){{
@@ -107,6 +112,7 @@ public class TestVariableLengthUpdate extends MockObjectTestCase {
 	 * @throws Exception
 	 */
 	public void testActualizacionElUltimoYExcede() throws Exception {
+		dynamicAccessor = crearArchivo(serializerMock); 
 		final Integer cuartosDeBloque = blockSize / 4;
 		configuracionVariosEnUnBloque();
 		bloquesHidratados.get(2).getData().remove(1);
@@ -131,6 +137,7 @@ public class TestVariableLengthUpdate extends MockObjectTestCase {
 	 * @throws Exception
 	 */
 	public void testActualizacionQueExtiendeBloque() throws Exception {
+		dynamicAccessor = crearArchivo(serializerMock); 
 		final Integer masDeUnBloque = blockSize;
 		fileStub.extendTo(5);
 		List<String> datos = new ArrayList<String>(1);
@@ -149,6 +156,7 @@ public class TestVariableLengthUpdate extends MockObjectTestCase {
 	 * @throws Exception
 	 */
 	public void testActualizacionDeVariosBloquesQueExtiendeMasBloques() throws Exception {
+		dynamicAccessor = crearArchivo(serializerMock); 
 		final Integer masDeUnBloque = blockSize * 2; // En total, por la Metadata son 3 bloques
 		fileStub.extendTo(5);
 		List<String> datos = new ArrayList<String>(1);
@@ -163,6 +171,29 @@ public class TestVariableLengthUpdate extends MockObjectTestCase {
 		}});
 		dynamicAccessor.updateEntity(new VariableLengthAddress(2L,(short)0), "objeto modificado");
 		assertWrittens(2L,3L,5L);
+	}
+	/**
+	 * BUGFIX 10e456
+	 * El problema se produce cuando un agrego un registro, luego lo actualizo y luego agrego otro
+	 * El que se está grabando en el último caso es los dos que agregué en lugar del que
+	 * modifiqué y el que agregué último
+	 * @throws Exception
+	 */
+	public void testAgregarActualizarAgregar() throws Exception {
+		VariableLengthFileManager<String> otroAccessor = new VariableLengthFileManager<String>("nombreArchivo", blockSize, new StringSerializerDelimiter()) {
+			@Override
+			public BlockFile constructFile(String nombreArchivo, Integer blockSize) {
+				cantidadDeVecesCreado++;
+				fileStub = new BlockFileStub(blockSize);
+				return fileStub;
+			}
+		};
+		BlockAddress<Long, Short> address = otroAccessor.addEntity("objeto a modificar");
+		otroAccessor.updateEntity(address, "objeto uno modificado");
+		otroAccessor.addEntity("objeto uno modificado");
+		assertEquals("objeto uno modificado", otroAccessor.get(address));
+		// XXX debería escribir menos veces
+		assertWrittens(0L,0L,0L,0L);
 	}
 	private void configuracionVariosEnUnBloque() {
 		fileStub.extendTo(5);
@@ -195,8 +226,8 @@ public class TestVariableLengthUpdate extends MockObjectTestCase {
 			assertEquals(l[i], writtenBlocks.get(i));
 		}
 	}
-	private VariableLengthWithCache<String> crearArchivo() {
-		return new VariableLengthWithCache<String>("nombreArchivo",blockSize, serializerMock) {
+	private VariableLengthWithCache<String> crearArchivo(Serializer<String> serializer) {
+		return new VariableLengthWithCache<String>("nombreArchivo",blockSize, serializer) {
 			@Override
 			public BlockFile constructFile(String nombreArchivo, Integer blockSize) {
 				cantidadDeVecesCreado++;

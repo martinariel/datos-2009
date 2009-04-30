@@ -23,7 +23,7 @@ public class TestBlockReader extends MockObjectTestCase {
 			allowing(mockFileBlock).getBlockSize();
 			will(returnValue(BLOCK_SIZE));
 			allowing(mockFileBlock).getTotalBlocks();
-			will(returnValue(1020L));
+			will(returnValue(150L));
 		}});
 		this.blockReader = new BlockReader(this.mockFileBlock);
 	}
