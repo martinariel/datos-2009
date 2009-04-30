@@ -74,8 +74,7 @@ public class VariableLengthFileManager<T> implements BlockAccessor<BlockAddress<
 		HydratedBlock<T> bloque = getBlock(direccion.getBlockNumber());
 		bloque.getData().remove(direccion.getObjectNumber().intValue());
 		bloque.getData().add(direccion.getObjectNumber(), entity);
-		BlockWriter writer = new BlockWriter(getRealFile());
-		for (Long blockNumber : bloque.getBlockNumbers()) writer.addAvailableBlock(blockNumber);
+		BlockWriter writer = getCleanWriterForBlock(bloque);
 		Integer cantidadEnElBloque = bloque.getData().size(); 
 		
 		if (cantidadEnElBloque > 1) {
@@ -94,6 +93,18 @@ public class VariableLengthFileManager<T> implements BlockAccessor<BlockAddress<
 		
 		return direccion;
 		
+	}
+	protected BlockWriter getCleanWriterForBlock(HydratedBlock<T> bloque) {
+		
+		BlockWriter writer;
+		if (this.lastBlockWriter != null && this.lastBlockWriter.getCurrentWrittingBlock().equals(bloque.getBlockNumber())) {
+			writer = this.lastBlockWriter;
+			writer.clearBuffer();
+		} else {
+			writer = new BlockWriter(getRealFile());
+		}
+		for (Long blockNumber : bloque.getBlockNumbers()) writer.addAvailableBlock(blockNumber);
+		return writer;
 	}
 	@Override
 	public Short getAmountOfBlocksFor(BlockAddress<Long, Short> address) {

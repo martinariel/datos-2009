@@ -271,4 +271,8 @@ public class BlockWriter implements RestrictedBufferRealeaser, OutputBuffer {
 		return this.lastHeadWritten;
 	}
 
+	public void clearBuffer() {
+		this.simpleRestrictedOutputBuffer = new SimpleRestrictedOutputBuffer(getSimpleDataSize(), this);
+	}
+
 }
