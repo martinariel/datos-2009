@@ -22,6 +22,7 @@ import ar.com.datos.serializer.common.TupleSerializer;
 import ar.com.datos.util.Tuple;
 import ar.com.datos.utils.sort.external.FixedLengthKeyCounter;
 import ar.com.datos.utils.sort.external.KeyCount;
+import ar.com.datos.wordservice.exception.InactiveSessionException;
 /**
  * Implementación básica de un {@link SessionIndexer}
  * Consta de un árbol B# para el índice de términos. El cual tiene asociada una
@@ -88,7 +89,7 @@ public class SimpleSessionIndexer<T> implements SessionIndexer<T>, Closeable {
 
 	@Override
 	public boolean isActive() {
-		return fixedLengthCounter == null;
+		return fixedLengthCounter != null;
 	}
 
 	/**
@@ -115,6 +116,7 @@ public class SimpleSessionIndexer<T> implements SessionIndexer<T>, Closeable {
 		this.fixedLengthCounter = null;
 	}
 	public void addTerms(T dato, String...terms) {
+		if (!this.isActive()) throw new InactiveSessionException();
 		for (String term : terms) addTerm(dato, term);
 	}
 	protected void addTerm(T data, String term) {
