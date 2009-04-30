@@ -20,17 +20,14 @@ public class AdministrativeBTreeSharp<E extends Element<K>, K extends Key> {
      * listas de {@link Element} y {@link Key}.
      */
     private String elementAndKeyListSerializerFactoryClassFQDN;
-    /** Tamaño de los bloques del archivo de nodos hojas. */
-    private int leafBlockSize;
     /** Posición del nodo raiz en el archivo */
     private BlockAddress<Long, Short> rootNodePosition;
     
     /**
      * Constructor que recibe la información directamente.
      */
-	public AdministrativeBTreeSharp(String leafNodeFileName, int leafBlockSize, String elementAndKeyListSerializerFactoryClassFQDN) {
+	public AdministrativeBTreeSharp(String leafNodeFileName, String elementAndKeyListSerializerFactoryClassFQDN) {
         this.leafNodeFileName = leafNodeFileName;
-        this.leafBlockSize = leafBlockSize;
         this.elementAndKeyListSerializerFactoryClassFQDN = elementAndKeyListSerializerFactoryClassFQDN;
 	}
 
@@ -44,7 +41,6 @@ public class AdministrativeBTreeSharp<E extends Element<K>, K extends Key> {
 		BlockAddress<Long, Short> position = new VariableLengthAddress(0L, (short)0);
         AdministrativeBTreeSharp<E, K> aux = internalNodeFileManager.get(position);
         this.leafNodeFileName = aux.getLeafFileName();
-        this.leafBlockSize = aux.getLeafBlockSize();
         this.elementAndKeyListSerializerFactoryClassFQDN = aux.getElementAndKeyListSerializerFactoryClassFQDN();
         this.rootNodePosition = new VariableLengthAddress((long)internalNodeFileManager.getAmountOfBlocksFor(position).shortValue(), (short)0);
 	}
@@ -66,13 +62,6 @@ public class AdministrativeBTreeSharp<E extends Element<K>, K extends Key> {
     }
 
     /**
-     * Permite obtener el tamanio del bloque del archivo de nodos hojas.
-     */
-    public int getLeafBlockSize() {
-    	return this.leafBlockSize;
-    }
-
-	/**
 	 * Permite obtener la posición del nodo raiz.
 	 */
 	public BlockAddress<Long, Short> getRootNodePosition() {

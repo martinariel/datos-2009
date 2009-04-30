@@ -30,6 +30,11 @@ public class TestKeyMemory implements Key {
 	}
 
 	@Override
+	public int hashCode() {
+		return this.value.hashCode();
+	}
+	
+	@Override
 	public boolean equals(Object obj) {
 		TestKeyMemory o = (TestKeyMemory)obj;
 		return this.value.equals(o.value);

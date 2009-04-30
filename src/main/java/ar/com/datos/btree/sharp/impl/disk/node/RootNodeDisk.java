@@ -92,17 +92,6 @@ public final class RootNodeDisk<E extends Element<K>, K extends Key> extends Abs
 		return this.bTreeSharpConfiguration.getStateInternalNodeSerializer().getDehydrateSize(this);
 	}
 
-// FIXME
-//	/*
-//	 * (non-Javadoc)
-//	 * @see ar.com.datos.btree.sharp.node.AbstractRootNode#getParts()
-//	 */
-//	@Override
-//	protected List<List<KeyNodeReference<E, K>>> getParts() {
-//		// TODO
-//		return null;
-//	}
-
 	/*
 	 * (non-Javadoc)
 	 * @see ar.com.datos.btree.sharp.node.AbstractInternalNode#getParts(ar.com.datos.btree.sharp.node.NodeReference, java.util.List, ar.com.datos.btree.elements.Key, ar.com.datos.btree.sharp.node.AbstractInternalNode, ar.com.datos.btree.sharp.node.AbstractInternalNode, ar.com.datos.btree.sharp.node.AbstractInternalNode, ar.com.datos.util.WrappedParam, ar.com.datos.util.WrappedParam)
@@ -149,7 +138,7 @@ public final class RootNodeDisk<E extends Element<K>, K extends Key> extends Abs
 		// quede en overflow. Si es así, trato de compensarlo hacia la izquierda.
 		StateInternalNodeSerializer<E, K> stateInternalNodeSerializer = this.bTreeSharpConfiguration.getStateInternalNodeSerializer();
 		KeyNodeReference<E, K> tempKeyNodeReference;
-		while (stateInternalNodeSerializer.getDehydrateSize((InternalNodeDisk<E, K>)rightNode) > this.bTreeSharpConfiguration.getMaxCapacityInternalNode() 
+		while (stateInternalNodeSerializer.getDehydrateSize((InternalNodeDisk<E, K>)rightNode) > this.bTreeSharpConfiguration.getMaxCapacityNode() 
 				&& rightNode.getKeysNodes().size() > 1) {
 			centerNode.getKeysNodes().add(new KeyNodeReference<E, K>(overflowKeyRight.getValue(), rightNode.getFirstChild()));
 			tempKeyNodeReference = rightNode.getKeysNodes().remove(0);
@@ -158,7 +147,7 @@ public final class RootNodeDisk<E extends Element<K>, K extends Key> extends Abs
 		}
 		
 		// Ahora me puede haber quedado overflow en center (más difícil aún).
-		while (stateInternalNodeSerializer.getDehydrateSize((InternalNodeDisk<E, K>)centerNode) > this.bTreeSharpConfiguration.getMaxCapacityInternalNode()
+		while (stateInternalNodeSerializer.getDehydrateSize((InternalNodeDisk<E, K>)centerNode) > this.bTreeSharpConfiguration.getMaxCapacityNode()
 				&& centerNode.getKeysNodes().size() > 1) {
 			leftNode.getKeysNodes().add(new KeyNodeReference<E, K>(overflowKeyCenter.getValue(), centerNode.getFirstChild()));
 			tempKeyNodeReference = centerNode.getKeysNodes().remove(0);
@@ -170,63 +159,6 @@ public final class RootNodeDisk<E extends Element<K>, K extends Key> extends Abs
 		// para los elementos que se quieren guardar. Se tirará una excepción en el serializer
 		// correspondiente (no se trata el caso aquí).		
 	}
-	
-//	FIXME
-//	/*
-//	 * (non-Javadoc)
-//	 * @see ar.com.datos.btree.sharp.node.AbstractInternalNode#getParts(ar.com.datos.btree.sharp.node.NodeReference, java.util.List, ar.com.datos.btree.elements.Key)
-//	 */
-//	@Override
-//	protected List<List<KeyNodeReference<E, K>>> getParts(NodeReference<E, K> firstChildRightNode, List<KeyNodeReference<E, K>> keysNodesRightNode, K fatherKeyRigthNode) {
-//		ListKeysSerializer<K> serializer = this.bTreeSharpConfiguration.getListKeysSerializer(); 
-//		
-//		// Creo una lista que incluya a firstChild.
-//		List<KeyNodeReference<E, K>> sourceKeyNodeReference = new LinkedList<KeyNodeReference<E,K>>();
-//		sourceKeyNodeReference.add(new KeyNodeReference<E, K>(null, this.firstChild));
-//		sourceKeyNodeReference.addAll(this.keysNodes);
-//		
-//		// Extraigo una lista de Keys.
-//		Iterator<KeyNodeReference<E, K>> itKeyNodeReference = sourceKeyNodeReference.iterator();
-//		List<K> sourceKeys = new LinkedList<K>();
-//		itKeyNodeReference.next();
-//		while (itKeyNodeReference.hasNext()) {
-//			sourceKeys.add(itKeyNodeReference.next().getKey());
-//		}
-//
-//		// Divido la lista de Keys.
-//		List<List<K>> keyParts = ThirdPartHelper.divideInThreePartsEspecial(sourceKeys);
-//
-//		List<K> left = keyParts.get(0);
-//		List<K> center = keyParts.get(1);
-//		List<K> right = keyParts.get(2);
-//
-//		EspecialListForThirdPart<K> eLeft = new EspecialListForThirdPart<K>(left, serializer, false);
-//		EspecialListForThirdPart<K> eCenterForLeft = new EspecialListForThirdPart<K>(center, serializer, true);
-//		EspecialListForThirdPart<K> eCenterForRight = new EspecialListForThirdPart<K>(center, serializer, false);
-//		EspecialListForThirdPart<K> eRight = new EspecialListForThirdPart<K>(right, serializer, true);
-//		
-//		// Reacomodo lo obtenido pero ahora calculando los tamaños (sin considerar tamaño fijo).
-//		ThirdPartHelper.balanceThirdPart(eLeft, eCenterForLeft, eRight.size());
-//		ThirdPartHelper.balanceThirdPart(eCenterForRight, eRight, eLeft.size());
-//		
-//		// Como el balanceo es hacia la derecha, puede pasar (difícil, pero puede) que el nodo derecho
-//		// quede en overflow. Si es así, trato de compensarlo hacia la izquierda.
-//		while (eRight.size() + 1 > this.bTreeSharpConfiguration.getMaxCapacityRootNode()) {
-//			eRight.giveOneElementTo(eCenterForRight);
-//		}
-//		
-//		// Ahora me puede haber quedado overflow en center (más dificil aún).
-//		while (eCenterForLeft.size() + 1 > this.bTreeSharpConfiguration.getMaxCapacityRootNode()) {
-//			eCenterForLeft.giveOneElementTo(eLeft);
-//		}
-//		
-//		// Si left quedó también en overflow es porque el tamaño de los nodos fue mal definido
-//		// para los elementos que se quieren guardar. Se tirará una excepción en el serializer
-//		// correspondiente (no se trata el caso aquí).
-//		
-//		// Recombino las listas divididas de keys con las KeyNodeReferences
-//		return ThirdPartHelper.combineKeysAndNodeReferences(sourceKeyNodeReference, keyParts);
-//	}
 	
 	/*
 	 * (non-Javadoc)

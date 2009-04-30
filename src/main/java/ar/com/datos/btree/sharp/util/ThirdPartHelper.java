@@ -113,37 +113,6 @@ public class ThirdPartHelper {
 		}
 	}
 	
-//	FIXME No va más
-//	/**
-//	 * Combina 3 listados de Keys con un listado de KeyNodeReference, dejando como resultado
-//	 * 3 listados de KeyNodeReference. La combinación la realiza tomando en orden la Key de los
-//	 * 3 listados de Keys y el NodeReference del listado de KeyNodeReference.
-//	 * La primer KeyNodeReference será la primer KeyNodeReference del listado de KeyNodeReference
-//	 * sin combinar con el listado de Keys.
-//	 * 
-//	 * PRE: Sumatoria(keyParts(i).size()) == keyNodeReferences.size() - 1
-//	 */
-//	public static <E extends Element<K>, K extends Key> List<List<KeyNodeReference<E, K>>> combineKeysAndNodeReferences(List<KeyNodeReference<E, K>> keyNodeReferences, List<List<K>> keyParts) {
-//		List<List<KeyNodeReference<E, K>>> returnValue = new LinkedList<List<KeyNodeReference<E,K>>>();
-//		List<KeyNodeReference<E, K>> part; 
-//		
-//		Iterator<KeyNodeReference<E, K>>itKeyNodeReference = keyNodeReferences.iterator();
-//		Iterator<K> itKey;
-//		for (int i = 0; i < 3; i++) {
-//			part = new LinkedList<KeyNodeReference<E,K>>();
-//			if (i == 0) {
-//				part.add(itKeyNodeReference.next());
-//			}
-//			itKey = keyParts.get(i).iterator();
-//			while (itKey.hasNext()) {
-//				part.add(new KeyNodeReference<E, K>(itKey.next(), itKeyNodeReference.next().getNodeReference()));
-//			}
-//			returnValue.add(part);
-//		}
-//		
-//		return returnValue;
-//	}
-	
 	/**
 	 * Pasa elementos desde thirdPart hacia mainPart o viceversa hasta ajustarse lo mejor posible
 	 * a un tamaño tal que thirdPart sea un tercio de la suma del tamaño de thirdPart y mainPart.

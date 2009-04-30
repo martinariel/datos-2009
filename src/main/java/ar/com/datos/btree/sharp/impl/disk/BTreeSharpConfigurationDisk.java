@@ -45,14 +45,14 @@ public class BTreeSharpConfigurationDisk<E extends Element<K>, K extends Key> ex
 	/**
 	 * Permite crear un {@link BTreeSharpConfigurationDisk} recibiendo todos los parametros.
 	 */
-	public BTreeSharpConfigurationDisk(short maxCapacityInternalNode, short maxCapacityLeafNode, short maxCapacityRootNode, 
+	public BTreeSharpConfigurationDisk(int maxCapacityNode, int maxCapacityRootNode, 
 									StateInternalNodeSerializer<E, K> stateInternalNodeSerializer,
 									LeafNodeSerializer<E, K> leafNodeSerializer,
 									ListElementsSerializer<E, K> listElementsSerializer,
 									ListKeysSerializer<K> listKeysSerializer,
 									BlockAccessor<BlockAddress<Long, Short>, Node<E, K>> internalNodesFileManager,
 									BlockAccessor<BlockAddress<Long, Short>, Node<E, K>> leafNodesFileManager) {
-		super(maxCapacityInternalNode, maxCapacityLeafNode, maxCapacityRootNode, new BTreeSharpNodeDiskFactory<E, K>());
+		super(maxCapacityNode, maxCapacityRootNode, new BTreeSharpNodeDiskFactory<E, K>());
 		this.stateInternalNodeSerializer = stateInternalNodeSerializer;
 		this.leafNodeSerializer = leafNodeSerializer;
 		this.internalNodesFileManager = internalNodesFileManager;

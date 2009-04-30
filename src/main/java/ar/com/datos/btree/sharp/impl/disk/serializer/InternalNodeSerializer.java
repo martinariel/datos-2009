@@ -64,7 +64,7 @@ public class InternalNodeSerializer<E extends Element<K>, K extends Key> impleme
 	@Override
 	public void dehydrate(OutputBuffer output, InternalNodeDisk<E, K> object) throws SerializerException {
 		// Debo hacer que el nodo tenga el tamaño de un bloque. Le agregaré al final basura hasta llenarlo.
-		int trashSize = (int)(this.bTreeSharpConfiguration.getMaxCapacityInternalNode() - 1 - getDehydrateSize(object));
+		int trashSize = (int)(this.bTreeSharpConfiguration.getMaxCapacityNode() - 1 - getDehydrateSize(object));
 		
 		if (trashSize < 0) {
 			throw new SerializerException(this.getClass().getCanonicalName() + ": Se intenta grabar un nodo de un " +
@@ -138,7 +138,7 @@ public class InternalNodeSerializer<E extends Element<K>, K extends Key> impleme
 		InternalNodeDisk<E, K> returnValue = new InternalNodeDisk<E, K>(this.bTreeSharpConfiguration, firstChild, keysNodes);
 		
 		// Vacio el buffer de información basura que había dejado al final.
-		int trashSize = (int)(this.bTreeSharpConfiguration.getMaxCapacityInternalNode() - 1 - getDehydrateSize(returnValue));
+		int trashSize = (int)(this.bTreeSharpConfiguration.getMaxCapacityNode() - 1 - getDehydrateSize(returnValue));
 		if (trashSize > 0) {
 			input.read(new byte[trashSize]);
 		}

@@ -33,6 +33,11 @@ public class TestKeyDisk implements Key {
 	}
 
 	@Override
+	public int hashCode() {
+		return this.value.hashCode();
+	}
+	
+	@Override
 	public boolean equals(Object obj) {
 		TestKeyDisk o = (TestKeyDisk)obj;
 		return this.value.equals(o.value);

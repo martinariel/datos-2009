@@ -55,7 +55,7 @@ public class LeafNodeSerializer<E extends Element<K>, K extends Key> implements 
 	@Override
 	public void dehydrate(OutputBuffer output, LeafNodeDisk<E, K> object) throws SerializerException {
 		// Debo hacer que el nodo tenga el tamaño de un bloque. Le agregaré al final basura hasta llenarlo.
-		int trashSize = (int)(this.bTreeSharpConfiguration.getMaxCapacityLeafNode() - getDehydrateSize(object));
+		int trashSize = (int)(this.bTreeSharpConfiguration.getMaxCapacityNode() - getDehydrateSize(object));
 		
 		if (trashSize < 0) {
 			throw new SerializerException(this.getClass().getCanonicalName() + ": Se intenta grabar un nodo de un " +
@@ -93,7 +93,7 @@ public class LeafNodeSerializer<E extends Element<K>, K extends Key> implements 
 		LeafNodeDisk<E, K> returnValue = new LeafNodeDisk<E, K>(this.bTreeSharpConfiguration, previous, next, elements);
 		
 		// Vacio el buffer de información basura que había dejado al final.
-		int trashSize = (int)(this.bTreeSharpConfiguration.getMaxCapacityLeafNode() - getDehydrateSize(returnValue));
+		int trashSize = (int)(this.bTreeSharpConfiguration.getMaxCapacityNode() - getDehydrateSize(returnValue));
 		if (trashSize > 0) {
 			input.read(new byte[trashSize]);
 		}

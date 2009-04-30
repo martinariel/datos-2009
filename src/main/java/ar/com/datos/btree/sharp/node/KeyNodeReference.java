@@ -41,25 +41,8 @@ public class KeyNodeReference<E extends Element<K>, K extends Key> {
 	 * (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
-//	@Override
-//	public String toString() {
-//		return this.key.toString() + "||" + this.nodeReference.toString();
-//	}
-
-	// FIXME: Este toString() debe ser reemplazado por el de arriba. Solo está para desarrollo.
 	@Override
 	public String toString() {
-		String returnValue;
-		if (this.key == null) {
-			returnValue = "((K:null))" + "||";
-		} else {
-			returnValue = this.key.toString() + "||";
-		}
-		if (this.nodeReference == null) {
-			returnValue += "((N:null))";
-		} else {
-			returnValue += this.nodeReference.toString();
-		}
-		return returnValue;
+		return this.key.toString() + "||" + this.nodeReference.toString();
 	}
 }

@@ -82,8 +82,7 @@ public abstract class AbstractLeafNode<E extends Element<K>, K extends Key> exte
 	 * Un {@link KeyNodeReference} cuya clave será la correspondiente al primer
 	 * {@link Element} del nodo creado, y el NodeReference apuntará al nodo creado.
 	 */
-	// FIXME: Este método debe ser private. Está como público para el desarrollo.
-	public KeyNodeReference<E, K> split(AbstractLeafNode<E, K> brother,
+	private KeyNodeReference<E, K> split(AbstractLeafNode<E, K> brother,
 										boolean leftBrother, WrappedParam<K> fatherKey) throws BTreeException {
 		// Trabajo a los nodos como left, center y right, donde center es el nuevo nodo.
 		AbstractLeafNode<E, K> left = (leftBrother) ? brother : this;
@@ -91,27 +90,8 @@ public abstract class AbstractLeafNode<E extends Element<K>, K extends Key> exte
 		// Creo una nueva hoja cuyo nodo anterior será left, y el siguiente será el right.
 		AbstractLeafNode<E, K> center = this.bTreeSharpConfiguration.getBTreeSharpNodeFactory().createLeafNode(this.bTreeSharpConfiguration, left.myNodeReference, right.myNodeReference);
 
-// FIXME
-//		// Extraigo el último tercio de left y el primer tercio de right y con ellas armo los elements
-//		// del nuevo nodo.
-//		center.elements.addAll(left.getThirdPart(false)); // Método template.
-//		center.elements.addAll(right.getThirdPart(true)); // Método template.
-		
 		// Extraigo los tercios
 		left.getParts(right.elements, left, center, right); // Método template.
-// FIXME
-//		List<List<E>> listParts = left.getParts(right.elements); // Método template.
-//		List<E> leftPart = listParts.get(0);
-//		List<E> centerPart = listParts.get(1);
-//		List<E> rightPart = listParts.get(2);
-//		
-//		// Pongo las listas en los nodos.
-//		left.elements.clear();
-//		left.elements.addAll(leftPart);
-//		center.elements.clear();
-//		center.elements.addAll(centerPart);
-//		right.elements.clear();
-//		right.elements.addAll(rightPart);		
 		
 		// Método template.
 		center.postAddElement();
@@ -144,7 +124,7 @@ public abstract class AbstractLeafNode<E extends Element<K>, K extends Key> exte
 		brother.insertElement(overflowElement);
 		
 		// Si sigue habiendo overflow, sigo pasando contenido.
-		if (calculateNodeSize() > this.bTreeSharpConfiguration.getMaxCapacityLeafNode()) {
+		if (calculateNodeSize() > this.bTreeSharpConfiguration.getMaxCapacityNode()) {
 			giveOverflowToBrother(brother, leftBrother);
 		}
 	}
@@ -178,7 +158,7 @@ public abstract class AbstractLeafNode<E extends Element<K>, K extends Key> exte
 		giveOverflowToBrother(brother, leftBrother);
 		
 		// Si hubo overflow en el hermano, esta vez hago un split
-		if (brother.calculateNodeSize() > this.bTreeSharpConfiguration.getMaxCapacityLeafNode()) {
+		if (brother.calculateNodeSize() > this.bTreeSharpConfiguration.getMaxCapacityNode()) {
 			returnValue = split(brother, leftBrother, fatherKey);
 		} else {
 			// Si no lo hubo, reemplazo fatherKey con la Key correspondiente al primer
@@ -231,7 +211,7 @@ public abstract class AbstractLeafNode<E extends Element<K>, K extends Key> exte
 	 * Obtiene la capacidad máxima del nodo.
 	 */
 	protected int getNodeMaxCapacity() {
-		return this.bTreeSharpConfiguration.getMaxCapacityLeafNode();
+		return this.bTreeSharpConfiguration.getMaxCapacityNode();
 	}
 	
 	/*
@@ -372,16 +352,6 @@ public abstract class AbstractLeafNode<E extends Element<K>, K extends Key> exte
 
 		return (ChainedNode<E, K>)node;
 	}
-
-//  FIXME: Esto no va más	
-//	/**
-//	 * Obtiene la tercera parte del nodo de la izquierda o de la derecha
-//	 * según el valor de left sea true o no.
-//	 * La list de elements del nodo quedará sin esa tercera parte.
-//	 * 
-//	 * Patrón de diseño Template.
-//	 */
-//	protected abstract List<E> getThirdPart(boolean left);
 
 	/**
 	 * Método para ser usado por la implementación de {@link #getParts(List, AbstractLeafNode, AbstractLeafNode, AbstractLeafNode)}
