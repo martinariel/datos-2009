@@ -6,6 +6,7 @@ import ar.com.datos.audio.DocumentPlayer;
 import ar.com.datos.audio.DocumentRecorder;
 import ar.com.datos.audio.IWordsRecorderConector;
 import ar.com.datos.documentlibrary.Document;
+import ar.com.datos.indexer.Indexer;
 import ar.com.datos.persistencia.SoundPersistenceService;
 import ar.com.datos.persistencia.variableLength.SoundPersistenceServiceVariableLengthImpl;
 
@@ -18,7 +19,8 @@ public class WordService {
 
     private Crawler crawler;
     private SoundPersistenceService persistenciaAudio;
-
+    private Indexer<Document> indexer;
+    
     public WordService (String directorioArchivos){
 
         //TODO reemplazar por persistencia en Trie
@@ -26,8 +28,8 @@ public class WordService {
                 directorioArchivos + "palabras",
                 directorioArchivos + "sonidos"
                 );
-
-        //TODO instanciar crawler
+        //TODO instanciar Indexer y crawler
+       
     }
 
     /**

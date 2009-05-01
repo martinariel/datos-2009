@@ -1,19 +1,18 @@
 package ar.com.datos.documentlibrary;
 import java.util.ArrayList;
 
-public class SimpleLinesDocument implements Document {
+public class MemoryDocument implements Document {
 
 	private ArrayList<String> lineas;
-	private int pos = 0;
+	private int pos = -1;
 	
-	public SimpleLinesDocument(){
+	public MemoryDocument(){
 		lineas = new ArrayList<String>();
 	}
 	
 	@Override
 	public void close() {
-		// TODO Auto-generated method stub
-
+		pos = -1;
 	}
 	
 	public void addLine(String line){
@@ -22,13 +21,12 @@ public class SimpleLinesDocument implements Document {
 
 	@Override
 	public void open() {
-		// TODO Auto-generated method stub
-
+		pos = 0;
 	}
 
 	@Override
 	public String readLine() {
-		if (pos < lineas.size()){
+		if (pos < lineas.size() && pos >= 0){
 			return lineas.get(pos++);
 			
 		}
