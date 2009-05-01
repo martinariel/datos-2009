@@ -14,7 +14,6 @@ import ar.com.datos.file.variableLength.address.OffsetAddress;
 import ar.com.datos.file.variableLength.address.OffsetAddressSerializer;
 import ar.com.datos.indexer.tree.IndexerTreeElement;
 import ar.com.datos.indexer.tree.IndexerTreeKey;
-import ar.com.datos.serializer.FrontCodingSerializer;
 import ar.com.datos.serializer.Serializer;
 import ar.com.datos.serializer.common.SerializerCache;
 
