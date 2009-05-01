@@ -1,7 +1,6 @@
 package ar.com.datos.indexer.tree;
 
 import ar.com.datos.btree.elements.Key;
-import ar.com.datos.btree.exception.UncomparableException;
 import ar.com.datos.indexer.SimpleSessionIndexer;
 /**
  * Implementación de Key para el árbol que utiliza para la indexación
@@ -18,7 +17,6 @@ public class IndexerTreeKey implements Key {
 	}
 	@Override
 	public int compareTo(Key arg0) {
-		if (arg0 == null || !(arg0 instanceof IndexerTreeKey)) throw new UncomparableException();
 		IndexerTreeKey other = (IndexerTreeKey) arg0;
 		return this.getTerm().compareTo(other.getTerm());
 	}
