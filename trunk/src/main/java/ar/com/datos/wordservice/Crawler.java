@@ -1,5 +1,7 @@
 package ar.com.datos.wordservice;
 
+import java.util.Collection;
+
 import ar.com.datos.documentlibrary.Document;
 
 /**
@@ -15,5 +17,5 @@ public interface Crawler {
 	 * para filtrar stopphrases y stopwords. 
 	 * @param {@link Document} el documento a indexar y grabar.
 	 */
-	public void addDocument(Document document);
+	public Collection<String> addDocument(Document document);
 }

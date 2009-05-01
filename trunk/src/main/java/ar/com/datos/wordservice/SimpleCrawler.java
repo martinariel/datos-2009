@@ -35,7 +35,7 @@ public class SimpleCrawler implements Crawler{
 	
 	
 	@Override
-	public void addDocument(Document document) {
+	public Collection<String> addDocument(Document document) {
 		List<String> nonStopWords;
 		
 		// lexico completo (todos los terminos)
@@ -46,15 +46,15 @@ public class SimpleCrawler implements Crawler{
 		
 		// inicializo el parser con este documento
 		this.parser = new Parser(document);
-		this.parser.initParser();
 		
+			
 		// recorro las frases (ya normalizadas) del documento 
-		for(Collection<String> phrase: this.parser){
+		for(List<String> phrase: this.parser){
 			// Agrego los terminos normalizados al lexico
 			allTerms.addAll(phrase);
 		
 			// filtro posibles stopwords y stopphrases
-			nonStopWords = this.discriminator.processPhrase(new LinkedList<String>(phrase));
+			nonStopWords = this.discriminator.processPhrase(phrase);
 			
 			// agrego los terminos del lexico al indexer
 			this.indexer.addTerms(document, nonStopWords.toArray(new String[0]));
@@ -62,6 +62,8 @@ public class SimpleCrawler implements Crawler{
 		
 		// finalizo la sesion con el indexer
 		this.indexer.endSession();
+		
+		return null;
 	}
 
 }
