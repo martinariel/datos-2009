@@ -3,23 +3,17 @@ import java.io.IOException;
 import java.util.Collection;
 
 import ar.com.datos.audio.DocumentPlayer;
-import ar.com.datos.audio.DocumentRecorder;
 import ar.com.datos.audio.IWordsRecorderConector;
 import ar.com.datos.audio.WordsRecorder;
 import ar.com.datos.documentlibrary.Document;
 import ar.com.datos.documentlibrary.DocumentLibrary;
-import ar.com.datos.documentlibrary.FileSystemDocument;
 import ar.com.datos.file.variableLength.address.OffsetAddress;
 import ar.com.datos.file.variableLength.address.OffsetAddressSerializer;
 import ar.com.datos.indexer.SessionIndexer;
 import ar.com.datos.indexer.SimpleSessionIndexer;
 import ar.com.datos.persistencia.SoundPersistenceService;
 import ar.com.datos.persistencia.variableLength.SoundPersistenceServiceVariableLengthImpl;
-import ar.com.datos.wordservice.stopwords.SimpleStopWordsDiscriminator;
-import ar.com.datos.wordservice.stopwords.StopWordsDiscriminator;
 import ar.com.datos.wordservice.stopwords.StopWordsDiscriminatorBuilder;
-
-
 
 /**
  * Backend de la aplicacion
