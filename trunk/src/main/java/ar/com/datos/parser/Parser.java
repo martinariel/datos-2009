@@ -20,9 +20,9 @@ public class Parser implements Iterable<Collection<String>> {
 
     static {
     	separadores = new String[3];
-    	separadores[0] = ".";
+    	separadores[0] = "?";
     	separadores[1] = ";";
-    	separadores[2] = "?";
+    	separadores[2] = ".";
     	
     	//TODO: Todos los caracteres excepto
     	cadenaRegex = "[^a-zA-Z\\.\\;\\?]";
@@ -49,7 +49,15 @@ public class Parser implements Iterable<Collection<String>> {
      */
     public void initParser(){
         iniciado = true;
+        documento.close();
         documento.open();
+    }
+    
+    public void endParser(){
+    	if (iniciado){
+    		iniciado = false;
+    		documento.close();
+    	}
     }
 
     /**
@@ -91,20 +99,23 @@ public class Parser implements Iterable<Collection<String>> {
      * @return Posicion en el string del primer separador encontrado
      */
     private static int findSeparator(String linea){
-    	int i = 0;
     	int indice = -1;
     	
-    	while (indice < 0 && i < separadores.length){
-    		indice = linea.indexOf(separadores[i]);
-    		i++;
+    	int[] posiciones = new int[separadores.length];
+    	
+    	for (int i = 0; i < posiciones.length; i++){
+    		posiciones[i] = linea.indexOf(separadores[i]);
+    		//WTF??
+    		if ((posiciones[i] > -1 && posiciones[i] < indice) || indice == -1)
+    			indice = posiciones[i];
     	}
     	
     	return indice;
+    	
     }
     
    
-
-    public Collection<String> getCurrentWords(){
+    private Collection<String> getCurrentWords(){
         Collection<String> words = null;
 
         if (isStarted()){
@@ -153,4 +164,36 @@ public class Parser implements Iterable<Collection<String>> {
         return new ParserLineIterator(this);
     }
 
+    private class ParserLineIterator implements Iterator<Collection<String>> {
+
+        private Parser parser;
+        private Collection<String> words;
+
+
+        public ParserLineIterator(Parser parser){
+            this.parser = parser;
+        }
+
+        public boolean hasNext() {
+            if (!parser.isStarted()) parser.initParser();
+            words = parser.getCurrentWords();
+            
+            boolean resultado = (words != null);
+            
+            if (!resultado){
+            	parser.endParser();
+            }
+            
+            return resultado;
+        }
+
+        public Collection<String> next() {
+            return words;
+        }
+
+        public void remove() {
+             throw new UnsupportedOperationException();
+        }
+    }
+    
 }
