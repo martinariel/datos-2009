@@ -30,7 +30,7 @@ import ar.com.datos.serializer.exception.SerializerException;
  */
 public class InternalNodeSerializer<E extends Element<K>, K extends Key> implements Serializer<InternalNodeDisk<E, K>> {
 	/** Configuraciones del árbol entre las cuales está la configuración del nodo. */
-	protected BTreeSharpConfigurationDisk<E, K> bTreeSharpConfiguration;
+	private BTreeSharpConfigurationDisk<E, K> bTreeSharpConfiguration;
 	/** Serializador de direcciones. */
 	private AddressBlockSerializer addressSerializer;
 	/** Serializador de tipo de nodo */
