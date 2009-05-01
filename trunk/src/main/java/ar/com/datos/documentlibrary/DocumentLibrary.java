@@ -6,6 +6,7 @@ import ar.com.datos.serializer.common.StringSerializerDelimiter;
 
 /**
  * Libreria de documentos
+ * 
  */
 public class DocumentLibrary {
 	
@@ -18,7 +19,7 @@ public class DocumentLibrary {
 	/**
 	 * Devuelve un documento
 	 * @param offset
-	 * @return
+	 * @return Documento
 	 */
 	public Document get(OffsetAddress offset){
 		
@@ -33,7 +34,7 @@ public class DocumentLibrary {
 	/**
 	 * Agrega un documento a la libreria devolviendo su offset
 	 * @param document
-	 * @return
+	 * @return OffsetAdress
 	 */
 	public OffsetAddress add(Document document){
 		
@@ -43,6 +44,7 @@ public class DocumentLibrary {
 		for (String linea = document.readLine(); linea != null; linea = document.readLine()) {
             fileContent.append(linea);
         }
+		document.close();
 		
 		return documentFile.addEntity(fileContent.toString());
 	}

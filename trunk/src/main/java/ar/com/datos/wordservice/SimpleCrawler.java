@@ -3,13 +3,14 @@ package ar.com.datos.wordservice;
 import java.util.Set;
 import java.util.List;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.Collection;
 
 import ar.com.datos.parser.Parser;
 import ar.com.datos.indexer.SessionIndexer;
 import ar.com.datos.documentlibrary.Document;
+import ar.com.datos.documentlibrary.DocumentLibrary;
 import ar.com.datos.wordservice.stopwords.StopWordsDiscriminator;
+import ar.com.datos.file.variableLength.address.OffsetAddress;
 
 /**
  * Implementacion sencilla de Crawler.
@@ -23,31 +24,35 @@ import ar.com.datos.wordservice.stopwords.StopWordsDiscriminator;
  */
 public class SimpleCrawler implements Crawler{
 
-	private SessionIndexer<Document> indexer;
+	private SessionIndexer<OffsetAddress> indexer;
 	private Parser parser;
 	private StopWordsDiscriminator discriminator;
+	private DocumentLibrary documentLibrary;
 
 
-	public SimpleCrawler(SessionIndexer<Document> indexer, StopWordsDiscriminator discriminator){
+	public SimpleCrawler(SessionIndexer<OffsetAddress> indexer, StopWordsDiscriminator discriminator, DocumentLibrary documentLibrary){
 		this.indexer = indexer;
 		this.discriminator = discriminator;
+		this.documentLibrary = documentLibrary;
 	}
 	
 	
 	@Override
 	public Collection<String> addDocument(Document document) {
 		List<String> nonStopWords;
-		
+
 		// lexico completo (todos los terminos)
 		Set<String> allTerms = new HashSet<String>();
+		
+		// agrego el documento a la libreria
+		OffsetAddress offset = documentLibrary.add(document);
 		
 		// inicializo una sesion con el indexer
 		this.indexer.startSession();
 		
 		// inicializo el parser con este documento
 		this.parser = new Parser(document);
-		
-			
+					
 		// recorro las frases (ya normalizadas) del documento 
 		for(List<String> phrase: this.parser){
 			// Agrego los terminos normalizados al lexico
@@ -57,13 +62,13 @@ public class SimpleCrawler implements Crawler{
 			nonStopWords = this.discriminator.processPhrase(phrase);
 			
 			// agrego los terminos del lexico al indexer
-			this.indexer.addTerms(document, nonStopWords.toArray(new String[0]));
+			this.indexer.addTerms(offset, nonStopWords.toArray(new String[0]));
 		}
 		
 		// finalizo la sesion con el indexer
 		this.indexer.endSession();
 		
-		return null;
+		return allTerms;
 	}
 
 }

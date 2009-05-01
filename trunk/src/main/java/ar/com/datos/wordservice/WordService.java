@@ -5,11 +5,20 @@ import java.util.Collection;
 import ar.com.datos.audio.DocumentPlayer;
 import ar.com.datos.audio.DocumentRecorder;
 import ar.com.datos.audio.IWordsRecorderConector;
+import ar.com.datos.audio.WordsRecorder;
 import ar.com.datos.documentlibrary.Document;
 import ar.com.datos.documentlibrary.DocumentLibrary;
-import ar.com.datos.indexer.Indexer;
+import ar.com.datos.documentlibrary.FileSystemDocument;
+import ar.com.datos.file.variableLength.address.OffsetAddress;
+import ar.com.datos.file.variableLength.address.OffsetAddressSerializer;
+import ar.com.datos.indexer.SessionIndexer;
+import ar.com.datos.indexer.SimpleSessionIndexer;
 import ar.com.datos.persistencia.SoundPersistenceService;
 import ar.com.datos.persistencia.variableLength.SoundPersistenceServiceVariableLengthImpl;
+import ar.com.datos.wordservice.stopwords.SimpleStopWordsDiscriminator;
+import ar.com.datos.wordservice.stopwords.StopWordsDiscriminator;
+import ar.com.datos.wordservice.stopwords.StopWordsDiscriminatorBuilder;
+
 
 
 /**
@@ -20,7 +29,7 @@ public class WordService {
 
     private Crawler crawler;
     private SoundPersistenceService persistenciaAudio;
-    private Indexer<Document> indexer;
+    private SessionIndexer<OffsetAddress> indexer;
     private DocumentLibrary documentLibrary;
     
     public WordService (String directorioArchivos){
@@ -29,26 +38,24 @@ public class WordService {
         persistenciaAudio = new SoundPersistenceServiceVariableLengthImpl(
                 directorioArchivos + "palabras",
                 directorioArchivos + "sonidos"
-                );
-        //TODO instanciar Indexer y crawler
+        );
         
         documentLibrary = new DocumentLibrary ( directorioArchivos + "documentos");
+        
+        indexer = new SimpleSessionIndexer<OffsetAddress>(directorioArchivos + "indice", new OffsetAddressSerializer());
        
+        crawler = new SimpleCrawler(indexer, StopWordsDiscriminatorBuilder.buildStopWords(directorioArchivos), documentLibrary);
+    
     }
+    
 
     /**
      * TODO: Agrega un documento al indexador
      * @param document
      */
     public void addDocument(Document document , IWordsRecorderConector vista){
-        DocumentRecorder recorder = new DocumentRecorder(vista, persistenciaAudio);
-        try {
-            recorder.record(document);
-        }
-        catch (Exception e){
-            vista.sendMessage("Audio device busy");
-        }
-        crawler.addDocument(document);
+    	WordsRecorder recorder = new WordsRecorder(vista, persistenciaAudio);
+    	recorder.recordWords(crawler.addDocument(document));
     }
 
 
