@@ -124,7 +124,7 @@ public class VariableLengthWithCache<T> extends VariableLengthFileManager<T> {
 	 * @return
 	 */
 	private void fillLastBlockBufferWith(InputBuffer iBuffer, Long lastBlockNumber, Integer cantidadRegistros) {
-		this.setCachedLastBlock(new HydratedBlock<T>(new ArrayList<T>(), lastBlockNumber, BlockFile.END_BLOCK));
+		this.setCachedLastBlock(new HydratedBlock<T>(new ArrayList<T>(), lastBlockNumber, getRealFile()));
 		if (lastBlockNumber != BlockFile.END_BLOCK) {
 			this.getLastBlockWriter().addAvailableBlock(lastBlockNumber);
 			for (Integer i = 0; i < cantidadRegistros; i++) {

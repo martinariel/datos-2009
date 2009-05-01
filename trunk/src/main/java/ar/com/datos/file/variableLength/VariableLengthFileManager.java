@@ -144,7 +144,7 @@ public class VariableLengthFileManager<T> implements BlockAccessor<BlockAddress<
 	 * @return
 	 */
 	protected HydratedBlock<T> getBlock(Long blockNumber) {
-		if (this.isEmpty()) return new HydratedBlock<T>(new ArrayList<T>(0),0L, BlockFile.END_BLOCK); 
+		if (this.isEmpty()) return new HydratedBlock<T>(new ArrayList<T>(0),0L, getRealFile()); 
 
 		getBlockReader().readBlock(blockNumber);
 		
@@ -155,7 +155,7 @@ public class VariableLengthFileManager<T> implements BlockAccessor<BlockAddress<
 			li.add(this.getSerializador().hydrate(data));
 		}
 		
-		return new HydratedBlock<T>(li, getBlockNumbers(getBlockReader()), getBlockReader().getNextBlockNumber());
+		return new HydratedBlock<T>(li, getBlockNumbers(getBlockReader()), getRealFile());
 	}
 	private List<Long> getBlockNumbers(BlockReader blockReader2) {
 		List<Long> blockNumbers = new ArrayList<Long>(blockReader2.getMetaData().size());

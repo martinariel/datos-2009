@@ -2,8 +2,6 @@ package ar.com.datos.persistencia.variableLength;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 import ar.com.datos.buffer.InputBuffer;
 import ar.com.datos.buffer.SimpleInputBuffer;
@@ -114,27 +112,4 @@ public class BlockReader {
 		this.fullBlockMeta.add(blockMetaData);
 	}
 
-	public Long getNextBlockNumber() {
-		retrieveAllInformation();
-		Long minimo = this.fullBlockMeta.get(0).getBlockNumber() + 1L;
-
-		SortedSet<Long> valores = new TreeSet<Long>();
-		for (BlockMetaData bmd : this.fullBlockMeta) {
-			if (minimo <= bmd.getBlockNumber()) valores.add(bmd.getBlockNumber());
-		}
-		for (Long valor: valores) {
-			if (valor > minimo) break;
-			minimo += 1;
-		}
-		BlockReader auxBlockReader = new BlockReader(getBlockFile());
-		while (minimo < getBlockFile().getTotalBlocks()) {
-			auxBlockReader.readBlock(minimo);
-			if (auxBlockReader.isBlockHead()) break;
-			minimo += 1;
-		}
-		
-		if (minimo.equals(getBlockFile().getTotalBlocks())) return BlockFile.END_BLOCK;
-		
-		return minimo;
-	}
 }
