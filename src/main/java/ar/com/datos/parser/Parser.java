@@ -2,14 +2,14 @@ package ar.com.datos.parser;
 
 import java.util.Iterator;
 import ar.com.datos.documentlibrary.Document;
-import java.util.Collection;
+import java.util.List;
 import java.util.LinkedList;
 
 /**
  * @author mfernandez
- *
+ * 
  */
-public class Parser implements Iterable<Collection<String>> {
+public class Parser implements Iterable<List<String>> {
 
     private Document documento;
     private boolean iniciado;
@@ -115,8 +115,8 @@ public class Parser implements Iterable<Collection<String>> {
     }
     
    
-    private Collection<String> getCurrentWords(){
-        Collection<String> words = null;
+    private List<String> getCurrentWords(){
+        List<String> words = null;
 
         if (isStarted()){
         	
@@ -160,14 +160,14 @@ public class Parser implements Iterable<Collection<String>> {
         return words;
     }
 
-    public Iterator<Collection<String>> iterator(){
+    public Iterator<List<String>> iterator(){
         return new ParserLineIterator(this);
     }
 
-    private class ParserLineIterator implements Iterator<Collection<String>> {
+    private class ParserLineIterator implements Iterator<List<String>> {
 
         private Parser parser;
-        private Collection<String> words;
+        private List<String> words;
 
 
         public ParserLineIterator(Parser parser){
@@ -187,7 +187,7 @@ public class Parser implements Iterable<Collection<String>> {
             return resultado;
         }
 
-        public Collection<String> next() {
+        public List<String> next() {
             return words;
         }
 
