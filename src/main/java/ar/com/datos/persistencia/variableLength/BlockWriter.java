@@ -41,9 +41,11 @@ public class BlockWriter implements RestrictedBufferRealeaser, OutputBuffer {
 	private Long lastHeadWritten = BlockFile.END_BLOCK;
 	private FlushListener flushListener;
 	private SimpleRestrictedOutputBuffer simpleRestrictedOutputBuffer;
+	private Boolean flushed;
 	public BlockWriter(BlockFile fileBlock) {
 		this.fileBlock = fileBlock;
 		this.simpleRestrictedOutputBuffer = new SimpleRestrictedOutputBuffer(getSimpleDataSize(), this);
+		setFlushed(true);
 	}
 
 	public void addAvailableBlock(Long blockNumber) {
@@ -62,7 +64,7 @@ public class BlockWriter implements RestrictedBufferRealeaser, OutputBuffer {
 
 	public void flush() {
 		// Nothing to flush
-		if (this.getOutputBuffer().getEntitiesCount() == 0) return;
+		if (this.getOutputBuffer().getEntitiesCount() == 0 || getFlushed()) return;
 		
 		Deque<Collection<ArrayByte>> retrieveEntities = this.simpleRestrictedOutputBuffer.retrieveEntities();
 		writeExistentOneBlock(retrieveEntities);
@@ -88,7 +90,9 @@ public class BlockWriter implements RestrictedBufferRealeaser, OutputBuffer {
 	@Override
 	public void release(RestrictedOutputBuffer ob) {
 		if (isReplaceRequiredEnabled()) {
-			requireReplace(ob);
+			if (!this.simpleRestrictedOutputBuffer.getCurrentSize().equals(getSimpleDataSize())) {
+				requireReplace(ob);
+			}
 		} else {
 			simpleRelease(ob);
 		}
@@ -101,7 +105,11 @@ public class BlockWriter implements RestrictedBufferRealeaser, OutputBuffer {
 			writeExistentOneBlock(d);
 			writeExistent(last, ob);
 		} else {
-			writeExistentMultipleBlock(last);
+			if (!this.simpleRestrictedOutputBuffer.getCurrentSize().equals(getSimpleDataSize()))
+				writeExistentMultipleBlock(last);
+			else {
+				writeExistentOneBlock(last);
+			}
 		}
 		notifyFlushListeners();
 	}
@@ -123,14 +131,18 @@ public class BlockWriter implements RestrictedBufferRealeaser, OutputBuffer {
 		Integer total = 0;
 		for (ArrayByte ab: last) total += ab.getLength();
 		if (total <= getSimpleDataSize()) {
-			Deque<Collection<ArrayByte>> d = new ArrayDeque<Collection<ArrayByte>>(1);
-			d.add(last);
-			writeExistentOneBlock(d);
+			writeExistentOneBlock(last);
 			this.availableBlocks.add(this.lastHeadWritten);
 			ob.addEntity(last);
 		} else {
 			writeExistentMultipleBlock(last);
 		}
+	}
+
+	private void writeExistentOneBlock(Collection<ArrayByte> last) {
+		Deque<Collection<ArrayByte>> d = new ArrayDeque<Collection<ArrayByte>>(1);
+		d.add(last);
+		writeExistentOneBlock(d);
 	}
 
 	private void writeExistentMultipleBlock(Collection<ArrayByte> datos) {
@@ -210,6 +222,7 @@ public class BlockWriter implements RestrictedBufferRealeaser, OutputBuffer {
 	}
 
 	private void notifyFlushListeners() {
+		setFlushed(true);
 		if (this.flushListener != null) this.flushListener.flushed();
 	}
 
@@ -231,11 +244,13 @@ public class BlockWriter implements RestrictedBufferRealeaser, OutputBuffer {
 
 	@Override
 	public void write(byte[] data) {
+		setFlushed(false);
 		this.getOutputBuffer().write(data);
 	}
 
 	@Override
 	public void write(byte data) {
+		setFlushed(false);
 		this.getOutputBuffer().write(data);
 	}
 
@@ -247,21 +262,6 @@ public class BlockWriter implements RestrictedBufferRealeaser, OutputBuffer {
 		Short entitiesCount = this.getOutputBuffer().getEntitiesCount();
 		return new VariableLengthAddress(this.lastHeadWritten, (entitiesCount == 0)? 0 : --entitiesCount);
 	}
-//	public Long getCurrentWrittingBlock() {
-//		if (lastHeadWritten.equals(BlockFile.END_BLOCK)) {
-//			if (availableBlocks.isEmpty()) {
-//				flush();
-//			} else {
-//				lastHeadWritten = availableBlocks.first();
-//			}
-//		}
-//		return this.lastHeadWritten;
-//	}
-//	public Short getCurrentWrittingEntityNumber() {
-//		Short entitiesCount = this.getOutputBuffer().getEntitiesCount();
-//		return (entitiesCount == 0)? 1 : entitiesCount;
-//	}
-//	
 
 	public Integer getEntitiesCount() {
 		return this.simpleRestrictedOutputBuffer.getEntitiesCount().intValue();
@@ -272,7 +272,16 @@ public class BlockWriter implements RestrictedBufferRealeaser, OutputBuffer {
 	}
 
 	public void clearBuffer() {
+		setFlushed(true);
 		this.simpleRestrictedOutputBuffer = new SimpleRestrictedOutputBuffer(getSimpleDataSize(), this);
+	}
+
+	protected Boolean getFlushed() {
+		return flushed;
+	}
+
+	protected void setFlushed(Boolean flushed) {
+		this.flushed = flushed;
 	}
 
 }
