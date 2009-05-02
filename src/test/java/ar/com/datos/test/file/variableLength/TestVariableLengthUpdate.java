@@ -142,7 +142,7 @@ public class TestVariableLengthUpdate extends MockObjectTestCase {
 		fileStub.extendTo(5);
 		List<String> datos = new ArrayList<String>(1);
 		datos.add("objeto a modificar");
-		bloquesHidratados.put(2, new HydratedBlock<String>(datos, 2L, 3L));
+		bloquesHidratados.put(2, new HydratedBlockStub<String>(datos, 2L, 3L));
 		checking(new Expectations(){{
 			one(serializerMock).dehydrate(with(any(OutputBuffer.class)), with("objeto modificado"));
 			will(consume(masDeUnBloque));
@@ -164,7 +164,7 @@ public class TestVariableLengthUpdate extends MockObjectTestCase {
 		List<Long> bloquesOriginales = new ArrayList<Long>(2);
 		bloquesOriginales.add(2L);
 		bloquesOriginales.add(3L);
-		bloquesHidratados.put(2, new HydratedBlock<String>(datos, bloquesOriginales , 3L));
+		bloquesHidratados.put(2, new HydratedBlockStub<String>(datos, bloquesOriginales , 3L));
 		checking(new Expectations(){{
 			one(serializerMock).dehydrate(with(any(OutputBuffer.class)), with("objeto modificado"));
 			will(consume(masDeUnBloque));
@@ -192,8 +192,7 @@ public class TestVariableLengthUpdate extends MockObjectTestCase {
 		otroAccessor.updateEntity(address, "objeto uno modificado");
 		otroAccessor.addEntity("objeto uno modificado");
 		assertEquals("objeto uno modificado", otroAccessor.get(address));
-		// XXX debería escribir menos veces
-		assertWrittens(0L,0L,0L,0L);
+		assertWrittens(0L,0L,0L);
 	}
 	private void configuracionVariosEnUnBloque() {
 		fileStub.extendTo(5);
@@ -202,7 +201,7 @@ public class TestVariableLengthUpdate extends MockObjectTestCase {
 		datos.add("objeto uno a modificar");
 		datos.add("objeto dos");
 		datos.add("objeto tres");
-		bloquesHidratados.put(2, new HydratedBlock<String>(datos, 2L, 3L));
+		bloquesHidratados.put(2, new HydratedBlockStub<String>(datos, 2L, 3L));
 	}
 	private Action consume(final Integer tamanioAConsumir) {
 		return new CustomAction("consumo:" + tamanioAConsumir.toString()) {

@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 
 import org.jmock.Expectations;
+import org.jmock.api.Action;
 import org.jmock.api.Invocation;
 import org.jmock.integration.junit3.MockObjectTestCase;
 import org.jmock.lib.action.CustomAction;
@@ -67,8 +68,10 @@ public class TestVariableLengthWithCache extends MockObjectTestCase {
 		campos2.add(2);
 		checking(new Expectations(){{
 			one(serializerMock).dehydrate(with(any(OutputBuffer.class)), with(campos1));
+			will(consume(1));
 			one(serializerMock).dehydrate(with(any(OutputBuffer.class)), with(campos2));
-			allowing(fileMock).writeBlock(with(0L), with(any(Collection.class)));
+			will(consume(1));
+			atMost(2).of(fileMock).writeBlock(with(0L), with(any(Collection.class)));
 		}});
 		VariableLengthWithCache unDynamicAccesor = crearArchivo();
 		assertFalse(unDynamicAccesor.iterator().hasNext());
@@ -103,6 +106,7 @@ public class TestVariableLengthWithCache extends MockObjectTestCase {
 			allowing(serializerMock).hydrate(with(any(InputBuffer.class)));
 			will(returnValue(campos));
 			allowing(serializerMock).dehydrate(with(any(OutputBuffer.class)), with(campos));
+			will(consume(1));
 		}});
 		VariableLengthWithCache unDynamicAccesor = crearArchivo();
 		BlockAddress<Long, Short> direccion = unDynamicAccesor.addEntity(campos);
@@ -129,7 +133,8 @@ public class TestVariableLengthWithCache extends MockObjectTestCase {
 			will(returnValue(bloque));
 			// Deserialización del registro que agrego 
 			one(serializerMock).dehydrate(with(any(OutputBuffer.class)), with(campos));
-			allowing(fileMock).writeBlock(with(cantidadDeBloquesEnFileMock), with(any(Collection.class)));
+			will(consume(1));
+			one(fileMock).writeBlock(with(cantidadDeBloquesEnFileMock), with(any(Collection.class)));
 		}});
 		VariableLengthWithCache unDynamicAccesor = crearArchivo();
 		BlockAddress<Long, Short> direccion = unDynamicAccesor.addEntity(campos);
@@ -167,7 +172,8 @@ public class TestVariableLengthWithCache extends MockObjectTestCase {
 			will(returnValue(campos1));
 			one(serializerMock).hydrate(with(any(InputBuffer.class)));
 			will(returnValue(campos2));
-			allowing(fileMock).readBlock(2L);
+			// XXX ver si se puede evitar esta lectura
+			one(fileMock).readBlock(2L);
 			will(returnValue(bloqueFinal));
 		}});
 		DynamicAccesor unDynamicAccesor = crearArchivo();
@@ -204,7 +210,8 @@ public class TestVariableLengthWithCache extends MockObjectTestCase {
 			will(returnValue(bloqueFinal));
 			one(serializerMock).hydrate(with(any(InputBuffer.class)));
 			will(returnValue(campos1));
-			allowing(fileMock).readBlock(2L);
+			// XXX ver si se puede evitar esta lectura
+			one(fileMock).readBlock(2L);
 			will(returnValue(bloqueFinal));
 		}});
 		VariableLengthWithCache unDynamicAccesor = crearArchivo();
@@ -342,7 +349,7 @@ public class TestVariableLengthWithCache extends MockObjectTestCase {
 					return null;
 				}
 			});
-			// Graba dos veces el mismo bloque porque hace un flush para asegurarse la posición del registro agregado
+			// XXX Graba dos veces el mismo bloque porque hace un flush para asegurarse la posición del registro agregado
 			one(fileMock).writeBlock(with(0L), with(equal(bloque1)));
 			one(serializerMock).dehydrate(with(any(OutputBuffer.class)), with(campos));
 			will(new CustomAction("deshidratar") {
@@ -415,7 +422,7 @@ public class TestVariableLengthWithCache extends MockObjectTestCase {
 		VariableLengthWithCache unVLFM = crearArchivo();
 		unVLFM.close();
 		checking(new Expectations(){{
-			atLeast(1).of(fileMock).writeBlock(with(0L), with(equal(bloque)));
+			one(fileMock).writeBlock(with(0L), with(equal(bloque)));
 			will(new CustomAction("writeBlock") {
 				@Override
 				public Object invoke(Invocation invocation) throws Throwable {
@@ -477,5 +484,18 @@ public class TestVariableLengthWithCache extends MockObjectTestCase {
 			return null;
 		}
 		
+	}
+	private Action consume(final Integer tamanioAConsumir) {
+		return new CustomAction("consumo:" + tamanioAConsumir.toString()) {
+		
+			@Override
+			public Object invoke(Invocation invocation) throws Throwable {
+				OutputBuffer buffer = (OutputBuffer)invocation.getParameter(0);
+				
+				buffer.write(new byte[tamanioAConsumir]);
+				return null;
+			}
+		
+		};
 	}
 }
