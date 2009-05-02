@@ -7,6 +7,7 @@ import ar.com.datos.btree.elements.Element;
 import ar.com.datos.file.address.BlockAddress;
 import ar.com.datos.file.variableLength.address.OffsetAddress;
 import ar.com.datos.indexer.SimpleSessionIndexer;
+import ar.com.datos.util.Tuple;
 import ar.com.datos.utils.sort.external.KeyCount;
 /**
  * Elemento para las hojas del árbol que utiliza el {@link SimpleSessionIndexer}
@@ -41,11 +42,11 @@ public class IndexerTreeElement<T> implements Element<IndexerTreeKey> {
 		Collection<KeyCount<T>> nuevaLista = newElement.temporalCount;
 		BlockAddress<Long, Short> currentAddress = this.getDataCountAddress();
 		if (currentAddress == null) {
-			this.setDataCountAddress(newElement.indexer.getListsForTerms().addEntity(nuevaLista));
+			this.setDataCountAddress(newElement.indexer.getListsForTerms().addEntity(new Tuple<OffsetAddress, Collection<KeyCount<T>>>(this.getAddressInLexicon(), nuevaLista)));
 		} else {
-			Collection<KeyCount<T>> previousDataCount = newElement.indexer.getListsForTerms().get(this.getDataCountAddress());
-			previousDataCount.addAll(nuevaLista);
-			this.setDataCountAddress(newElement.indexer.getListsForTerms().updateEntity(currentAddress, previousDataCount));
+			Tuple<OffsetAddress, Collection<KeyCount<T>>> previousList = newElement.indexer.getListsForTerms().get(this.getDataCountAddress());
+			previousList.getSecond().addAll(nuevaLista);
+			this.setDataCountAddress(newElement.indexer.getListsForTerms().updateEntity(currentAddress, previousList));
 		}
 		return !this.getDataCountAddress().equals(currentAddress);
 	}

@@ -8,10 +8,12 @@ import java.util.Collection;
 import ar.com.datos.btree.BTree;
 import ar.com.datos.btree.BTreeSharpFactory;
 import ar.com.datos.btree.sharp.impl.disk.ElementAndKeyListSerializerFactory;
-import ar.com.datos.file.variableLength.VariableLengthFileManager;
+import ar.com.datos.file.BlockAccessor;
+import ar.com.datos.file.address.BlockAddress;
 import ar.com.datos.file.variableLength.VariableLengthWithCache;
 import ar.com.datos.file.variableLength.address.OffsetAddress;
 import ar.com.datos.file.variableLength.address.OffsetAddressSerializer;
+import ar.com.datos.indexer.lexic.LexicalManager;
 import ar.com.datos.indexer.serializer.IndexerSerializerFactory;
 import ar.com.datos.indexer.serializer.KeyCountSerializer;
 import ar.com.datos.indexer.tree.IndexerTreeElement;
@@ -50,7 +52,7 @@ public class SimpleSessionIndexer<T> implements SessionIndexer<T>, Closeable {
 	private Serializer<T> indexedSerializer;
 
 	private LexicalManager lexicon;
-	private VariableLengthFileManager<Collection<KeyCount<T>>> listsForTerms;
+	private BlockAccessor<BlockAddress<Long, Short>, Tuple<OffsetAddress, Collection<KeyCount<T>>>> listsForTerms;
 	private BTree<IndexerTreeElement<T>, IndexerTreeKey> indexedElements;
 
 	// Usado solamente durante la sesión de agregado de palabras
@@ -128,10 +130,10 @@ public class SimpleSessionIndexer<T> implements SessionIndexer<T>, Closeable {
 	}
 	@Override
 	public Collection<KeyCount<T>> findTerm(String string) {
-		return this.listsForTerms.get(this.indexedElements.findElement(new IndexerTreeKey(string)).getDataCountAddress());
+		return this.listsForTerms.get(this.indexedElements.findElement(new IndexerTreeKey(string)).getDataCountAddress()).getSecond();
 	}
 
-	public VariableLengthFileManager<Collection<KeyCount<T>>> getListsForTerms() {
+	public BlockAccessor<BlockAddress<Long, Short>, Tuple<OffsetAddress, Collection<KeyCount<T>>>> getListsForTerms() {
 		return listsForTerms;
 	}
 
@@ -152,8 +154,9 @@ public class SimpleSessionIndexer<T> implements SessionIndexer<T>, Closeable {
 		return new LexicalManager(fileName + LEXICON_SUFFIX);
 	}
 
-	protected VariableLengthFileManager<Collection<KeyCount<T>>> constructListForTerms(String fileName) {
-		return new VariableLengthWithCache<Collection<KeyCount<T>>>(fileName + LIST_SUFFIX, LIST_BLOCK_SIZE, new CollectionSerializer<KeyCount<T>>(new KeyCountSerializer<T>(this.indexedSerializer)));
+	protected BlockAccessor<BlockAddress<Long, Short>, Tuple<OffsetAddress, Collection<KeyCount<T>>>> constructListForTerms(String fileName) {
+		return new VariableLengthWithCache<Tuple<OffsetAddress, Collection<KeyCount<T>>>>(fileName + LIST_SUFFIX, LIST_BLOCK_SIZE, 
+				new TupleSerializer<OffsetAddress, Collection<KeyCount<T>>>(new OffsetAddressSerializer(), new CollectionSerializer<KeyCount<T>>(new KeyCountSerializer<T>(this.indexedSerializer))));
 	}
 
 	@SuppressWarnings("unchecked")
