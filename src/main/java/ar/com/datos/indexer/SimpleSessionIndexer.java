@@ -172,5 +172,9 @@ public class SimpleSessionIndexer<T> implements SessionIndexer<T>, Closeable {
 		this.lexicon.close();
 		this.listsForTerms.close();
 	}
+	@Override
+	public Long getNumberOfIndexedTerms() {
+		return this.lexicon.getNumberOfTerms();
+	}
 
 }

@@ -31,4 +31,8 @@ public interface Indexer<T> {
 	 */
 	public Collection<KeyCount<T>> findTerm(String term);
 
+	/**
+	 * @return cantidad de terminos diferentes que se ingresaron al indexador
+	 */
+	public Long getNumberOfIndexedTerms();
 }
