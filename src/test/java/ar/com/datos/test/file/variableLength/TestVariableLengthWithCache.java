@@ -349,8 +349,6 @@ public class TestVariableLengthWithCache extends MockObjectTestCase {
 					return null;
 				}
 			});
-			// XXX Graba dos veces el mismo bloque porque hace un flush para asegurarse la posición del registro agregado
-			one(fileMock).writeBlock(with(0L), with(equal(bloque1)));
 			one(serializerMock).dehydrate(with(any(OutputBuffer.class)), with(campos));
 			will(new CustomAction("deshidratar") {
 				@Override

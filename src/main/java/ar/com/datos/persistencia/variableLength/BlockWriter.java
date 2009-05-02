@@ -67,7 +67,13 @@ public class BlockWriter implements RestrictedBufferRealeaser, OutputBuffer {
 		if (this.getOutputBuffer().getEntitiesCount() == 0 || getFlushed()) return;
 		
 		Deque<Collection<ArrayByte>> retrieveEntities = this.simpleRestrictedOutputBuffer.retrieveEntities();
-		writeExistentOneBlock(retrieveEntities);
+		if (this.availableBlocks.size() > 1) {
+			// En los únicos casos que voy a tener mas de un bloque disponible es cuando hay una sola entidad
+			// La razón por la cual la entidad no forzó flush es porque se acortó (era una actualización)
+			writeExistentMultipleBlock(retrieveEntities.getFirst());
+		} else {
+			writeExistentOneBlock(retrieveEntities);
+		}
 		for (Collection<ArrayByte> entidad : retrieveEntities) {
 			this.simpleRestrictedOutputBuffer.addEntity(entidad);
 		}
@@ -99,13 +105,14 @@ public class BlockWriter implements RestrictedBufferRealeaser, OutputBuffer {
 	}
 
 	private void simpleRelease(RestrictedOutputBuffer ob) {
+		Integer loadedSize = this.simpleRestrictedOutputBuffer.getCurrentSize();
 		Deque<Collection<ArrayByte>> d = ob.retrieveEntities();
 		Collection<ArrayByte> last = d.removeLast();
 		if (!d.isEmpty()) {
 			writeExistentOneBlock(d);
 			writeExistent(last, ob);
 		} else {
-			if (!this.simpleRestrictedOutputBuffer.getCurrentSize().equals(getSimpleDataSize()))
+			if (!loadedSize.equals(getSimpleDataSize()) || this.availableBlocks.size() > 1)
 				writeExistentMultipleBlock(last);
 			else {
 				writeExistentOneBlock(last);
@@ -160,7 +167,7 @@ public class BlockWriter implements RestrictedBufferRealeaser, OutputBuffer {
 			Long bloqueActual = availableBlocks.first();
 			Collection<ArrayByte> segmento = it.next();
 			availableBlocks.remove(bloqueActual);
-			Long proximoBloque = it.hasNext()? availableBlocks.first() : bloqueActual;
+			Long proximoBloque = !availableBlocks.isEmpty()? availableBlocks.first() : bloqueActual;
 			segmento.add(new SimpleArrayByte(PrimitiveTypeSerializer.toByte(proximoBloque)));
 			segmento.add(new SimpleArrayByte(PrimitiveTypeSerializer.toByte((short)(first? -1:0))));
 			this.fileBlock.writeBlock(bloqueActual, segmento);
