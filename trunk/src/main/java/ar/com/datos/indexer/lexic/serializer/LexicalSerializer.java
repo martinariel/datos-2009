@@ -1,8 +1,8 @@
-package ar.com.datos.indexer.serializer;
+package ar.com.datos.indexer.lexic.serializer;
 
 import ar.com.datos.buffer.InputBuffer;
 import ar.com.datos.buffer.OutputBuffer;
-import ar.com.datos.indexer.LexicalData;
+import ar.com.datos.indexer.lexic.LexicalData;
 import ar.com.datos.serializer.Serializer;
 import ar.com.datos.serializer.exception.SerializerException;
 

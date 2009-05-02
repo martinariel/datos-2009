@@ -1,4 +1,4 @@
-package ar.com.datos.indexer;
+package ar.com.datos.indexer.lexic;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -6,7 +6,7 @@ import java.io.IOException;
 import ar.com.datos.file.exception.OutOfBoundsException;
 import ar.com.datos.file.variableLength.StraightVariableLengthFile;
 import ar.com.datos.file.variableLength.address.OffsetAddress;
-import ar.com.datos.indexer.serializer.LexicalSerializer;
+import ar.com.datos.indexer.lexic.serializer.LexicalSerializer;
 /**
  * Administrador del léxico completo.
  * Es un thin-Wrapper de un archivo secuencial de acceso dinámico no actualizable

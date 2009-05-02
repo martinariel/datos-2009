@@ -2,8 +2,8 @@ package ar.com.datos.test.indexer;
 
 import ar.com.datos.file.variableLength.StraightVariableLengthFile;
 import ar.com.datos.file.variableLength.address.OffsetAddress;
-import ar.com.datos.indexer.LexicalData;
-import ar.com.datos.indexer.LexicalManager;
+import ar.com.datos.indexer.lexic.LexicalData;
+import ar.com.datos.indexer.lexic.LexicalManager;
 import junit.framework.TestCase;
 
 public class TestLexicalManager extends TestCase {

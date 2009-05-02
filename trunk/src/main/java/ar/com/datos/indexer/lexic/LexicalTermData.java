@@ -1,4 +1,4 @@
-package ar.com.datos.indexer;
+package ar.com.datos.indexer.lexic;
 
 public class LexicalTermData implements LexicalData {
 
