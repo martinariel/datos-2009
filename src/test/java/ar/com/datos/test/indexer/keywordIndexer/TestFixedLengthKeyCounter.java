@@ -61,7 +61,7 @@ public class TestFixedLengthKeyCounter extends TestCase {
 		};
 		contador.startSession();
 		Random r = new Random();
-		for (Integer i = 0; i < 1934; i++) {
+		for (Integer i = 0; i < 5000; i++) {
 			Long random = Math.abs(r.nextLong() % 1024);
 			contarEnMapa(resultadosEsperados, random);
 			contador.countKey(random);

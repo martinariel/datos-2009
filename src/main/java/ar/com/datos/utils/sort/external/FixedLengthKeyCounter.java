@@ -25,7 +25,7 @@ import ar.com.datos.wordservice.SessionHandler;
  */
 public class FixedLengthKeyCounter<T> implements SessionHandler, Iterable<KeyCount<T>> {
 
-	private static final Integer DEFAULT_AMMOUNT_OF_BLOCKS = 60;
+	private static final Integer DEFAULT_AMMOUNT_OF_BLOCKS = 2048;
 	protected static final IntegerSerializer countSerializer = SerializerCache.getInstance().getSerializer(IntegerSerializer.class);
 	private Serializer<T> serializer;
 	private BlockFile data;
