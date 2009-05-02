@@ -63,15 +63,6 @@ public class RootNodeSerializer<E extends Element<K>, K extends Key> implements 
 	 */
 	@Override
 	public void dehydrate(OutputBuffer output, RootNodeDisk<E, K> object) throws SerializerException {
-		// Debo hacer que el nodo tenga el tamaño de un bloque. Le agregaré al final basura hasta llenarlo.
-		int trashSize = (int)(this.bTreeSharpConfiguration.getMaxCapacityRootNode() - 1 - getDehydrateSize(object));
-		
-		if (trashSize < 0) {
-			throw new SerializerException(this.getClass().getCanonicalName() + ": Se intenta grabar un nodo de un " +
-					"tamaño mayor al permitido. Esto se debe a que la key puede ser demasiado grande para el" +
-					"tamaño que se definió para el nodo.");
-		}
-		
 		// Primero armo listas por separado de Keys y NodeReferences
 		List<K> keys = new LinkedList<K>();
 		List<NodeReferenceDisk<E, K>> nodeReferences = new LinkedList<NodeReferenceDisk<E,K>>();
@@ -97,10 +88,6 @@ public class RootNodeSerializer<E extends Element<K>, K extends Key> implements 
 		Iterator<NodeReferenceDisk<E, K>> itNodeReferences = nodeReferences.iterator();
 		while (itNodeReferences.hasNext()) {
 			this.addressSerializer.dehydrate(output, itNodeReferences.next().getNodeAddress());
-		}
-		
-		if (trashSize > 0) {
-			output.write(new byte[trashSize]);
 		}
 	}
 
@@ -136,12 +123,6 @@ public class RootNodeSerializer<E extends Element<K>, K extends Key> implements 
 		}
 		
 		RootNodeDisk<E, K> returnValue = new RootNodeDisk<E, K>(this.bTreeSharpConfiguration, firstChild, keysNodes);
-		
-		// Vacio el buffer de información basura que había dejado al final.
-		int trashSize = (int)(this.bTreeSharpConfiguration.getMaxCapacityRootNode() - 1 - getDehydrateSize(returnValue));
-		if (trashSize > 0) {
-			input.read(new byte[trashSize]);
-		}
 		
 		return returnValue;
 	}

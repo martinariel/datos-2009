@@ -2,7 +2,6 @@ package ar.com.datos.test.btree.sharp;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -70,9 +69,9 @@ public class TestBTreeSharpDisk extends ExtendedTestCase {
 //		}
 //	}
 	
-	/**
-	 * Test intensivo. Puede tardar MUCHO (muchas horas y horas y horas) 
-	 */
+//	/**
+//	 * Test intensivo. Puede tardar MUCHO (muchas horas y horas y horas) 
+//	 */
 //	public void testIntensivo() {
 //		BTreeSharpFactory<TestElementDisk, TestKeyDisk> bTreeSharpFactory = new BTreeSharpFactory<TestElementDisk, TestKeyDisk>();
 //		int blockSize = 131072;

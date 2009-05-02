@@ -109,12 +109,14 @@ public class FrontCodingSerializer implements Serializer<List<String>>{
 		previousWord = "";
 		Iterator<String> it = words.iterator();
 		short currentPosition;
+		int shortestWordLenght;
 		while (it.hasNext()) {
 			currentWord = it.next();
 			currentPosition = 0;
+			shortestWordLenght = (currentWord.length() > previousWord.length()) ? previousWord.length() : currentWord.length();
 			// Recorro la palabra letra por letra buscando la primera posición en la que no haya
 			// coincidencia.
-			while (currentPosition < currentWord.length() && currentPosition < previousWord.length() && 
+			while (currentPosition < shortestWordLenght && 
 					currentWord.charAt(currentPosition) == previousWord.charAt(currentPosition)) {
 				currentPosition++; 
 			}
