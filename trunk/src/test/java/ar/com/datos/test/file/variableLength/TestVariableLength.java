@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 
 import org.jmock.Expectations;
+import org.jmock.api.Action;
 import org.jmock.api.Invocation;
 import org.jmock.integration.junit3.MockObjectTestCase;
 import org.jmock.lib.action.CustomAction;
@@ -68,7 +69,9 @@ public class TestVariableLength extends MockObjectTestCase {
 		campos2.add(2);
 		checking(new Expectations(){{
 			one(serializerMock).dehydrate(with(any(OutputBuffer.class)), with(campos1));
+			will(consume(1));
 			one(serializerMock).dehydrate(with(any(OutputBuffer.class)), with(campos2));
+			will(consume(1));
 			one(serializerMock).hydrate(with(any(InputBuffer.class)));
 			will(returnValue(campos1));
 			one(serializerMock).hydrate(with(any(InputBuffer.class)));
@@ -118,6 +121,7 @@ public class TestVariableLength extends MockObjectTestCase {
 			allowing(serializerMock).hydrate(with(any(InputBuffer.class)));
 			will(returnValue(campos));
 			allowing(serializerMock).dehydrate(with(any(OutputBuffer.class)), with(campos));
+			will(consume(1));
 		}});
 		VariableLengthFileManager unDynamicAccesor = crearArchivo();
 		BlockAddress<Long, Short> direccion = unDynamicAccesor.addEntity(campos);
@@ -407,5 +411,18 @@ public class TestVariableLength extends MockObjectTestCase {
 			return null;
 		}
 		
+	}
+	private Action consume(final Integer tamanioAConsumir) {
+		return new CustomAction("consumo:" + tamanioAConsumir.toString()) {
+		
+			@Override
+			public Object invoke(Invocation invocation) throws Throwable {
+				OutputBuffer buffer = (OutputBuffer)invocation.getParameter(0);
+				
+				buffer.write(new byte[tamanioAConsumir]);
+				return null;
+			}
+		
+		};
 	}
 }

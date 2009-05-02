@@ -2,6 +2,7 @@ package ar.com.datos.test.btree.sharp;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -69,18 +70,20 @@ public class TestBTreeSharpDisk extends ExtendedTestCase {
 //		}
 //	}
 	
-//	/**
-//	 * Test intensivo. Puede tardar MUCHO (muchas horas y horas y horas) 
-//	 */
+	/**
+	 * Test intensivo. Puede tardar MUCHO (muchas horas y horas y horas) 
+	 */
 //	public void testIntensivo() {
 //		BTreeSharpFactory<TestElementDisk, TestKeyDisk> bTreeSharpFactory = new BTreeSharpFactory<TestElementDisk, TestKeyDisk>();
-//		int blockSize = 256;
+//		int blockSize = 131072;
 //		for (int i = 0; i < 9; i++) {
-//			for (int k = 0; k < 5; k++) { // Número de pruebas por tamaño.
+//			Date ahora = new Date();
+////			for (int k = 0; k < 5; k++) { // Número de pruebas por tamaño.
 //				this.bTreeSharp = bTreeSharpFactory.createBTreeSharpDisk(INTERNAL_FILE, LEAF_FILE, blockSize, TestElementAndTestKeyListSerializerFactory.class, true); 
 //				testRandomInsertion();
-//			}
-//			blockSize *= 2;
+////			}
+//			System.out.println("Para nodos de tamaño: " + blockSize + " tardó: " + (new Date().getTime() - ahora.getTime()));
+//			blockSize /= 2;
 //		}
 //	}
 	
