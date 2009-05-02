@@ -71,7 +71,7 @@ public class SimpleRestrictedOutputBuffer implements RestrictedOutputBuffer {
 	 */
 	@Override
 	public Boolean isOverloaded() {
-		return getCurrentSize() > this.bufferSize;
+		return getCurrentSize() >= this.bufferSize;
 	}
 
 	public Integer getCurrentSize() {
