@@ -22,6 +22,9 @@ public class ExternalSorter {
 	public List<BlockFile> getSortedChunks() {
 		List<BlockFile> chunks = new ArrayList<BlockFile>();
 		Comparator<byte[]> comparador = getNewComparator();
+		// Para los casos que la cantidad de archivos temporales a generar exceda a 127 fuerzo a esa cantidad de 
+		if ((this.file.getTotalBlocks() / this.ammountOfBlocks) > 127)
+			this.ammountOfBlocks = this.file.getTotalBlocks().intValue() / 127;
 		List<byte[]> currentChunkData = new ArrayList<byte[]>(this.ammountOfBlocks);
 		for (byte[] data : this.file) {
 			currentChunkData.add(data);
@@ -39,6 +42,7 @@ public class ExternalSorter {
 		for (byte[] sortedData : currentChunkData) {
 			tempFile.appendBlock(sortedData);
 		}
+		tempFile.close();
 		chunks.add(tempFile);
 		currentChunkData.clear();
 	}
