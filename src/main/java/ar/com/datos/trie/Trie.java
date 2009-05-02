@@ -1,31 +1,19 @@
 package ar.com.datos.trie;
 
-import ar.com.datos.serializer.Serializable;
-
-public interface Trie <K extends Serializable<T> , T>{
+public interface Trie <E extends Element<K, A>, K extends Key<A>,A extends KeyAtom>{
 
 	/**
 	 * Agrega un K al trie
 	 * @param key
 	 * @param element
 	 */
-	void add(String key, K element);
+	public void addElement(E element);
 	
 	/**
-	 * Retorna el K elemento por su key
-	 * Sino existe retorna NULL
 	 * 
 	 * @param key
 	 * @return
 	 */
-	K find(String key);
-	
-	
-	/**
-	 * Elimina un elemento y lo devuelve
-	 * @param key
-	 */
-	K delete(String key);
-	
+	public E findElement(K key);
 	
 }
