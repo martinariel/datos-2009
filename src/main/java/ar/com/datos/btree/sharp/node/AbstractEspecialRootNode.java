@@ -45,12 +45,11 @@ public abstract class AbstractEspecialRootNode<E extends Element<K>, K extends K
 		return NodeType.ESPECIALROOT;
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see ar.com.datos.btree.sharp.node.AbstractLeafNode#overflow(ar.com.datos.btree.sharp.node.AbstractLeafNode, boolean, ar.com.datos.util.WrappedParam)
+	/**
+	 * Divide el nodo raiz en 3 generando 3 hojas y reemplazando este nodo raiz
+	 * temporal por un nodo raiz definitivo.
 	 */
-	@Override
-	protected KeyNodeReference<E, K> overflow(AbstractLeafNode<E, K> brother, boolean leftBrother, WrappedParam<K> fatherKey) throws BTreeException {
+	private void overflow() throws BTreeException {
 		// Aca no hay hermano, ni clave del padre... Solo debo crear 3 hijos, poner
 		// 1/3 del nodo (2/3 de un nodo normal) en cada uno de esos hijos y reescribir
 		// esta raiz.
@@ -89,8 +88,33 @@ public abstract class AbstractEspecialRootNode<E extends Element<K>, K extends K
 		
 		// Establezco el definitiveRootNode en el arbol.
 		this.btree.setRootNode(definitiveRootNode);
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see ar.com.datos.btree.sharp.node.Node#addElement(ar.com.datos.btree.elements.Element, ar.com.datos.btree.sharp.node.NodeReference, boolean, ar.com.datos.util.WrappedParam)
+	 */
+	@SuppressWarnings("unchecked")
+	@Override
+	public KeyNodeReference<E, K> addElement(E element, 
+											 NodeReference<E, K> brother,
+											 boolean leftBrother,
+											 WrappedParam<K> fatherKey) throws BTreeException {
+		KeyNodeReference<E, K> returnValue = null;
+		fatherKey.setValue(null);
 		
-		return null;
+		boolean modified = insertElement(element);
+		if (modified) {
+			if (calculateNodeSize() > getNodeMaxCapacity()) {
+				// Si mi nodo quedo con overflow
+				overflow();
+			} else {
+				// Método template.
+				postAddElement();
+			}
+		}
+
+		return returnValue;
 	}
 	
 	/*
