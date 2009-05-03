@@ -40,21 +40,6 @@ public class BTreeSharp<E extends Element<K>, K extends Key> implements BTree<E,
 		this.rootNode = null;
 	}
 
-	/**
-	 * Permite crear un {@link BTreeSharp}.
-	 * 
-	 * @param bTreeSharpConfiguration
-	 * Configuraciones del árbol.
-	 * 
-	 * @param rootNode
-	 * Nodo raiz.
-	 */
-	public BTreeSharp(BTreeSharpConfiguration<E, K> bTreeSharpConfiguration, Node<E, K> rootNode) {
-		this.bTreeSharpConfiguration = bTreeSharpConfiguration;
-		this.destroyed = false;
-		this.rootNode = rootNode;
-	}
-
 	/*
 	 * (non-Javadoc)
 	 * @see ar.com.datos.btree.BTree#addElement(ar.com.datos.btree.elements.Element)

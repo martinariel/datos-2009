@@ -122,7 +122,11 @@ public class BTreeSharpFactory<E extends Element<K>, K extends Key> {
 
 			// Creo y guardo la configuración del nodo.
 			AdministrativeBTreeSharpSerializer<E, K> administrativeSerializer = new AdministrativeBTreeSharpSerializer<E, K>();
-			String leafFileRelativePath = RelativePath.getRelativePath(internalF.getParentFile(), leafF);
+			File internalFParent = internalF.getParentFile();
+			if (internalFParent == null) {
+				internalFParent = new File("./");
+			}
+			String leafFileRelativePath = RelativePath.getRelativePath(internalFParent, leafF);
 			AdministrativeBTreeSharp<E, K> administrativeBTreeSharp = new AdministrativeBTreeSharp<E, K>(leafFileRelativePath, serializerFactoryClass.getName());
 			BlockAccessor<BlockAddress<Long, Short>, AdministrativeBTreeSharp<E, K>> administrativeFile = new VariableLengthFileManager<AdministrativeBTreeSharp<E,K>>(internalFile, blockSize, administrativeSerializer);
 			administrativeFile.addEntity(administrativeBTreeSharp);
@@ -214,7 +218,11 @@ public class BTreeSharpFactory<E extends Element<K>, K extends Key> {
 		BlockAccessor<BlockAddress<Long,Short>, Node<E, K>> internalNodeFile = new VariableLengthFileManager<Node<E, K>>(internalFile, blockSize, leafAndInternalNodeSerializer.getSecond());			
 		String leafFile = administrativeBTreeSharp.getLeafFileName();
 		File internalF = new File(internalFile);
-		String leafFileRelative = internalF.getParent() + "/" + leafFile;
+		File internalFParent = internalF.getParentFile();
+		if (internalFParent == null) {
+			internalFParent = new File("./");
+		}
+		String leafFileRelative = internalFParent + "/" + leafFile;
 		BlockAccessor<BlockAddress<Long,Short>, Node<E, K>> leafNodeFile = new VariableLengthFileManager<Node<E, K>>(leafFileRelative, blockSize, (Serializer)leafAndInternalNodeSerializer.getFirst());
 		
 		// Establezco la información correspondiente a la configuración del árbol en el BTreeSharpConfigurationDisk
@@ -258,14 +266,17 @@ public class BTreeSharpFactory<E extends Element<K>, K extends Key> {
 			// Creo la configuración del árbol en disco.
 			BTreeSharpConfigurationDisk<E, K> bTreeSharpConfigurationDisk = createBTreeSharpConfigurationDisk(internalFile, blockSize, administrativeBTreeSharp);
 
-			// Obtengo el nodo raiz.
-			Node<E, K> rootNode = readRootNodeFromDisk(bTreeSharpConfigurationDisk.getInternalNodesFileManager(), administrativeBTreeSharp.getRootNodePosition());
-			
 			// Creo el árbol
-			BTreeSharp<E, K> btree = new BTreeSharp<E, K>(bTreeSharpConfigurationDisk, rootNode);
+			BTreeSharp<E, K> btree = new BTreeSharp<E, K>(bTreeSharpConfigurationDisk);
 			
 			// Agrego el arbol donde se necesita.
 			bTreeSharpConfigurationDisk.getStateInternalNodeSerializer().setBTree(btree);
+			
+			// Obtengo el nodo raiz.
+			Node<E, K> rootNode = readRootNodeFromDisk(bTreeSharpConfigurationDisk.getInternalNodesFileManager(), administrativeBTreeSharp.getRootNodePosition());
+			
+			// Establezco el nodo raiz en el árbol
+			btree.setRootNode(rootNode);
 			
 			return btree;
  		} catch (BTreeConfException e) {

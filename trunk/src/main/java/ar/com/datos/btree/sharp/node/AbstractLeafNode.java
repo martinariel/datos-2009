@@ -192,7 +192,7 @@ public abstract class AbstractLeafNode<E extends Element<K>, K extends Key> exte
 	 * @return
 	 * Booleano indicando si el nodo fue modificado.
 	 */
-	private boolean insertElement(E element) {
+	protected boolean insertElement(E element) {
 		int insertPosition = findInsertPosition(element.getKey());
 		boolean modified = true;
 		if (this.elements.size() > 0 && this.elements.size() != insertPosition &&
