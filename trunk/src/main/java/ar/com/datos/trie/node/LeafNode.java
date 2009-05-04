@@ -3,6 +3,8 @@
  */
 package ar.com.datos.trie.node;
 
+import java.util.List;
+
 import ar.com.datos.trie.Element;
 import ar.com.datos.trie.Key;
 import ar.com.datos.trie.KeyAtom;
@@ -14,9 +16,18 @@ import ar.com.datos.trie.KeyAtom;
 public class 
 LeafNode<E extends Element<K, A>, K extends Key<A>,A extends KeyAtom> extends Node<E,K,A> {
 	
-	public LeafNode(int level) {
+	// La porcion de clave de este nodo (this)
+	protected A keyAtom;
+	
+	// Indica si en este nodo hay una terminacion (una clave termina en este nodo).
+	// Ej: si se agrega "MAR" y este nodo tiene la "R" entonces, este element 
+	// contendra la referencia al elemento referenciado por la clave "MAR".
+	// Si ninguna clave termina en este nodo, entonces este element es null.
+	protected E element;
+	
+	public LeafNode(int level, A keyAtom) {
 		super(level);
-		// TODO Auto-generated constructor stub
+		this.keyAtom = keyAtom;
 	}
 
 	@Override
