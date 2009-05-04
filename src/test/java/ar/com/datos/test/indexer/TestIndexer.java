@@ -66,7 +66,7 @@ public class TestIndexer extends TestCase {
 		unIndexador = new SimpleSessionIndexer<OffsetAddress>(fileName, new OffsetAddressSerializer());
 		OffsetAddress idDocumento2 = new OffsetAddress(55L);
 		unIndexador.startSession();
-		unIndexador.addTerms(idDocumento2, "hola", "hola");
+		unIndexador.addTerms(idDocumento2, "hola", "hola", "hola", "hola");
 		unIndexador.addTerms(idDocumento2, "otra palabra");
 		unIndexador.addTerms(idDocumento2, "otra palabra", "y otra mas");
 		unIndexador.endSession();
@@ -75,10 +75,10 @@ public class TestIndexer extends TestCase {
 		documentosRecuperados = unIndexador.findTerm("hola").getAssociatedData();
 		assertEquals(2, documentosRecuperados.size());
 		ArrayList<KeyCount<OffsetAddress>> docs = new ArrayList<KeyCount<OffsetAddress>>(documentosRecuperados);
-		assertEquals(idDocumento, docs.get(0).getKey());
-		assertEquals(3, docs.get(0).getCount().intValue());
-		assertEquals(idDocumento2, docs.get(1).getKey());
-		assertEquals(2, docs.get(1).getCount().intValue());
+		assertEquals(idDocumento2, docs.get(0).getKey());
+		assertEquals(4, docs.get(0).getCount().intValue());
+		assertEquals(idDocumento, docs.get(1).getKey());
+		assertEquals(3, docs.get(1).getCount().intValue());
 		documentosRecuperados = unIndexador.findTerm("otra palabra").getAssociatedData();
 		assertEquals(1, documentosRecuperados.size());
 		for (KeyCount<OffsetAddress> cuenta: documentosRecuperados) {

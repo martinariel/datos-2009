@@ -33,4 +33,10 @@ public class Tuple<K, V> {
 			return o1.getFirst().compareTo(o2.getFirst());
 		}
 	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder("< ").append(getFirst()).append(" , ").append(getSecond()).append(" >");
+		return sb.toString();
+	}
 }

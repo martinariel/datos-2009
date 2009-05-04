@@ -2,6 +2,9 @@ package ar.com.datos.indexer.tree;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 import ar.com.datos.btree.elements.Element;
 import ar.com.datos.file.address.BlockAddress;
@@ -22,7 +25,7 @@ public class IndexerTreeElement<T> implements Element<IndexerTreeKey>, IndexedTe
 	private BlockAddress<Long, Short> dataCountAddress;
 	private SimpleSessionIndexer<T> indexer;
 	private Integer dataCount;
-	private Collection<KeyCount<T>> temporalCount = new ArrayList<KeyCount<T>>(0);
+	private List<KeyCount<T>> temporalCount = new ArrayList<KeyCount<T>>(0);
 	/**
 	 * Crea un nuevo indexerTreeElement cuya clave es la recibida en key 
 	 * @param key
@@ -41,18 +44,32 @@ public class IndexerTreeElement<T> implements Element<IndexerTreeKey>, IndexedTe
 	@Override
 	public boolean updateElement(Element<IndexerTreeKey> element) {
 		IndexerTreeElement<T> newElement = (IndexerTreeElement<T>)element;
-		Collection<KeyCount<T>> nuevaLista = newElement.temporalCount;
+		List<KeyCount<T>> nuevaLista = newElement.temporalCount;
 		BlockAddress<Long, Short> currentAddress = this.getDataCountAddress();
 		if (currentAddress == null) {
-			this.setDataCountAddress(newElement.indexer.getListsForTerms().addEntity(new Tuple<OffsetAddress, Collection<KeyCount<T>>>(this.getAddressInLexicon(), nuevaLista)));
+			sortByCount(nuevaLista);
+			this.setDataCountAddress(newElement.indexer.getListsForTerms().addEntity(new Tuple<OffsetAddress, List<KeyCount<T>>>(this.getAddressInLexicon(), nuevaLista)));
 		} else {
-			Tuple<OffsetAddress, Collection<KeyCount<T>>> previousList = newElement.indexer.getListsForTerms().get(this.getDataCountAddress());
-			previousList.getSecond().addAll(nuevaLista);
-			nuevaLista = previousList.getSecond();
+			Tuple<OffsetAddress, List<KeyCount<T>>> previousList = newElement.indexer.getListsForTerms().get(this.getDataCountAddress());
+			nuevaLista.addAll(previousList.getSecond());
+			sortByCount(nuevaLista);
+			previousList.setSecond(nuevaLista);
 			this.setDataCountAddress(newElement.indexer.getListsForTerms().updateEntity(currentAddress, previousList));
 		}
 		this.dataCount = nuevaLista.size();
 		return true;
+	}
+
+	protected void sortByCount(List<KeyCount<T>> nuevaLista) {
+		Collections.sort(nuevaLista, new Comparator<KeyCount<T>>() {
+
+			@Override
+			public int compare(KeyCount<T> o1, KeyCount<T> o2) {
+				return o2.getCount().compareTo(o1.getCount());
+			}
+			
+		});
+		
 	}
 
 	/**
