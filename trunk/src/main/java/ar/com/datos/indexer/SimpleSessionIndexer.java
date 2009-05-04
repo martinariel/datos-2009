@@ -4,6 +4,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import ar.com.datos.btree.BTree;
 import ar.com.datos.btree.BTreeSharpFactory;
@@ -16,10 +17,10 @@ import ar.com.datos.file.variableLength.address.OffsetAddressSerializer;
 import ar.com.datos.indexer.lexic.LexicalManager;
 import ar.com.datos.indexer.serializer.IndexerSerializerFactory;
 import ar.com.datos.indexer.serializer.KeyCountSerializer;
+import ar.com.datos.indexer.serializer.ListSerializer;
 import ar.com.datos.indexer.tree.IndexerTreeElement;
 import ar.com.datos.indexer.tree.IndexerTreeKey;
 import ar.com.datos.serializer.Serializer;
-import ar.com.datos.serializer.common.CollectionSerializer;
 import ar.com.datos.serializer.common.TupleSerializer;
 import ar.com.datos.util.Tuple;
 import ar.com.datos.utils.sort.external.FixedLengthKeyCounter;
@@ -52,7 +53,7 @@ public class SimpleSessionIndexer<T> implements SessionIndexer<T>, Closeable {
 	private Serializer<T> indexedSerializer;
 
 	private LexicalManager lexicon;
-	private BlockAccessor<BlockAddress<Long, Short>, Tuple<OffsetAddress, Collection<KeyCount<T>>>> listsForTerms;
+	private BlockAccessor<BlockAddress<Long, Short>, Tuple<OffsetAddress, List<KeyCount<T>>>> listsForTerms;
 	private BTree<IndexerTreeElement<T>, IndexerTreeKey> indexedElements;
 
 	// Usado solamente durante la sesión de agregado de palabras
@@ -135,7 +136,7 @@ public class SimpleSessionIndexer<T> implements SessionIndexer<T>, Closeable {
 		return findElement;
 	}
 
-	public BlockAccessor<BlockAddress<Long, Short>, Tuple<OffsetAddress, Collection<KeyCount<T>>>> getListsForTerms() {
+	public BlockAccessor<BlockAddress<Long, Short>, Tuple<OffsetAddress, List<KeyCount<T>>>> getListsForTerms() {
 		return listsForTerms;
 	}
 
@@ -156,9 +157,9 @@ public class SimpleSessionIndexer<T> implements SessionIndexer<T>, Closeable {
 		return new LexicalManager(fileName + LEXICON_SUFFIX);
 	}
 
-	protected BlockAccessor<BlockAddress<Long, Short>, Tuple<OffsetAddress, Collection<KeyCount<T>>>> constructListForTerms(String fileName) {
-		return new VariableLengthWithCache<Tuple<OffsetAddress, Collection<KeyCount<T>>>>(fileName + LIST_SUFFIX, LIST_BLOCK_SIZE, 
-				new TupleSerializer<OffsetAddress, Collection<KeyCount<T>>>(new OffsetAddressSerializer(), new CollectionSerializer<KeyCount<T>>(new KeyCountSerializer<T>(this.indexedSerializer))));
+	protected BlockAccessor<BlockAddress<Long, Short>, Tuple<OffsetAddress, List<KeyCount<T>>>> constructListForTerms(String fileName) {
+		return new VariableLengthWithCache<Tuple<OffsetAddress, List<KeyCount<T>>>>(fileName + LIST_SUFFIX, LIST_BLOCK_SIZE, 
+				new TupleSerializer<OffsetAddress, List<KeyCount<T>>>(new OffsetAddressSerializer(), new ListSerializer<KeyCount<T>>(new KeyCountSerializer<T>(this.indexedSerializer))));
 	}
 
 	@SuppressWarnings("unchecked")
