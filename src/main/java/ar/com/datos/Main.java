@@ -170,10 +170,17 @@ public class Main implements IWordsRecorderConector{
 
         try {
            Document documento = new FileSystemDocument(ruta);
-           backend.addDocument(documento, this);
+
+           if (documento.canOpen()){
+               backend.addDocument(documento, this);
+           }
+           else
+           {
+               loadDocument();
+           }
         }
         catch(Exception e){
-            loadDocument();
+           e.printStackTrace();
         }
 
     }
@@ -190,7 +197,14 @@ public class Main implements IWordsRecorderConector{
 
         try {
             Document documento = new FileSystemDocument(ruta);
-            backend.playDocument(documento, this);
+
+            if (documento.canOpen()){
+                backend.playDocument(documento, this);
+            }
+            else
+            {
+                playDocument();
+            }
         }
         catch(Exception e){
             e.printStackTrace();

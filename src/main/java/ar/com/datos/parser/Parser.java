@@ -63,11 +63,17 @@ public class Parser implements Iterable<List<String>> {
      *
      */
     public void initParser(){
-        started = true;
-        document.close();
-        document.open();
+        if (!started && document.canOpen()){
+            started = true;
+            document.close();
+            document.open();
+        }
     }
 
+    /**
+     * Finaliza el parser
+     *
+     */
     public void endParser(){
         if (started){
             started = false;

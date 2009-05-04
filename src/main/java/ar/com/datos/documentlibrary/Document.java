@@ -12,18 +12,24 @@ public interface Document {
      * @return String linea del documento.
      * null en el caso de fin de archivo
      */
-    String readLine();
-
+    public String readLine();
 
     /**
      * Abre el documento
      *
      */
-    void open();
+    public void open();
 
     /**
      * Cierra el documento
      *
      */
-    void close();
+    public void close();
+
+    /**
+     *
+     * @return
+     * Boolean indicando si puede abrir el documento
+     */
+    public boolean canOpen();
 }
