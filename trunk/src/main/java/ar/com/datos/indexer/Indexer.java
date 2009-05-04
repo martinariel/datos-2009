@@ -1,8 +1,5 @@
 package ar.com.datos.indexer;
 
-import java.util.Collection;
-
-import ar.com.datos.utils.sort.external.KeyCount;
 /**
  * Interfaz que deben cumplir los indexadores de términos.
  * Estos son los encargados de relacionar un objeto de tipo T contra
@@ -29,7 +26,7 @@ public interface Indexer<T> {
 	 * @param term
 	 * @return
 	 */
-	public Collection<KeyCount<T>> findTerm(String term);
+	public IndexedTerm<T> findTerm(String term);
 
 	/**
 	 * @return cantidad de terminos diferentes que se ingresaron al indexador

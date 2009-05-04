@@ -6,6 +6,7 @@ import java.util.Collection;
 import ar.com.datos.btree.elements.Element;
 import ar.com.datos.file.address.BlockAddress;
 import ar.com.datos.file.variableLength.address.OffsetAddress;
+import ar.com.datos.indexer.IndexedTerm;
 import ar.com.datos.indexer.SimpleSessionIndexer;
 import ar.com.datos.util.Tuple;
 import ar.com.datos.utils.sort.external.KeyCount;
@@ -14,12 +15,13 @@ import ar.com.datos.utils.sort.external.KeyCount;
  * @author jbarreneche
  * @param <T> tipo de objeto al que se va a realizar la indexación de términos
  */
-public class IndexerTreeElement<T> implements Element<IndexerTreeKey> {
+public class IndexerTreeElement<T> implements Element<IndexerTreeKey>, IndexedTerm<T> {
 
 	private IndexerTreeKey key;
 	private OffsetAddress addressInLexicon;
 	private BlockAddress<Long, Short> dataCountAddress;
 	private SimpleSessionIndexer<T> indexer;
+	private Integer dataCount;
 	private Collection<KeyCount<T>> temporalCount = new ArrayList<KeyCount<T>>(0);
 	/**
 	 * Crea un nuevo indexerTreeElement cuya clave es la recibida en key 
@@ -46,9 +48,11 @@ public class IndexerTreeElement<T> implements Element<IndexerTreeKey> {
 		} else {
 			Tuple<OffsetAddress, Collection<KeyCount<T>>> previousList = newElement.indexer.getListsForTerms().get(this.getDataCountAddress());
 			previousList.getSecond().addAll(nuevaLista);
+			nuevaLista = previousList.getSecond();
 			this.setDataCountAddress(newElement.indexer.getListsForTerms().updateEntity(currentAddress, previousList));
 		}
-		return !this.getDataCountAddress().equals(currentAddress);
+		this.dataCount = nuevaLista.size();
+		return true;
 	}
 
 	/**
@@ -95,4 +99,18 @@ public class IndexerTreeElement<T> implements Element<IndexerTreeKey> {
 		this.indexer = indexer;
 	}
 
+	@Override
+	public String getTerm() {
+		return this.getKey().getTerm();
+	}
+	
+	@Override
+	public Collection<KeyCount<T>> getAssociatedData() {
+		return this.indexer.getListsForTerms().get(this.getDataCountAddress()).getSecond();
+	}
+
+	@Override
+	public Integer getNumberOfAssociatedData() {
+		return this.dataCount;
+	}
 }
