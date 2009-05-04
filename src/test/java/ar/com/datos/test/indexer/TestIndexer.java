@@ -40,23 +40,23 @@ public class TestIndexer extends TestCase {
 		unIndexador.addTerms(idDocumento, "bueno", "chau");
 		unIndexador.addTerms(idDocumento, "bueno", "hola");
 		unIndexador.endSession();
-		Collection<KeyCount<OffsetAddress>> documentosRecuperados = unIndexador.findTerm("hola");
+		Collection<KeyCount<OffsetAddress>> documentosRecuperados = unIndexador.findTerm("hola").getAssociatedData();
 		assertEquals(1, documentosRecuperados.size());
 		for (KeyCount<OffsetAddress> cuenta: documentosRecuperados) {
 			assertEquals(3, cuenta.getCount().intValue());
 		}
-		documentosRecuperados = unIndexador.findTerm("bueno");
+		documentosRecuperados = unIndexador.findTerm("bueno").getAssociatedData();
 		assertEquals(1, documentosRecuperados.size());
 		for (KeyCount<OffsetAddress> cuenta: documentosRecuperados) {
 			assertEquals(2, cuenta.getCount().intValue());
 		}
 		
-		documentosRecuperados = unIndexador.findTerm("mano");
+		documentosRecuperados = unIndexador.findTerm("mano").getAssociatedData();
 		assertEquals(1, documentosRecuperados.size());
 		for (KeyCount<OffsetAddress> cuenta: documentosRecuperados) {
 			assertEquals(1, cuenta.getCount().intValue());
 		}
-		documentosRecuperados = unIndexador.findTerm("chau");
+		documentosRecuperados = unIndexador.findTerm("chau").getAssociatedData();
 		assertEquals(1, documentosRecuperados.size());
 		for (KeyCount<OffsetAddress> cuenta: documentosRecuperados) {
 			assertEquals(1, cuenta.getCount().intValue());
@@ -71,14 +71,15 @@ public class TestIndexer extends TestCase {
 		unIndexador.addTerms(idDocumento2, "otra palabra", "y otra mas");
 		unIndexador.endSession();
 
-		documentosRecuperados = unIndexador.findTerm("hola");
+		assertNull(unIndexador.findTerm("frankfurt"));
+		documentosRecuperados = unIndexador.findTerm("hola").getAssociatedData();
 		assertEquals(2, documentosRecuperados.size());
 		ArrayList<KeyCount<OffsetAddress>> docs = new ArrayList<KeyCount<OffsetAddress>>(documentosRecuperados);
 		assertEquals(idDocumento, docs.get(0).getKey());
 		assertEquals(3, docs.get(0).getCount().intValue());
 		assertEquals(idDocumento2, docs.get(1).getKey());
 		assertEquals(2, docs.get(1).getCount().intValue());
-		documentosRecuperados = unIndexador.findTerm("otra palabra");
+		documentosRecuperados = unIndexador.findTerm("otra palabra").getAssociatedData();
 		assertEquals(1, documentosRecuperados.size());
 		for (KeyCount<OffsetAddress> cuenta: documentosRecuperados) {
 			assertEquals(2, cuenta.getCount().intValue());

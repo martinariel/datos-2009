@@ -129,8 +129,10 @@ public class SimpleSessionIndexer<T> implements SessionIndexer<T>, Closeable {
 		this.fixedLengthCounter.countKey(new Tuple<OffsetAddress, T>(current.getAddressInLexicon(), data));
 	}
 	@Override
-	public Collection<KeyCount<T>> findTerm(String string) {
-		return this.listsForTerms.get(this.indexedElements.findElement(new IndexerTreeKey(string)).getDataCountAddress()).getSecond();
+	public IndexedTerm<T> findTerm(String string) {
+		IndexerTreeElement<T> findElement = this.indexedElements.findElement(new IndexerTreeKey(string));
+		if (findElement != null) findElement.setIndexer(this);
+		return findElement;
 	}
 
 	public BlockAccessor<BlockAddress<Long, Short>, Tuple<OffsetAddress, Collection<KeyCount<T>>>> getListsForTerms() {
