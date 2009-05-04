@@ -6,14 +6,14 @@ import java.io.FileReader;
 import java.io.IOException;
 
 /**
- * Documento del tipo FileSystem
+ * Implementacion de un Document del FileSystem
  * @author mfernandez
  *
  */
 public class FileSystemDocument implements Document {
 
     private String filePath;
-    private File archivo;
+    private File file;
     private boolean opened;
     private BufferedReader reader;
 
@@ -21,9 +21,10 @@ public class FileSystemDocument implements Document {
         filePath = path;
         opened = false;
         reader = null;
-        archivo = null;
+        file = new File(filePath);
     }
 
+    @Override
     public String readLine() {
 
         if (opened){
@@ -39,12 +40,11 @@ public class FileSystemDocument implements Document {
         }
     }
 
+    @Override
     public void open(){
         if (!opened) {
-            File archivo = new File(filePath);
-
             try {
-                reader = new BufferedReader(new FileReader(archivo));
+                reader = new BufferedReader(new FileReader(file));
                 opened = true;
             }
             catch (IOException e){ }
@@ -53,6 +53,7 @@ public class FileSystemDocument implements Document {
 
     }
 
+    @Override
     public void close() {
         if (opened){
             if (reader != null){
@@ -63,6 +64,11 @@ public class FileSystemDocument implements Document {
             }
             opened = false;
         }
+    }
+
+    @Override
+    public boolean canOpen(){
+        return file.canRead();
     }
 
 
