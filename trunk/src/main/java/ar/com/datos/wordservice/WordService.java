@@ -13,43 +13,70 @@ import ar.com.datos.indexer.SessionIndexer;
 import ar.com.datos.indexer.SimpleSessionIndexer;
 import ar.com.datos.persistencia.SoundPersistenceService;
 import ar.com.datos.persistencia.variableLength.SoundPersistenceServiceVariableLengthImpl;
+import ar.com.datos.util.Tuple;
+import ar.com.datos.wordservice.search.SeachEngineImpl;
+import ar.com.datos.wordservice.search.SearchEngine;
+import ar.com.datos.wordservice.stopwords.StopWordsDiscriminator;
 import ar.com.datos.wordservice.stopwords.StopWordsDiscriminatorBuilder;
 
 /**
  * Backend de la aplicacion
  *
+ * Basicamente delega comportamiento en otras clases.
+ *
+ *
  */
 public class WordService {
 
     private Crawler crawler;
-    private SoundPersistenceService persistenciaAudio;
+    private SoundPersistenceService soundPersistenceService;
     private SessionIndexer<OffsetAddress> indexer;
     private DocumentLibrary documentLibrary;
-    
-    public WordService (String directorioArchivos){
+    private SearchEngine searchEngine;
+    private StopWordsDiscriminator stopWords;
 
-        //TODO reemplazar por persistencia en Trie
-        persistenciaAudio = new SoundPersistenceServiceVariableLengthImpl(
-                directorioArchivos + "palabras",
-                directorioArchivos + "sonidos"
-        );
-        
-        documentLibrary = new DocumentLibrary ( directorioArchivos + "documentos");
-        
-        indexer = new SimpleSessionIndexer<OffsetAddress>(directorioArchivos + "indice", new OffsetAddressSerializer());
-       
-        crawler = new SimpleCrawler(indexer, StopWordsDiscriminatorBuilder.buildStopWords(directorioArchivos), documentLibrary);
-    
-    }
-    
+    private static final String soundsFileName 		= "sonidos";
+    private static final String wordsFileName 		= "palabras";
+    private static final String documentsFileName 	= "documentos";
+    private static final String indexFileName			= "indice";
+    private static final String stopWordsFileName 	= "stop_words.txt";
+    private static final String stopPhrasesFileName 	= "stop_phrases.txt";
 
     /**
-     * TODO: Agrega un documento al indexador
-     * @param document
+     * Crea la instancia del backend
+     *
+     * @param directorioArchivos
+     * Directorio de trabajo, donde se localizaran todos los archivos del sistema.
      */
-    public void addDocument(Document document , IWordsRecorderConector vista){
-    	WordsRecorder recorder = new WordsRecorder(vista, persistenciaAudio);
-    	recorder.recordWords(crawler.addDocument(document));
+    public WordService (String directory){
+
+        //TODO reemplazar por persistencia en Trie
+        soundPersistenceService = new SoundPersistenceServiceVariableLengthImpl(
+                directory + wordsFileName,
+                directory + soundsFileName
+        );
+
+        documentLibrary = new DocumentLibrary (directory + documentsFileName);
+        stopWords 		= StopWordsDiscriminatorBuilder.build(directory + stopWordsFileName, directory + stopPhrasesFileName);
+        indexer 		= new SimpleSessionIndexer<OffsetAddress>(directory + indexFileName, new OffsetAddressSerializer());
+        crawler 		= new SimpleCrawler(indexer, stopWords ,documentLibrary);
+        searchEngine 	= new SeachEngineImpl(indexer, documentLibrary, stopWords);
+
+    }
+
+
+    /**
+     * Agrega un documento al sistema
+     *
+     * @param document
+     * Documento a agregar
+     * @param vista
+     * IWordsRecorderConector a notificar la grabacion de las palabras
+     *
+     */
+    public void addDocument(Document document , IWordsRecorderConector view){
+        WordsRecorder recorder = new WordsRecorder(view, soundPersistenceService);
+        recorder.recordWords(crawler.addDocument(document));
     }
 
 
@@ -57,28 +84,31 @@ public class WordService {
      * TODO: Obteniene una coleccion de documentos relacionados
      * con el documento parametro ordenados por relevancia
      *
-     * @param document
+     * @param query
+     * Documento cuyo contenido es el query deseado
      * @return
+     * Lista ordenada de documentos por orden de ranking (superior ranking primero).
      */
-    public List<Document> searchDocument(Document document){
-        //TODO
-        return null;
+    public List<Tuple<Double, Document>> searchDocument(Document query){
+        return searchEngine.lookUp(query, 5);
     }
 
 
     /**
      * Reproduce un documento
+     *
      * @param document
+     * Documento a reproductir
      */
-    public void playDocument(Document document, IWordsRecorderConector vista){
+    public void playDocument(Document document, IWordsRecorderConector view){
 
-        DocumentPlayer player = new DocumentPlayer(persistenciaAudio);
+        DocumentPlayer player = new DocumentPlayer(soundPersistenceService);
 
         try {
             player.play(document);
         }
         catch (Exception e){
-            vista.sendMessage("Audio device busy");
+            view.sendMessage("Audio device busy");
         }
 
     }
@@ -86,11 +116,10 @@ public class WordService {
 
     /**
      * Finaliza el servicio
-     *
      */
     public void end() {
         try{
-            persistenciaAudio.close();
+            soundPersistenceService.close();
         }
         catch (IOException e){
              e.printStackTrace();

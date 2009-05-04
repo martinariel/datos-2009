@@ -6,41 +6,45 @@ import java.util.List;
 import java.util.LinkedList;
 
 /**
+ * Parser
+ *
+ * Recibe un Document y devuelve a traves del Iterator las oraciones completas del mismo.
+ *
  * @author mfernandez
- * 
+ *
  */
 public class Parser implements Iterable<List<String>> {
 
-    private Document documento;
-    private boolean iniciado;
-    private String lineaAnterior = "";
-    
-    private static String[] separadores = null;
-    private static String cadenaRegex;
+    private Document document;
+    private boolean started;
+    private String bufferedLine = "";
+
+    private static String[] separators = null;
+    private static String stringRegex;
 
     static {
-    	separadores = new String[3];
-    	separadores[0] = "?";
-    	separadores[1] = ";";
-    	separadores[2] = ".";
-    	
-    	//TODO: Todos los caracteres excepto
-    	cadenaRegex = "[^a-zA-Z\\.\\;\\?]";
-    	
+        separators = new String[3];
+        separators[0] = "?";
+        separators[1] = ";";
+        separators[2] = ".";
+
+        //TODO: Todos los caracteres excepto
+        stringRegex = "[^a-zA-Z\\.\\;\\?]";
+
     }
-    
+
     public Parser(Document documento){
-        this.documento = documento;
-        iniciado = false;
+        this.document = documento;
+        started = false;
     }
-    
+
 
     /**
      *
      * @return estado de inicializacion
      */
     public boolean isStarted(){
-        return iniciado;
+        return started;
     }
 
     /**
@@ -48,20 +52,20 @@ public class Parser implements Iterable<List<String>> {
      *
      */
     public void initParser(){
-        iniciado = true;
-        documento.close();
-        documento.open();
+        started = true;
+        document.close();
+        document.open();
     }
-    
+
     public void endParser(){
-    	if (iniciado){
-    		iniciado = false;
-    		documento.close();
-    	}
+        if (started){
+            started = false;
+            document.close();
+        }
     }
 
     /**
-     * 
+     *
      * @param linea
      * @return linea sin tildes
      */
@@ -75,88 +79,88 @@ public class Parser implements Iterable<List<String>> {
 
         return linea;
     }
-    
+
     /**
-     * 
+     *
      * @param linea
      * @return linea con solo caracteres del abecedario y los separadores
      */
-    private static String limpiarCaracteres(String linea){
-    	
-    	linea = linea.replaceAll(cadenaRegex, " ");
+    private static String cleanRegex(String linea){
+
+        linea = linea.replaceAll(stringRegex, " ");
         linea = linea.replaceAll("  ", " ");
-    	return linea;
+        return linea;
     }
-    
-    private static String limpiarLinea(String linea){
-    	return limpiarTildes(limpiarCaracteres(linea.toLowerCase()));
-    	
+
+    private static String cleanLine(String line){
+        return limpiarTildes(cleanRegex(line.toLowerCase()));
+
     }
-    
+
     /**
-     * 
+     *
      * @param linea
      * @return Posicion en el string del primer separador encontrado
      */
     private static int findSeparator(String linea){
-    	int indice = -1;
-    	
-    	int[] posiciones = new int[separadores.length];
-    	
-    	for (int i = 0; i < posiciones.length; i++){
-    		posiciones[i] = linea.indexOf(separadores[i]);
-    		//WTF??
-    		if ((posiciones[i] > -1 && posiciones[i] < indice) || indice == -1)
-    			indice = posiciones[i];
-    	}
-    	
-    	return indice;
-    	
+        int indice = -1;
+
+        int[] posiciones = new int[separators.length];
+
+        for (int i = 0; i < posiciones.length; i++){
+            posiciones[i] = linea.indexOf(separators[i]);
+            //WTF??
+            if ((posiciones[i] > -1 && posiciones[i] < indice) || indice == -1)
+                indice = posiciones[i];
+        }
+
+        return indice;
+
     }
-    
-   
+
+
     private List<String> getCurrentWords(){
         List<String> words = null;
 
         if (isStarted()){
-        	
-        	String linea 			= lineaAnterior; //Inicializo en el pedazo anterior
-        	String lineaArchivo		= null;
-        	String lineaResultado 	= null;
-        	
-        	int posicionSeparator = -1;
-        	
-        	do {
-        		//Busco el primer separador
-        		posicionSeparator = findSeparator(linea);
-        		
-        		if (posicionSeparator < 0){
-        			lineaArchivo = documento.readLine();
-        			if (lineaArchivo != null)
-        				linea += " " + limpiarLinea(lineaArchivo);
-        		}	
-	           
-        	}while (posicionSeparator < 0 && lineaArchivo != null);
 
-        	if (posicionSeparator > 0){
-        		lineaResultado = linea.substring(0, posicionSeparator);
-        		lineaAnterior  = linea.substring(posicionSeparator+1);
-        	}
-        	else {
-        		lineaResultado = linea;
-        		lineaAnterior = "";
-        	}
-        	
-        	if (lineaResultado.trim().length() > 0){
-        		String[] vector = lineaResultado.trim().split(" ");
-        		words = new LinkedList<String>();
-        		for (int i = 0; i < vector.length ; i++){
-        			if (vector[i].trim().length() > 0)
-        				words.add(vector[i].trim());
-        		}
-        	}
+            String linea 			= bufferedLine; //Inicializo en el pedazo anterior
+            String lineaArchivo		= null;
+            String lineaResultado 	= null;
+
+            int posicionSeparator = -1;
+
+            do {
+                //Busco el primer separador
+                posicionSeparator = findSeparator(linea);
+
+                if (posicionSeparator < 0){
+                    lineaArchivo = document.readLine();
+                    if (lineaArchivo != null)
+                        linea += " " + cleanLine(lineaArchivo);
+                }
+
+            }while (posicionSeparator < 0 && lineaArchivo != null);
+
+            if (posicionSeparator > 0){
+                lineaResultado = linea.substring(0, posicionSeparator);
+                bufferedLine  = linea.substring(posicionSeparator+1);
+            }
+            else {
+                lineaResultado = linea;
+                bufferedLine = "";
+            }
+
+            if (lineaResultado.trim().length() > 0){
+                String[] vector = lineaResultado.trim().split(" ");
+                words = new LinkedList<String>();
+                for (int i = 0; i < vector.length ; i++){
+                    if (vector[i].trim().length() > 0)
+                        words.add(vector[i].trim());
+                }
+            }
         }
-        
+
         return words;
     }
 
@@ -164,11 +168,16 @@ public class Parser implements Iterable<List<String>> {
         return new ParserLineIterator(this);
     }
 
+    /**
+     * Parser Iterator
+     *
+     * @author mfernandez
+     *
+     */
     private class ParserLineIterator implements Iterator<List<String>> {
 
         private Parser parser;
         private List<String> words;
-
 
         public ParserLineIterator(Parser parser){
             this.parser = parser;
@@ -177,13 +186,13 @@ public class Parser implements Iterable<List<String>> {
         public boolean hasNext() {
             if (!parser.isStarted()) parser.initParser();
             words = parser.getCurrentWords();
-            
+
             boolean resultado = (words != null);
-            
+
             if (!resultado){
-            	parser.endParser();
+                parser.endParser();
             }
-            
+
             return resultado;
         }
 
@@ -195,5 +204,5 @@ public class Parser implements Iterable<List<String>> {
              throw new UnsupportedOperationException();
         }
     }
-    
+
 }
