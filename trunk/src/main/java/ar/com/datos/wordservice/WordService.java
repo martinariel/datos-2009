@@ -1,6 +1,6 @@
 package ar.com.datos.wordservice;
 import java.io.IOException;
-import java.util.Collection;
+import java.util.List;
 
 import ar.com.datos.audio.DocumentPlayer;
 import ar.com.datos.audio.IWordsRecorderConector;
@@ -60,7 +60,7 @@ public class WordService {
      * @param document
      * @return
      */
-    public Collection<Document> searchDocument(Document document){
+    public List<Document> searchDocument(Document document){
         //TODO
         return null;
     }
