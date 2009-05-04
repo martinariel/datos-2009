@@ -2,13 +2,14 @@ package ar.com.datos;
 
 import ar.com.datos.audio.AudioStopper;
 import ar.com.datos.audio.IWordsRecorderConector;
+import ar.com.datos.util.Tuple;
 import ar.com.datos.wordservice.WordService;
 import ar.com.datos.documentlibrary.Document;
 import ar.com.datos.documentlibrary.FileSystemDocument;
 import ar.com.datos.documentlibrary.MemoryDocument;
 
 import java.io.*;
-import java.util.Collection;
+import java.util.List;
 
 /**
  *
@@ -21,8 +22,13 @@ public class Main implements IWordsRecorderConector{
     private BufferedReader bufferReaderTeclado;
     private WordService backend;
     private AudioStopper stopper;
-    Collection<Document> searchResult;
+    List<Tuple<Double, Document>> searchResult;
 
+    /**
+     *
+     * @param directorioArchivos
+     * Directorio de trabajo
+     */
     public Main (String directorioArchivos){
 
         directorioArchivos = directorioArchivos.trim();
@@ -108,6 +114,9 @@ public class Main implements IWordsRecorderConector{
         return linea;
     }
 
+    /**
+     * @return Char Leido del teclado
+     */
     private char readKeyBoardChar(){
         String opcion;
         do
@@ -115,6 +124,15 @@ public class Main implements IWordsRecorderConector{
         while (opcion.length() == 0 || opcion.length() > 1);
 
         return opcion.trim().toLowerCase().charAt(0);
+    }
+
+    /**
+     * @return Integer leido del teclado
+     *  TODO Validacion
+     */
+    private int readKeyBoardInt(){
+        int returnValue = Integer.parseInt(readKeyboardString());
+        return returnValue;
     }
 
     /**
@@ -134,6 +152,8 @@ public class Main implements IWordsRecorderConector{
         case '2': playDocument();break;
         case '3': searchDocument();break;
         }
+
+        //Finalizo el backend
         backend.end();
     }
 
@@ -178,52 +198,66 @@ public class Main implements IWordsRecorderConector{
         showMenu();
 
     }
-    
+
+    /**
+     * Busca el documento en el backend
+     *
+     */
     private void searchDocument(){
-    	
-    	sendMessage("Ingrese el criterio de busqueda:");
-    	String busqueda = readKeyboardString();
-    	
-    	MemoryDocument document = new MemoryDocument();
-    	document.addLine(busqueda);
-    	
-    	searchResult = backend.searchDocument(document);
-    	showSearchResult();
-    	showMenu();
-    	
+
+        sendMessage("Ingrese el criterio de busqueda:");
+        String busqueda = readKeyboardString();
+
+        MemoryDocument document = new MemoryDocument();
+        document.addLine(busqueda);
+
+        searchResult = backend.searchDocument(document);
+        showSearchResult();
+        showMenu();
+
     }
-    
+
+    /**
+     * Muestra los resultados de la busqueda
+     *
+     */
     private void showSearchResult(){
-    	int i = 0;
-    	
-    	sendMessage("Resultado de busqueda:");
-    	
-    	for (Document doc : searchResult){
-    		doc.open();
-    		
-    		String line = doc.readLine().substring(0, 20);
-    	
-    		if (line != null){
-    			sendMessage(new Integer(++i).toString() + " - " + line);
-    		}
-    		
-    		doc.close();
-    	}
-    	
-    	if (i == 0){
-    		sendMessage("No se han encontrado documentos. ");
-    	}
-    	else {
-    		sendMessage("Desea reproducir un documento(s/n):");
-    		if (readKeyBoardChar() == 's'){
-    			sendMessage("Ingrese el numero de documento:");
-    			//TODO: leer de teclado el numero y hacer
-    			//un backend.playDocument(searchResult[numero])
-    		}
-    		
-    	}
-    	
+        int i = 0;
+
+        sendMessage("Resultado de busqueda:");
+
+        for (Tuple<Double, Document> result : searchResult){
+
+            Double docValue = result.getFirst();
+            Document doc = result.getSecond();
+            doc.open();
+
+            String line = doc.readLine().substring(0, 20);
+
+            if (line != null){
+                sendMessage(new Integer(++i).toString() + " - " + new Double(docValue).toString() + " - "+ line);
+            }
+
+            doc.close();
+        }
+
+        if (i == 0){
+            sendMessage("No se han encontrado documentos. ");
+        }
+        else {
+            sendMessage("Desea reproducir un documento(s/n):");
+            if (readKeyBoardChar() == 's'){
+
+                sendMessage("Ingrese el numero de documento:");
+
+                int searchOption = readKeyBoardInt();
+
+                if (searchOption > 0 && searchOption <= searchResult.size())
+                    backend.playDocument(searchResult.get(searchOption - 1).getSecond(), this);
+            }
+        }
     }
+
 
     /**
      * Main

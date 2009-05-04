@@ -5,6 +5,12 @@ import ar.com.datos.persistencia.SoundPersistenceService;
 import ar.com.datos.documentlibrary.Document;
 import ar.com.datos.parser.Parser;
 
+/**
+ * @deprecated
+ *
+ * @author mfernandez
+ *
+ */
 public class DocumentRecorder implements IWordsRecorderConector, AudioStopper {
 
     private WordsRecorder grabador;
