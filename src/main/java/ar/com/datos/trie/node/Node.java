@@ -18,9 +18,6 @@ public abstract class Node <E extends Element<K, A>, K extends Key<A>,A extends 
 	// Esto se debe a que hay niveles con un comportamiento especial.
 	protected int level; 
 	
-	// Referencia al proximo nodo (que estara en el nivel (this.level+1) del Trie)
-	protected NodeReference nodeReference;
-	
 	public Node(int level) {
 		this.level = level;
 	}
@@ -28,9 +25,5 @@ public abstract class Node <E extends Element<K, A>, K extends Key<A>,A extends 
 	public abstract E findElement(K key);
 	
 	public abstract boolean addElement(E Element);
-	
-	public void setNodeReference(NodeReference<E, K, A> nodeReference){
-		this.nodeReference = nodeReference;
-	}
 	
 }
