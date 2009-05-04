@@ -23,13 +23,24 @@ public class Parser implements Iterable<List<String>> {
     private static String stringRegex;
 
     static {
-        separators = new String[3];
+
+        //TODO: Completar con los separators que falten
+        separators = new String[4];
         separators[0] = "?";
         separators[1] = ";";
         separators[2] = ".";
+        separators[3] = "!";
 
-        //TODO: Todos los caracteres excepto
-        stringRegex = "[^a-zA-Z\\.\\;\\?]";
+        //Reemplazar todos los caracteres excepto:
+        stringRegex = "[^a-z";
+
+        //Completo el regex con los separadores, es decir, no seran removidos
+        for (int i = 0; i < separators.length; i++){
+            stringRegex += "\\" + separators[i];
+        }
+
+        //Cierro el Regex
+        stringRegex += "]";
 
     }
 
