@@ -1,5 +1,7 @@
 package ar.com.datos.util;
 
+import java.util.Comparator;
+
 public class Tuple<K, V> {
 	private K first;
 	private V second;
@@ -21,5 +23,14 @@ public class Tuple<K, V> {
 	}
 	public void setSecond(V second) {
 		this.second = second;
+	}
+	
+	/**
+	 * Compara una tupla con otra usando first.
+	 */
+	public static class FirstComparator<T extends Tuple<C, ?>, C extends Comparable<C>> implements Comparator<T> {
+		public int compare(T o1, T o2) {
+			return o1.getFirst().compareTo(o2.getFirst());
+		}
 	}
 }
