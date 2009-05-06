@@ -10,7 +10,7 @@ import ar.com.datos.trie.KeyAtom;
 import ar.com.datos.trie.node.LeafPartitionNode;
 
 public class 
-LeafNodeSerializer<E extends Element<K, A>, K extends Key<A>,A extends KeyAtom> 
+LeafPartitionNodeSerializer<E extends Element<K, A>, K extends Key<A>,A extends KeyAtom> 
 implements Serializer<LeafPartitionNode<E,K,A>>{
 
 	@Override
