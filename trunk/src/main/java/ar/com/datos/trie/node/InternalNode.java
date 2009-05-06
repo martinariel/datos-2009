@@ -3,12 +3,14 @@
  */
 package ar.com.datos.trie.node;
 
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
 import ar.com.datos.trie.Element;
 import ar.com.datos.trie.Key;
 import ar.com.datos.trie.KeyAtom;
+import ar.com.datos.trie.node.exception.LeafPartitionLimitException;
 
 /**
  * @author marcos
@@ -19,9 +21,6 @@ public class InternalNode <E extends Element<K, A>, K extends Key<A>,A extends K
 	// Referencia a los proximos nodos (nodos hijos). Estos nodos hijos estan 
 	// en el nivel (this.level+1) del Trie, un nivel mas que este nodo (this).
 	protected List<NodeReference<E,K,A>> childNodesReferences;
-	
-	// La porcion de clave de este nodo (this)
-	protected A keyAtom;
 	
 	// Indica si en este nodo hay una terminacion (una clave termina en este nodo).
 	// Ej: si se agrega "MAR" y este nodo tiene la "R" entonces, este element 
@@ -34,10 +33,9 @@ public class InternalNode <E extends Element<K, A>, K extends Key<A>,A extends K
 	protected NodeFactory<E,K,A> nodeFactory;
 	
 	
-	public InternalNode(int level, A keyAtom, NodeFactory<E,K,A> nodeFactory) {
+	public InternalNode(int level, NodeFactory<E,K,A> nodeFactory) {
 		super(level);
 		this.element = null;
-		this.keyAtom = keyAtom;
 		this.nodeFactory = nodeFactory;
 		this.childNodesReferences = new LinkedList<NodeReference<E,K,A>>();
 	}
@@ -46,49 +44,82 @@ public class InternalNode <E extends Element<K, A>, K extends Key<A>,A extends K
 	public boolean addElement(E element) {
 		boolean wasChildModified = false;
 		boolean wasThisNodeModified = false;
-		
-		K key = element.getKey();
-		NodeReference<E,K,A> childNodeReference = this.findChildNodeReferenceFor(element);
 		Node<E,K,A> child;
+		NodeReference<E,K,A> childNodeReference = this.findChildNodeReferenceFor(element.getKey());
 		
 		if (childNodeReference != null) {
 			child = childNodeReference.getNode();
+			if (child==null){
+				child = this.nodeFactory.createNode(this.level+1);
+			}
 		} else {
-			int childLevel = this.level+1;
-			A childKeyAtom = key.getKeyAtom(childLevel);
-			
-			// creo el nodo hijo y una referencia a ese nodo
-			child = this.nodeFactory.createNode(childLevel, childKeyAtom);
-			childNodeReference = this.nodeFactory.createNodeReference(childLevel, childKeyAtom);
-			
-			// me guardo la referencia ya que es un nodo hijo nuevo. 
+			// creo una nueva NodeReference y la guardo en este nodo
+			childNodeReference = this.nodeFactory.createNodeReference(this.level+1, 
+					element.getKey().getKeyAtom(this.level+1));
 			this.childNodesReferences.add(childNodeReference);
+			
+			// creo el nodo hijo
+			child = this.nodeFactory.createNode(this.level+1);
 			
 			wasThisNodeModified = true;
 		}
 		
-		// agrego el elemento y me fijo si el child fue modificado.
-	    wasChildModified = child.addElement(element);
-	    
-	    // si el child fue modificado guardo primero el child
-	    if (wasChildModified){ 
-	    	childNodeReference.saveNode(child);
-	    }
-	    
+		try{
+			// agrego el elemento y me fijo si el child fue modificado.
+		    wasChildModified = child.addElement(element);
+		    // si el child fue modificado guardo primero el child
+		    if (wasChildModified){ 
+		    	childNodeReference.saveNode(child);
+		    }
+		} catch(LeafPartitionLimitException e){
+			// estoy en un nodo hoja, en una particion que esta completa
+			// debo crear una nueva particion para el nodo
+		    child = this.nodeFactory.createNode(this.level+1);
+		    // agregarle el elemento a esa particion del nodo
+		    child.addElement(element);
+		    // salvo la particion del nodo recien creada
+		    childNodeReference.saveNode(child);
+		    // este nodo (this) se modifico porque agregue una nueva referencia
+		    wasThisNodeModified = true;
+		    
+		}
+		
 	    // devuelvo si este nodo fue modificado (solo si tuve que crear un subnodo)
 	    return wasThisNodeModified;		
 	}
 
 	@Override
 	public E findElement(K key) {
-		NodeReference<E,K,A> childNodeReference = this.findChildNodeReferenceFor(element);
-		return childNodeReference.getNode().findElement(key);
-	}
-	
-	private NodeReference<E, K, A> findChildNodeReferenceFor(E element) {
-		// TODO Auto-generated method stub
+		E element; // elemento a devolver (si se encuentra en el Trie)
+		
+		// Este algoritmo es generico por eso trabaja con particiones de nodo
+		// en realidad los unicos nodos particionados son los del ultimo nivel, 
+		// con lo cual los nodos anteriores no tendran mas que una sola particion
+		Node<E, K, A> nodePartition;
+		
+		NodeReference<E,K,A> childNodeReference = this.findChildNodeReferenceFor(key);
+		if (childNodeReference != null){
+			Iterator<Node<E,K,A>> it = childNodeReference.iterator();
+			while(it.hasNext()){
+				nodePartition = it.next();
+				element = nodePartition.findElement(key);
+				if (element != null){
+					return element;
+				}
+			}	
+		}
 		return null;
 	}
-
 	
+	private NodeReference<E,K,A> findChildNodeReferenceFor(K key) {
+		NodeReference<E,K,A> nodeRef;
+		Iterator<NodeReference<E,K,A>> it = this.childNodesReferences.iterator();
+		while(it.hasNext()){
+			nodeRef = it.next();
+			if (nodeRef.getKeyAtom() == key.getKeyAtom(this.level+1)){
+				return nodeRef;
+			}
+		}
+		return null;
+	}
 }
