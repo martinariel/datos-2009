@@ -96,7 +96,6 @@ public class InternalNode <E extends Element<K, A>, K extends Key<A>,A extends K
 		    childNodeReference.saveNode(child);
 		    // este nodo (this) se modifico porque agregue una nueva referencia
 		    wasThisNodeModified = true;
-		    
 		}
 		
 	    // devuelvo si este nodo fue modificado (solo si tuve que crear un subnodo)
@@ -106,6 +105,11 @@ public class InternalNode <E extends Element<K, A>, K extends Key<A>,A extends K
 	@Override
 	public E findElement(K key) {
 		E element; // elemento a devolver (si se encuentra en el Trie)
+		
+		// si la key termina en este nodo devuelvo el elemento que tenga
+		if (key.getRestOfKey(this.level+1).size() == 0){
+			return this.element;
+		}
 		
 		// Este algoritmo es generico por eso trabaja con particiones de nodo
 		// en realidad los unicos nodos particionados son los del ultimo nivel, 
