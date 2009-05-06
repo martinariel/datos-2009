@@ -45,14 +45,28 @@ public class InternalNode <E extends Element<K, A>, K extends Key<A>,A extends K
 		boolean wasChildModified = false;
 		boolean wasThisNodeModified = false;
 		Node<E,K,A> child;
+		
+		// en el caso que la key termine en este nodo me guardo el elemento
+		if (element.getKey().getRestOfKey(this.level+1).size() == 0){
+			this.element = element;
+			// indico que este nodo fue modificado
+			return true;
+		}
+		
+		// obtengo la NodeReference al nodo siguiente
 		NodeReference<E,K,A> childNodeReference = this.findChildNodeReferenceFor(element.getKey());
 		
+		// si hay una NodeReference le pido el nodo al que apunta
 		if (childNodeReference != null) {
+			// (en el caso del anteultimo nivel, me devuelve el la ultima particion del nodo hoja)
 			child = childNodeReference.getNode();
+			
+			// si no hay un nodo hijo, necesito crearlo
 			if (child==null){
 				child = this.nodeFactory.createNode(this.level+1);
 			}
 		} else {
+			// si no habia una NodeReference para esta key
 			// creo una nueva NodeReference y la guardo en este nodo
 			childNodeReference = this.nodeFactory.createNodeReference(this.level+1, 
 					element.getKey().getKeyAtom(this.level+1));
@@ -61,6 +75,7 @@ public class InternalNode <E extends Element<K, A>, K extends Key<A>,A extends K
 			// creo el nodo hijo
 			child = this.nodeFactory.createNode(this.level+1);
 			
+			// indico que este nodo fue modificado
 			wasThisNodeModified = true;
 		}
 		
@@ -97,6 +112,9 @@ public class InternalNode <E extends Element<K, A>, K extends Key<A>,A extends K
 		// con lo cual los nodos anteriores no tendran mas que una sola particion
 		Node<E, K, A> nodePartition;
 		
+		// el iterador me permite aplicar el mismo algoritmo para los nodos
+		// internos y para los nodos hojas. 
+		// En el caso de nodos internos, siempre vamos a iterar una sola vez.
 		NodeReference<E,K,A> childNodeReference = this.findChildNodeReferenceFor(key);
 		if (childNodeReference != null){
 			Iterator<Node<E,K,A>> it = childNodeReference.iterator();
@@ -111,6 +129,11 @@ public class InternalNode <E extends Element<K, A>, K extends Key<A>,A extends K
 		return null;
 	}
 	
+	/**
+	 * Devuelve la NodeReference correspondiente a una key, para este nodo.
+	 * Por ejemplo, si este es el nivel de la "A" en "MARCOS", estoy buscando
+	 * la NodeReference correspondiente a la "R".
+	 */
 	private NodeReference<E,K,A> findChildNodeReferenceFor(K key) {
 		NodeReference<E,K,A> nodeRef;
 		Iterator<NodeReference<E,K,A>> it = this.childNodesReferences.iterator();
