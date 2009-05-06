@@ -12,17 +12,20 @@ import ar.com.datos.trie.KeyAtom;
  * @author marcos
  *
  */
+@SuppressWarnings("unchecked")
 public class NodeFactory<E extends Element<K, A>, K extends Key<A>,A extends KeyAtom>{
 
 	private int nLevels;
-	private VariableLengthFileManager<Node<E,K,A>> leafNodeVLFM;
-	private VariableLengthFileManager<Node<E,K,A>> internalNodeVLFM;
+	private int maxLeafPartitionItems;
 	
-	public NodeFactory(int nLevels,
-			VariableLengthFileManager<Node<E,K,A>> leafNodeVLFM,
-			VariableLengthFileManager<Node<E,K,A>> internalNodeVLFM){
+	private VariableLengthFileManager leafPartitionNodeVLFM;
+	private VariableLengthFileManager internalNodeVLFM;
+	public NodeFactory(int nLevels, int maxLeafPartitionItems,
+			VariableLengthFileManager leafNodeVLFM,
+			VariableLengthFileManager internalNodeVLFM){
 		this.nLevels = nLevels;
-		this.leafNodeVLFM = leafNodeVLFM;
+		this.maxLeafPartitionItems = maxLeafPartitionItems;
+		this.leafPartitionNodeVLFM = leafNodeVLFM;
 		this.internalNodeVLFM = internalNodeVLFM;
 	}
 	
@@ -38,13 +41,11 @@ public class NodeFactory<E extends Element<K, A>, K extends Key<A>,A extends Key
 	 * @param keyAtom la porcion de clave que contendra el nodo a crear
 	 * @return el nodo ya creado (puede ser un nodo hoja o un nodo interno)
 	 */
-	public Node<E,K,A> createNode(int nodeLevel, A keyAtom){
+	public Node<E,K,A> createNode(int nodeLevel){
 		if (nodeLevel < this.nLevels-1){
-			return this.createInternalNode(nodeLevel, keyAtom);
-		} else if (nodeLevel == this.nLevels-1){
-			return this.createSpecialInternalNode(nodeLevel, keyAtom);
+			return this.createInternalNode(nodeLevel);
 		} else if(nodeLevel == this.nLevels){
-			return this.createLeafNode(nodeLevel, keyAtom);
+			return this.createLeafNode(nodeLevel);
 		} else { 
 			// nodeLevel > this.nLevels (numero de nivel mayor que niveles posibles)
 			//TODO: Tirar excepcion!
@@ -73,7 +74,7 @@ public class NodeFactory<E extends Element<K, A>, K extends Key<A>,A extends Key
 		if (nodeLevel < this.nLevels-1){
 			return this.createNodeReferenceWithVLFM(this.internalNodeVLFM, keyAtom);
 		} else if (nodeLevel == this.nLevels-1){
-			return this.createNodeReferenceWithVLFM(this.leafNodeVLFM, keyAtom);
+			return this.createNodeReferenceWithVLFM(this.leafPartitionNodeVLFM, keyAtom);
 		} else { 
 			// nodeLevel >= this.nLevels (numero de nivel mayor o igual que niveles posibles)
 			//TODO: Tirar excepcion!
@@ -86,16 +87,12 @@ public class NodeFactory<E extends Element<K, A>, K extends Key<A>,A extends Key
 		return new NodeReference<E,K,A>(vlfm, keyAtom);
 	}
 	
-	private InternalNode<E,K,A> createInternalNode(int level, A keyAtom){
-		return new InternalNode<E, K, A>(level, keyAtom, this);
+	private InternalNode<E,K,A> createInternalNode(int level){
+		return new InternalNode<E, K, A>(level, this);
 	}
 	
-	private SpecialInternalNode<E,K,A> createSpecialInternalNode(int level, A keyAtom){
-		return new SpecialInternalNode<E, K, A>(level, keyAtom, this);
-	}
-	
-	private LeafNode<E,K,A> createLeafNode(int level, A keyAtom){
-		return new LeafNode<E, K, A>(level, keyAtom);
+	private LeafPartitionNode<E,K,A> createLeafNode(int level){
+		return new LeafPartitionNode<E, K, A>(level, this.maxLeafPartitionItems);
 	}
 	
 	
