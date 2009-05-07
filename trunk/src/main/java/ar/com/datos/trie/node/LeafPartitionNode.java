@@ -3,6 +3,7 @@
  */
 package ar.com.datos.trie.node;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -20,11 +21,16 @@ public class
 LeafPartitionNode<E extends Element<K, A>, K extends Key<A>,A extends KeyAtom> extends Node<E,K,A> {
 	
 	private int maxPartitionItems;
-	private List<Tuple<List<A>,E>> leafPartitionItems;
+	private List<Tuple<List<A>,E>> leafPartitionItems = new ArrayList<Tuple<List<A>,E>>();
 	
 	public LeafPartitionNode(int level, int maxPartitionItems) {
 		super(level);
 		this.maxPartitionItems = maxPartitionItems;
+	}
+
+	public LeafPartitionNode(int level, int maxPartitionItems, List<Tuple<List<A>, E>> leafPartitionItems) {
+		this(level,maxPartitionItems);
+		this.leafPartitionItems = leafPartitionItems;
 	}
 
 	@Override
@@ -42,14 +48,19 @@ LeafPartitionNode<E extends Element<K, A>, K extends Key<A>,A extends KeyAtom> e
 	@Override
 	public E findElement(K key) {
 		Tuple<List<A>, E> item;
+		List<A> restOfKey = key.getRestOfKey(getLevel());
 		Iterator<Tuple<List<A>, E>> it = leafPartitionItems.iterator();
 		while(it.hasNext()){
 			item = it.next();
-			if (item.getSecond().getKey().equals(key)){
+			if (item.getFirst().equals(restOfKey)){
 				return item.getSecond();
 			}
 		}
 		return null;
 	}
 	
+	public List<Tuple<List<A>, E>> getLeafPartitionItems() {
+		return leafPartitionItems;
+	}
+
 }

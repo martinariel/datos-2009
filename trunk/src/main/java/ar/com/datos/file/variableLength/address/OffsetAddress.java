@@ -46,4 +46,8 @@ public class OffsetAddress implements Address {
 		return true;
 	}
 
+	@Override
+	public String toString() {
+		return new StringBuilder("< ").append(this.offset).append(" >").toString();
+	}
 }

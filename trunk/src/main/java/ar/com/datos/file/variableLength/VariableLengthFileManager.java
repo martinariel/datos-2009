@@ -132,7 +132,7 @@ public class VariableLengthFileManager<T> implements BlockAccessor<BlockAddress<
 		try {
 			HydratedBlock<T> block = getBlock(address.getBlockNumber());
 			if ((!block.getBlockNumber().equals(address.getBlockNumber())) || (block.getData().size() <= address.getObjectNumber().intValue())) throw new InvalidAddressException();
-			return block.getData().get(address.getObjectNumber());
+			return block.getData().get(address.getObjectNumber().intValue());
 		} catch (OutOfBoundsException ob) {
 			throw new InvalidAddressException(ob);
 		}

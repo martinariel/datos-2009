@@ -3,11 +3,12 @@
  */
 package ar.com.datos.trie.node;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import ar.com.datos.file.BlockAccessor;
 import ar.com.datos.file.address.BlockAddress;
-import ar.com.datos.file.variableLength.VariableLengthFileManager;
 import ar.com.datos.trie.Element;
 import ar.com.datos.trie.Key;
 import ar.com.datos.trie.KeyAtom;
@@ -18,10 +19,10 @@ import ar.com.datos.trie.KeyAtom;
  */
 public class NodeReference<E extends Element<K, A>, K extends Key<A>,A extends KeyAtom>{
 	private A keyAtom;
-	private List<BlockAddress<Long, Short>> addresses;
-	private VariableLengthFileManager<Node<E,K,A>> vlfm;
+	private List<BlockAddress<Long, Short>> addresses = new ArrayList<BlockAddress<Long,Short>>();
+	private BlockAccessor<BlockAddress<Long,Short>, Node<E,K,A>> vlfm;
 	
-	public NodeReference(VariableLengthFileManager<Node<E,K,A>> vlfm, A keyAtom){
+	public NodeReference(BlockAccessor<BlockAddress<Long,Short>, Node<E,K,A>> vlfm, A keyAtom){
 		this.vlfm = vlfm;
 		this.keyAtom = keyAtom;
 	}
@@ -45,8 +46,7 @@ public class NodeReference<E extends Element<K, A>, K extends Key<A>,A extends K
 			node.setAddress(newAddress);
 		} else {
 			newAddress = this.vlfm.updateEntity(previousAddress, node);
-			if (newAddress.getBlockNumber() == previousAddress.getBlockNumber()
-					&& newAddress.getObjectNumber() == previousAddress.getObjectNumber()){
+			if (newAddress.equals(previousAddress)){
 				return false;
 			} else {
 				node.setAddress(newAddress);
@@ -67,13 +67,24 @@ public class NodeReference<E extends Element<K, A>, K extends Key<A>,A extends K
 	 */
 	public Node<E,K,A> getNode(){
 		if (this.addresses.size() >= 1){
-			return this.vlfm.get(this.addresses.get(this.addresses.size()-1));
+			BlockAddress<Long, Short> address = this.addresses.get(this.addresses.size()-1);
+			Node<E, K, A> node = this.vlfm.get(address);
+			node.setAddress(address);
+			return node;
 		}
 		return null;
 	}
 
 	public Iterator<Node<E,K,A>> iterator() {
 		return new NodeReferenceIterator<E,K,A>(this.vlfm, this.addresses);
+	}
+
+	public List<BlockAddress<Long, Short>> getAddresses() {
+		return addresses;
+	}
+
+	public void setAddresses(List<BlockAddress<Long, Short>> addresses) {
+		this.addresses = addresses;
 	}
 }
 
@@ -83,9 +94,9 @@ implements Iterator<Node<E,K,A>>{
 
 	private int index;
 	private List<BlockAddress<Long, Short>> addresses;
-	private VariableLengthFileManager<Node<E,K,A>> vlfm;
+	private BlockAccessor<BlockAddress<Long,Short>, Node<E,K,A>> vlfm;
 	
-	public NodeReferenceIterator(VariableLengthFileManager<Node<E,K,A>> vlfm,
+	public NodeReferenceIterator(BlockAccessor<BlockAddress<Long,Short>, Node<E,K,A>> vlfm,
 			List<BlockAddress<Long, Short>> addresses){
 		this.vlfm = vlfm;
 		this.addresses = addresses;
@@ -99,8 +110,10 @@ implements Iterator<Node<E,K,A>>{
 
 	@Override
 	public Node<E,K,A> next() {
+		Node<E, K, A> retorno = this.vlfm.get(this.addresses.get(this.index));
+		retorno.setAddress(this.addresses.get(this.index));
 		this.index++;
-		return this.vlfm.get(this.addresses.get(this.index-1));
+		return retorno;
 	}
 
 	@Override

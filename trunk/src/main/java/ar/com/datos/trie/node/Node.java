@@ -13,7 +13,7 @@ import ar.com.datos.trie.KeyAtom;
  * @author marcos
  *
  */
-public abstract class Node <E extends Element<K, A>, K extends Key<A>,A extends KeyAtom>{
+public abstract class Node<E extends Element<K, A>, K extends Key<A>,A extends KeyAtom>{
 
 	// Indica el nivel dentro del Trie en el que esta este nodo. 
 	// Esto se debe a que hay niveles con un comportamiento especial.
@@ -35,5 +35,9 @@ public abstract class Node <E extends Element<K, A>, K extends Key<A>,A extends 
 	public void setAddress(BlockAddress<Long, Short> address) {
 		this.address = address;
 	}
-	
+
+	public int getLevel() {
+		return level;
+	}
+
 }
