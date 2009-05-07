@@ -2,6 +2,7 @@ package ar.com.datos.wordservice.search;
 
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -11,8 +12,11 @@ import java.util.Set;
 
 import ar.com.datos.documentlibrary.Document;
 import ar.com.datos.file.variableLength.address.OffsetAddress;
+import ar.com.datos.indexer.IndexedTerm;
 import ar.com.datos.parser.Parser;
+import ar.com.datos.util.MapEntryComparator;
 import ar.com.datos.util.Tuple;
+import ar.com.datos.util.UpsideDownComparator;
 import ar.com.datos.utils.sort.external.KeyCount;
 import ar.com.datos.wordservice.stopwords.StopWordsDiscriminator;
 
@@ -25,14 +29,16 @@ import ar.com.datos.wordservice.stopwords.StopWordsDiscriminator;
  */
 public class SimpleQueryResolver implements QueryResolver {
 	private StopWordsDiscriminator stopWordsDiscriminator;
-	private Comparator<Tuple<Integer, List<KeyCount<OffsetAddress>>>> comparator;
+	private Comparator<Tuple<Double, IndexedTerm<OffsetAddress>>> comparator1;
+	private Comparator<Map.Entry<OffsetAddress, Double>> comparator2;
 	
 	/**
 	 * Construye una instancia.
 	 */
 	public SimpleQueryResolver(StopWordsDiscriminator stopWordsDiscriminator) {
 		this.stopWordsDiscriminator = stopWordsDiscriminator;
-		this.comparator = new Tuple.FirstComparator<Tuple<Integer, List<KeyCount<OffsetAddress>>>, Integer>();
+		this.comparator1 = new Tuple.FirstComparator<Tuple<Double, IndexedTerm<OffsetAddress>>, Double>();
+		this.comparator2 = new UpsideDownComparator<Map.Entry<OffsetAddress,Double>>(new MapEntryComparator.ByValue<Map.Entry<OffsetAddress,Double>>());
 	}
 	
 	/*
@@ -65,38 +71,64 @@ public class SimpleQueryResolver implements QueryResolver {
 
 	/*
 	 * (non-Javadoc)
-	 * @see ar.com.datos.wordservice.search.QueryResolver#resolveQuery(java.util.Map, ar.com.datos.documentlibrary.Document, int)
+	 * @see ar.com.datos.wordservice.search.QueryResolver#resolveQuery(java.util.Map, long, ar.com.datos.documentlibrary.Document, int)
 	 */
-	@Override
-	public List<Tuple<Double, OffsetAddress>> resolveQuery(Map<String, Tuple<Integer, List<KeyCount<OffsetAddress>>>> termsData, Document query, int maxResults) {
-		List<Tuple<Double, OffsetAddress>> returnValue = new LinkedList<Tuple<Double,OffsetAddress>>();
-		
+	public List<Tuple<Double, OffsetAddress>> resolveQuery(Map<String, IndexedTerm<OffsetAddress>> termsData, long documentCount, Document query, int maxResults) {
 		// En esta implementación la query no me interesa usarla, porque todos los términos deben ser buscados
 		// sin necesidad de operaciones de conjuntos, etc. Así que para saber cuales son los términos uso directamente
 		// termData (puesto que por contrato contiene todos los términos devueltos por getQueryTerms()).
-		List<Tuple<Integer, List<KeyCount<OffsetAddress>>>> termsByNumberOfDocument = new LinkedList<Tuple<Integer,List<KeyCount<OffsetAddress>>>>(termsData.values());
+		List<IndexedTerm<OffsetAddress>> terms = new LinkedList<IndexedTerm<OffsetAddress>>(termsData.values());
 		
-		// Ordeno por peso global.
-		// Lo ordeno de menor a mayor y no necesito calcular el peso global ! (Puesto que
-		// PesoGlobal = log(CantDocsTotal/CantDocsEnQueAparece), y cuanto menor sea
-		// CantDocsEnQueAparece, mayor será el peso global.
-		Collections.sort(termsByNumberOfDocument, this.comparator);
+		// Obtengo el peso global de cada término
+		double globalWeight;
+		List<Tuple<Double, IndexedTerm<OffsetAddress>>> globalWeightTerm = new LinkedList<Tuple<Double,IndexedTerm<OffsetAddress>>>();
+		Iterator<IndexedTerm<OffsetAddress>> itTerm = terms.iterator();
+		IndexedTerm<OffsetAddress> term;
+		while (itTerm.hasNext()) {
+			term = itTerm.next();
+			globalWeight = Math.log10(documentCount / term.getNumberOfAssociatedData());
+			globalWeightTerm.add(new Tuple<Double, IndexedTerm<OffsetAddress>>(globalWeight, term));
+		}
 		
-		Iterator<Tuple<Integer, List<KeyCount<OffsetAddress>>>> itTerms = termsByNumberOfDocument.iterator();
-		Iterator<KeyCount<OffsetAddress>> itDocuments;
-		OffsetAddress address;
-		double similarity;
-		while (itTerms.hasNext()) {
-			// Aca recién tiene que traerse el listado (lazy!)
-			itDocuments = itTerms.next().getSecond().iterator();
-			while (itDocuments.hasNext()) {
-				address = itDocuments.next().getKey();
-				
-				// TODO: acá tendría que calcular la similaridad.
-				similarity = 0D;
-				
-				returnValue.add(new Tuple<Double, OffsetAddress>(similarity, address));
+		// Lo ordeno por peso global.
+		Collections.sort(globalWeightTerm, this.comparator1);
+		
+		// Creo un hashMap donde ire guardando la similitud con cada uno de los documentos.
+		HashMap<OffsetAddress, Double> offsetSimilarity = new HashMap<OffsetAddress, Double>();
+		double similarityPortion;
+		Double similarity;
+		Tuple<Double, IndexedTerm<OffsetAddress>> currentGlobalWeightTerm;
+		Iterator<Tuple<Double, IndexedTerm<OffsetAddress>>> itGlobalWeightTerm = globalWeightTerm.iterator();
+		Iterator<KeyCount<OffsetAddress>> itKeyCountOffset;
+		KeyCount<OffsetAddress> keyCountOffset;
+		while (itGlobalWeightTerm.hasNext()) {
+			currentGlobalWeightTerm = itGlobalWeightTerm.next();
+			// Sim(d,c) ~= Sumatoria(peso(t,d) * pesoGlobal) = Sumatoria(cantOcurrencias * pesoGlobal^2)
+			// con t perteneciente a c. Se ignora la normalización del peso.
+			globalWeight = currentGlobalWeightTerm.getFirst();
+			// Para cada elemento de la lista de documentos...
+			itKeyCountOffset = currentGlobalWeightTerm.getSecond().getAssociatedData().iterator();
+			while (itKeyCountOffset.hasNext()) {
+				keyCountOffset = itKeyCountOffset.next();
+				similarityPortion = keyCountOffset.getCount() * globalWeight * globalWeight;
+				// Agrego al mapa el par similitud-offset
+				similarity = offsetSimilarity.get(keyCountOffset.getKey());
+				similarity = (similarity == null) ? similarityPortion : similarity + similarityPortion;
+				offsetSimilarity.put(keyCountOffset.getKey(), similarity);
 			}
+		}
+		
+		// Tengo el par similitud-offset para todos los documentos. Extraigo los maxResults mejores
+		// y devuelvo eso.
+		List<Tuple<Double, OffsetAddress>> returnValue = new LinkedList<Tuple<Double,OffsetAddress>>();
+		List<Map.Entry<OffsetAddress, Double>> offsetSimilarityList = new LinkedList<Map.Entry<OffsetAddress, Double>>(offsetSimilarity.entrySet());
+		Collections.sort(offsetSimilarityList, this.comparator2); // la ordeno
+		Map.Entry<OffsetAddress, Double> offsetSimilarityEntry;
+		Iterator<Map.Entry<OffsetAddress, Double>> itOffsetSimilarity = offsetSimilarityList.iterator();
+		int count = 0;
+		while (itOffsetSimilarity.hasNext() && count < maxResults) {
+			offsetSimilarityEntry = itOffsetSimilarity.next();
+			returnValue.add(new Tuple<Double, OffsetAddress>(offsetSimilarityEntry.getValue(), offsetSimilarityEntry.getKey()));
 		}
 		
 		return returnValue;

@@ -1,5 +1,7 @@
 package ar.com.datos.documentlibrary;
 
+import java.io.IOException;
+
 import ar.com.datos.file.variableLength.StraightVariableLengthFile;
 import ar.com.datos.file.variableLength.address.OffsetAddress;
 import ar.com.datos.serializer.common.StringSerializerDelimiter;
@@ -9,11 +11,12 @@ import ar.com.datos.serializer.common.StringSerializerDelimiter;
  * 
  */
 public class DocumentLibrary {
-	
 	private StraightVariableLengthFile<String> documentFile;
+	private boolean isClosed;
 	
 	public DocumentLibrary(String fileName){
-		documentFile = new StraightVariableLengthFile<String>(fileName, new StringSerializerDelimiter());
+		this.documentFile = new StraightVariableLengthFile<String>(fileName, new StringSerializerDelimiter());
+		this.isClosed = false;
 	}
 	
 	/**
@@ -22,6 +25,9 @@ public class DocumentLibrary {
 	 * @return Documento
 	 */
 	public Document get(OffsetAddress offset){
+		if (this.isClosed) {
+			throw new RuntimeException();
+		}
 		
 		MemoryDocument document = new MemoryDocument();
 		
@@ -37,6 +43,9 @@ public class DocumentLibrary {
 	 * @return OffsetAdress
 	 */
 	public OffsetAddress add(Document document){
+		if (this.isClosed) {
+			throw new RuntimeException();
+		}
 		
 		StringBuilder fileContent = new StringBuilder();
 		document.close();
@@ -47,5 +56,29 @@ public class DocumentLibrary {
 		document.close();
 		
 		return documentFile.addEntity(fileContent.toString());
+	}
+	
+	public void close() {
+		if (this.isClosed) {
+			throw new RuntimeException();
+		}
+		
+		this.isClosed = true;
+		try {
+			this.documentFile.close();
+		} catch(IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public boolean isClosed() {
+		return this.isClosed;
+	}
+	
+	@Override
+	protected void finalize() throws Throwable {
+		if (!this.isClosed) {
+			close();
+		}
 	}
 }

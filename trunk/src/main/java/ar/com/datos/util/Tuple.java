@@ -34,6 +34,15 @@ public class Tuple<K, V> {
 		}
 	}
 
+	/**
+	 * Compara una tupla con otra usando second.
+	 */
+	public static class SecondComparator<T extends Tuple<?, C>, C extends Comparable<C>> implements Comparator<T> {
+		public int compare(T o1, T o2) {
+			return o1.getSecond().compareTo(o2.getSecond());
+		}
+	}
+	
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder("< ").append(getFirst()).append(" , ").append(getSecond()).append(" >");

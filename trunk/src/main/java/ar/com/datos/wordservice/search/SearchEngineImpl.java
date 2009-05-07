@@ -8,11 +8,12 @@ import java.util.Map;
 import java.util.Set;
 
 import ar.com.datos.documentlibrary.Document;
+import ar.com.datos.documentlibrary.DocumentFromDocumentLibrary;
 import ar.com.datos.documentlibrary.DocumentLibrary;
 import ar.com.datos.file.variableLength.address.OffsetAddress;
+import ar.com.datos.indexer.IndexedTerm;
 import ar.com.datos.indexer.Indexer;
 import ar.com.datos.util.Tuple;
-import ar.com.datos.utils.sort.external.KeyCount;
 import ar.com.datos.wordservice.stopwords.StopWordsDiscriminator;
 
 /**
@@ -20,28 +21,29 @@ import ar.com.datos.wordservice.stopwords.StopWordsDiscriminator;
  * 
  * @author fvalido
  */
-public class SeachEngineImpl implements SearchEngine {
+public class SearchEngineImpl implements SearchEngine {
 	private QueryResolver queryResolver;
-	private Indexer indexer;
+	private Indexer<OffsetAddress> indexer;
 	private DocumentLibrary documentLibrary;
 	
 	/**
 	 * Crea una instancia que usará como {@link QueryResolver} a {@link SimpleQueryResolver}.
 	 */
-	public SeachEngineImpl(Indexer<OffsetAddress> indexer, DocumentLibrary documentLibrary, StopWordsDiscriminator discriminator) {
+	public SearchEngineImpl(Indexer<OffsetAddress> indexer, DocumentLibrary documentLibrary, StopWordsDiscriminator discriminator) {
 		this.indexer = indexer;
-		this.documentLibrary = documentLibrary;
 		this.queryResolver = new SimpleQueryResolver(discriminator);
+		this.documentLibrary = documentLibrary;
 	}
 	
 	/**
 	 * Crea una instancia que usará como el queryResolverPasado.
 	 */
-	public SeachEngineImpl(Indexer<OffsetAddress> indexer, DocumentLibrary documentLibrary, QueryResolver queryResolver) {
+	public SearchEngineImpl(Indexer<OffsetAddress> indexer, DocumentLibrary documentLibrary, QueryResolver queryResolver) {
 		this.indexer = indexer;
-		this.documentLibrary = documentLibrary;
 		this.queryResolver = queryResolver;
+		this.documentLibrary = documentLibrary;
 	}	
+	
 	
 	/*
 	 * (non-Javadoc)
@@ -59,28 +61,33 @@ public class SeachEngineImpl implements SearchEngine {
 	@Override
 	public List<Tuple<Double, Document>> lookUp(Document query, int maxResults, QueryResolver queryResolver) {
 		Set<String> terms = queryResolver.getQueryTerms(query);
-		Map<String, Tuple<Integer, List<KeyCount<OffsetAddress>>>> termsData = new HashMap<String, Tuple<Integer,List<KeyCount<OffsetAddress>>>>();
+		Map<String, IndexedTerm<OffsetAddress>> termsData = new HashMap<String, IndexedTerm<OffsetAddress>>();
 
+		// Mediante el indexer busco cada término obteniendo una representación que posee las listas, etc.
 		Iterator<String> itTerms = terms.iterator();
 		String term;
-		Tuple<Integer, List<KeyCount<OffsetAddress>>> termData;
+		IndexedTerm<OffsetAddress> termData;
 		while (itTerms.hasNext()) {
 			term = itTerms.next();
 			
-			// FIXME: Cuando Juan lo haya hecho. termData = indexer.findTerm(term);
-			termData = null;
-			termsData.put(term, termData);
+			termData = this.indexer.findTerm(term);
+			if (termData != null) {
+				termsData.put(term, termData);
+			}
 		}
 
-		List<Tuple<Double, Document>> documents = new LinkedList<Tuple<Double,Document>>();
-		Iterator<Tuple<Double, OffsetAddress>> itDocs = queryResolver.resolveQuery(termsData, query, maxResults).iterator();
-		Tuple<Double, OffsetAddress> docsSimilarity;
-		while (itDocs.hasNext()) {
-			docsSimilarity = itDocs.next();
-			documents.add(new Tuple<Double, Document>(docsSimilarity.getFirst(), this.documentLibrary.get(docsSimilarity.getSecond())));
+		// Resulvo la consulta delegando al queryResolver.
+		long documentCount = this.indexer.getNumberOfIndexedTerms(); // FIXME: Es el total de documentos !!
+		Iterator<Tuple<Double, OffsetAddress>> itSimilarityOffset = queryResolver.resolveQuery(termsData, documentCount, query, maxResults).iterator();
+
+		List<Tuple<Double, Document>> returnValue = new LinkedList<Tuple<Double,Document>>();
+		Tuple<Double, OffsetAddress> current;
+		while (itSimilarityOffset.hasNext()) {
+			current = itSimilarityOffset.next();
+			returnValue.add(new Tuple<Double, Document>(current.getFirst(), new DocumentFromDocumentLibrary(this.documentLibrary, current.getSecond())));
 		}
 		
-		return documents;
+		return returnValue;
 	}
 
 }
