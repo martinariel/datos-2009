@@ -7,7 +7,7 @@ import ar.com.datos.util.Tuple;
 
 /**
  * Encargado de la consulta de documentos dentro del FTRS.
- * Busca a partir de una query un número de resultados ordenados por relevancia. 
+ * Busca a partir de una query un número de resultados ordenados por similitud. 
  * 
  * @see QueryResolver
  * 
@@ -16,7 +16,7 @@ import ar.com.datos.util.Tuple;
 public interface SearchEngine {
 	/**
 	 * Realiza la búsqueda contenida en query, devolviendo los primeros maxResults
-	 * ordenados por relevancia. Para resolver la query y el orden de relevancia
+	 * ordenados por similitud. Para resolver la query y el orden de similitud
 	 * utiliza el {@link QueryResolver} por defecto para la implementación (clase
 	 * u objeto) actual.
 	 * 
@@ -25,12 +25,13 @@ public interface SearchEngine {
 	 * @param maxResults
 	 * Máxima cantidad de resultados a obtener.
 	 * @return
-	 * Lista ordenada de documentos por orden de ranking (superior ranking primero).
+	 * Lista de tuplas formadas por la similitud con la consulta y el documento ordenada 
+	 * por la similitud.
 	 */
 	public List<Tuple<Double, Document>> lookUp(Document query, int maxResults);
 	/**
 	 * Realiza la búsqueda contenida en query, devolviendo los primeros maxResults
-	 * ordenados por relevancia. Para resolver la query y el orden de relevancia
+	 * ordenados por similitud. Para resolver la query y el orden de similitud
 	 * utiliza el {@link QueryResolver} recibido.
 	 * 
 	 * @param query
@@ -38,9 +39,10 @@ public interface SearchEngine {
 	 * @param maxResults
 	 * Máxima cantidad de resultados a obtener.
 	 * @param queryResolver
-	 * {@link QueryResolver} a utilizar para resolver la consulta y el orden de relevancia.
+	 * {@link QueryResolver} a utilizar para resolver la consulta y el orden de similitud.
 	 * @return
-	 * Lista ordenada de documentos por orden de ranking (superior ranking primero).
+	 * Lista de tuplas formadas por la similitud con la consulta y el documento ordenada 
+	 * por la similitud.
 	 */
 	public List<Tuple<Double, Document>> lookUp(Document query, int maxResults, QueryResolver queryResolver);
 }

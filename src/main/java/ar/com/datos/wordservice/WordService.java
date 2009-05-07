@@ -14,7 +14,7 @@ import ar.com.datos.indexer.SimpleSessionIndexer;
 import ar.com.datos.persistencia.SoundPersistenceService;
 import ar.com.datos.persistencia.variableLength.SoundPersistenceServiceVariableLengthImpl;
 import ar.com.datos.util.Tuple;
-import ar.com.datos.wordservice.search.SeachEngineImpl;
+import ar.com.datos.wordservice.search.SearchEngineImpl;
 import ar.com.datos.wordservice.search.SearchEngine;
 import ar.com.datos.wordservice.stopwords.StopWordsDiscriminator;
 import ar.com.datos.wordservice.stopwords.StopWordsDiscriminatorBuilder;
@@ -60,7 +60,7 @@ public class WordService {
         stopWords 		= StopWordsDiscriminatorBuilder.build(directory + stopWordsFileName, directory + stopPhrasesFileName);
         indexer 		= new SimpleSessionIndexer<OffsetAddress>(directory + indexFileName, new OffsetAddressSerializer());
         crawler 		= new SimpleCrawler(indexer, stopWords ,documentLibrary);
-        searchEngine 	= new SeachEngineImpl(indexer, documentLibrary, stopWords);
+        searchEngine 	= new SearchEngineImpl(indexer, documentLibrary, stopWords);
 
     }
 

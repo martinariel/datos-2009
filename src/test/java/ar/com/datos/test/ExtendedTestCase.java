@@ -19,8 +19,7 @@ public class ExtendedTestCase extends TestCase {
 		assertTrue(bigger.compareTo(lower) > 0);
 	}
 
-	public void assertBigger(Object bigger, Object lower, Comparator<Object> c) {
-		assertTrue(bigger.getClass().isAssignableFrom(lower.getClass()) || lower.getClass().isAssignableFrom(bigger.getClass()));
+	public <T, R extends T, S extends T> void assertBigger(R bigger, S lower, Comparator<T> c) {
 		assertTrue(c.compare(bigger, lower) > 0);
 	}
 	
@@ -30,8 +29,7 @@ public class ExtendedTestCase extends TestCase {
 		assertTrue(bigger.compareTo(lower) >= 0);
 	}
 	
-	public void assertBiggerOrEquals(Object bigger, Object lower, Comparator<Object> c) {
-		assertTrue(bigger.getClass().isAssignableFrom(lower.getClass()) || lower.getClass().isAssignableFrom(bigger.getClass()));
+	public <T, R extends T, S extends T> void assertBiggerOrEquals(R bigger, S lower, Comparator<T> c) {
 		assertTrue(c.compare(bigger, lower) >= 0);
 	}
 	
@@ -40,7 +38,7 @@ public class ExtendedTestCase extends TestCase {
 		assertBigger(bigger, lower);
 	}
 
-	public void assertLower(Object lower, Object bigger, Comparator<Object> c) {
+	public <T, R extends T, S extends T> void assertLower(R lower, S bigger, Comparator<T> c) {
 		assertBigger(bigger, lower, c);
 	}
 	
@@ -49,7 +47,7 @@ public class ExtendedTestCase extends TestCase {
 		assertBiggerOrEquals(bigger, lower);
 	}
 	
-	public void assertLowerOrEquals(Object lower, Object bigger, Comparator<Object> c) {
+	public <T, R extends T, S extends T> void assertLowerOrEquals(R lower, S bigger, Comparator<T> c) {
 		assertBiggerOrEquals(bigger, lower, c);
 	}
 	
