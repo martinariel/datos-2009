@@ -94,7 +94,6 @@ public abstract class AbstractEspecialRootNode<E extends Element<K>, K extends K
 	 * (non-Javadoc)
 	 * @see ar.com.datos.btree.sharp.node.Node#addElement(ar.com.datos.btree.elements.Element, ar.com.datos.btree.sharp.node.NodeReference, boolean, ar.com.datos.util.WrappedParam)
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
 	public KeyNodeReference<E, K> addElement(E element, 
 											 NodeReference<E, K> brother,

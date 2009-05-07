@@ -148,7 +148,6 @@ public class RootNodeSerializer<E extends Element<K>, K extends Key> implements 
 	/**
 	 * Permite saber el archivo a usar para el tipo de nodo pasado.
 	 */
-	@SuppressWarnings("unchecked")
 	private BlockAccessor<BlockAddress<Long, Short>, Node<E, K>> getFileManagerFor(NodeType nodeType) {
 		BlockAccessor<BlockAddress<Long, Short>, Node<E, K>> returnValue = null;
 		switch (nodeType) {
