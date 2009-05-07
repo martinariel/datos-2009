@@ -3,8 +3,8 @@
  */
 package ar.com.datos.trie.node;
 
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 
 import ar.com.datos.trie.Element;
@@ -37,7 +37,7 @@ public class InternalNode <E extends Element<K, A>, K extends Key<A>,A extends K
 		super(level);
 		this.element = null;
 		this.nodeFactory = nodeFactory;
-		this.childNodesReferences = new LinkedList<NodeReference<E,K,A>>();
+		this.childNodesReferences = new ArrayList<NodeReference<E,K,A>>();
 	}
 	
 	@Override
@@ -143,10 +143,37 @@ public class InternalNode <E extends Element<K, A>, K extends Key<A>,A extends K
 		Iterator<NodeReference<E,K,A>> it = this.childNodesReferences.iterator();
 		while(it.hasNext()){
 			nodeRef = it.next();
-			if (nodeRef.getKeyAtom() == key.getKeyAtom(this.level+1)){
+			if (nodeRef.getKeyAtom().equals(key.getKeyAtom(this.level+1))){
 				return nodeRef;
 			}
 		}
 		return null;
+	}
+
+	public List<NodeReference<E, K, A>> getChildNodesReferences() {
+		return childNodesReferences;
+	}
+
+	public void setChildNodesReferences(
+			List<NodeReference<E, K, A>> childNodesReferences) {
+		this.childNodesReferences = childNodesReferences;
+	}
+
+	public E getElement() {
+		return element;
+	}
+
+	public void setElement(E element) {
+		this.element = element;
+	}
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(this.getLevel()).append(" : ").append(this.getElement()).append(" {");
+
+		for (NodeReference<E,K,A> nr : this.childNodesReferences)
+			sb.append("( ").append(nr.getKeyAtom()).append(" => ").append(nr.getAddresses()).append(" )");
+		
+		return sb.append("}").toString();
 	}
 }

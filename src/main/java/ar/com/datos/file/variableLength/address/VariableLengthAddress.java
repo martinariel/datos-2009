@@ -26,4 +26,8 @@ public class VariableLengthAddress implements BlockAddress<Long, Short> {
 		return String.format("%1$019d%2$05d", getBlockNumber(), getObjectNumber());
 	}
 
+	@Override
+	public String toString() {
+		return new StringBuilder("< ").append(getBlockNumber()).append(", ").append(getObjectNumber()).append(" >").toString();
+	}
 }
