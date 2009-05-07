@@ -1,7 +1,6 @@
 package ar.com.datos.indexer.tree;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -122,7 +121,7 @@ public class IndexerTreeElement<T> implements Element<IndexerTreeKey>, IndexedTe
 	}
 	
 	@Override
-	public Collection<KeyCount<T>> getAssociatedData() {
+	public List<KeyCount<T>> getAssociatedData() {
 		return this.indexer.getListsForTerms().get(this.getDataCountAddress()).getSecond();
 	}
 
