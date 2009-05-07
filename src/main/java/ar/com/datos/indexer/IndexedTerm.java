@@ -1,6 +1,6 @@
 package ar.com.datos.indexer;
 
-import java.util.Collection;
+import java.util.List;
 
 import ar.com.datos.utils.sort.external.KeyCount;
 
@@ -19,6 +19,6 @@ public interface IndexedTerm<T> {
 	 * Devuelve todos los datos asociados al este término con la cantidad de asociaciones existentes
 	 * @return
 	 */
-	public Collection<KeyCount<T>> getAssociatedData();
+	public List<KeyCount<T>> getAssociatedData();
 
 }
