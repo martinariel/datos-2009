@@ -3,7 +3,6 @@ package ar.com.datos.file.variableLength.address;
 import ar.com.datos.buffer.InputBuffer;
 import ar.com.datos.buffer.OutputBuffer;
 import ar.com.datos.serializer.NullableSerializer;
-import ar.com.datos.serializer.Serializer;
 import ar.com.datos.serializer.common.LongSerializer;
 import ar.com.datos.serializer.common.SerializerCache;
 

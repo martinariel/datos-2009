@@ -58,7 +58,6 @@ public class TestStopWordsDiscrminatorTemp extends TestCase {
 		Hashtable h;
 		List<String> phrase;
 		Hashtable sessionStopPhrases = new Hashtable();
-		Tuple<Boolean, Hashtable> t;
 		
 		for (int i=0; i < phrases.size(); i++){
 			phrase = phrases.get(i);
