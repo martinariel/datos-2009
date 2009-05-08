@@ -12,7 +12,7 @@ import ar.com.datos.file.variableLength.address.OffsetAddressSerializer;
 import ar.com.datos.indexer.SessionIndexer;
 import ar.com.datos.indexer.SimpleSessionIndexer;
 import ar.com.datos.persistencia.SoundPersistenceService;
-import ar.com.datos.persistencia.variableLength.SoundPersistenceServiceVariableLengthImpl;
+import ar.com.datos.persistencia.variableLength.SoundPersistenceServiceTrieImpl;
 import ar.com.datos.util.Tuple;
 import ar.com.datos.wordservice.search.SearchEngineImpl;
 import ar.com.datos.wordservice.search.SearchEngine;
@@ -41,6 +41,7 @@ public class WordService {
     private static final String indexFileName			= "indice";
     private static final String stopWordsFileName 	= "resources/stopWords/stopWordsFile.txt";
     private static final String stopPhrasesFileName 	= "resources/stopWords/stopWordsPhrases.txt";
+    private static final int MAX_SEARCH_RESULTS = 5;
 
     /**
      * Crea la instancia del backend
@@ -50,12 +51,8 @@ public class WordService {
      */
     public WordService (String directory){
 
-        //TODO reemplazar por persistencia en Trie
-        soundPersistenceService = new SoundPersistenceServiceVariableLengthImpl(
-                directory + wordsFileName,
-                directory + soundsFileName
-        );
 
+        soundPersistenceService = new SoundPersistenceServiceTrieImpl(directory + wordsFileName, directory + soundsFileName );
         documentLibrary = new DocumentLibrary (directory + documentsFileName);
         stopWords 		= StopWordsDiscriminatorBuilder.build(directory + stopWordsFileName, directory + stopPhrasesFileName);
         indexer 		= new SimpleSessionIndexer<OffsetAddress>(directory + indexFileName, new OffsetAddressSerializer());
@@ -90,7 +87,7 @@ public class WordService {
      * Lista ordenada de documentos por orden de ranking (superior ranking primero).
      */
     public List<Tuple<Double, Document>> searchDocument(Document query){
-        return searchEngine.lookUp(query, 5);
+        return searchEngine.lookUp(query, MAX_SEARCH_RESULTS);
     }
 
 
