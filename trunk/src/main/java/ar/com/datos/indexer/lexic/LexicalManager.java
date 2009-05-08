@@ -25,8 +25,7 @@ public class LexicalManager implements Closeable {
 	}
 	public OffsetAddress add(String token) {
 		incrementarContadorDeTerminos();
-		OffsetAddress nuevoOffset = this.lexical.addEntity(new LexicalTermData(token));
-		return nuevoOffset;
+		return this.lexical.addEntity(new LexicalTermData(token));
 	}
 	protected void incrementarContadorDeTerminos() {
 		getSerializer().setCurrentToCounter();

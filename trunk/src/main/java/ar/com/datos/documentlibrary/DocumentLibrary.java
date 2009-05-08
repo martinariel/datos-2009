@@ -2,20 +2,21 @@ package ar.com.datos.documentlibrary;
 
 import java.io.IOException;
 
+import ar.com.datos.file.exception.OutOfBoundsException;
 import ar.com.datos.file.variableLength.StraightVariableLengthFile;
 import ar.com.datos.file.variableLength.address.OffsetAddress;
-import ar.com.datos.serializer.common.StringSerializerDelimiter;
 
 /**
  * Libreria de documentos
  * 
  */
 public class DocumentLibrary {
-	private StraightVariableLengthFile<String> documentFile;
+	private StraightVariableLengthFile<LibraryData> documentFile;
 	private boolean isClosed;
-	
+	private LibraryStateSerializer serializer;
 	public DocumentLibrary(String fileName){
-		this.documentFile = new StraightVariableLengthFile<String>(fileName, new StringSerializerDelimiter());
+		this.serializer = new LibraryStateSerializer();
+		this.documentFile = new StraightVariableLengthFile<LibraryData>(fileName, this.serializer);
 		this.isClosed = false;
 	}
 	
@@ -29,12 +30,8 @@ public class DocumentLibrary {
 			throw new RuntimeException();
 		}
 		
-		MemoryDocument document = new MemoryDocument();
+		return (Document) this.documentFile.get(offset);
 		
-		String fileContent = documentFile.get(offset);
-		document.addLine(fileContent);
-		
-		return document;
 	}
 	
 	/**
@@ -46,16 +43,22 @@ public class DocumentLibrary {
 		if (this.isClosed) {
 			throw new RuntimeException();
 		}
+		this.incrementDocumentCounter();
+		return documentFile.addEntity((LibraryData) document);
+	}
+	
+	protected void incrementDocumentCounter() {
+		getSerializer().setCurrentToCounter();
+		try {
+			OffsetAddress counterAddress = new OffsetAddress(0L);
+			LibraryCounterData lcd = (LibraryCounterData) this.documentFile.get(counterAddress);
+			lcd.increment();
+			this.documentFile.updateEntity(counterAddress, lcd);
+		} catch (OutOfBoundsException obe) {
+			this.documentFile.addEntity(new LibraryCounterData(1L));
+		}
+		getSerializer().setCurrentToDocument();
 		
-		StringBuilder fileContent = new StringBuilder();
-		document.close();
-		document.open();
-		for (String linea = document.readLine(); linea != null; linea = document.readLine()) {
-            fileContent.append(linea);
-        }
-		document.close();
-		
-		return documentFile.addEntity(fileContent.toString());
 	}
 	
 	public void close() {
@@ -81,4 +84,22 @@ public class DocumentLibrary {
 			close();
 		}
 	}
+
+	public Long getNumberOfDocuments() {
+		try {
+			getSerializer().setCurrentToCounter();
+			OffsetAddress counterAddress = new OffsetAddress(0L);
+			LibraryCounterData lcd = (LibraryCounterData) this.documentFile.get(counterAddress);
+			return lcd.getCurrentCount();
+		} catch (OutOfBoundsException obe) {
+			return 0L;
+		} finally {
+			getSerializer().setCurrentToDocument();
+		}
+	}
+
+	protected LibraryStateSerializer getSerializer() {
+		return this.serializer;
+	}
+	
 }

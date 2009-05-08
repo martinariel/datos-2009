@@ -126,4 +126,8 @@ public class StringSerializerDelimiter implements Serializer<String> {
 	public long getDehydrateSize(String object) {
 		return object.length() * 2 + this.delimiter.length;
 	}
+
+	public byte[] getDelimiter() {
+		return delimiter;
+	}
 }
