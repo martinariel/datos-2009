@@ -5,7 +5,7 @@ import java.util.List;
 
 import ar.com.datos.buffer.InputBuffer;
 import ar.com.datos.buffer.OutputBuffer;
-import ar.com.datos.serializer.Serializer;
+import ar.com.datos.serializer.NullableSerializer;
 import ar.com.datos.serializer.common.SerializerCache;
 import ar.com.datos.serializer.common.ShortSerializer;
 import ar.com.datos.serializer.exception.SerializerException;
@@ -17,7 +17,7 @@ import ar.com.datos.trie.node.LeafPartitionNode;
 import ar.com.datos.util.Tuple;
 
 public class 
-LeafPartitionNodeSerializer<E extends Element<K, A>, K extends Key<A>,A extends KeyAtom> implements Serializer<LeafPartitionNode<E,K,A>>{
+LeafPartitionNodeSerializer<E extends Element<K, A>, K extends Key<A>,A extends KeyAtom> implements NullableSerializer<LeafPartitionNode<E,K,A>>{
 
 	private static ShortSerializer shortSerializer = SerializerCache.getInstance().getSerializer(ShortSerializer.class);
 	private DiskTrie<E, K, A> diskTrie;
@@ -29,6 +29,11 @@ LeafPartitionNodeSerializer<E extends Element<K, A>, K extends Key<A>,A extends 
 	@Override
 	public void dehydrate(OutputBuffer output, LeafPartitionNode<E, K, A> node)
 			throws SerializerException {
+		if (node == null) { 
+			this.dehydrateNull(output);
+			return;
+		}
+		
 		List<Tuple<List<A>, E>> datos = node.getLeafPartitionItems();
 		shortSerializer.dehydrate(output, (short)datos.size());
 		for (Tuple<List<A>, E> tupla : datos) {
@@ -66,6 +71,10 @@ LeafPartitionNodeSerializer<E extends Element<K, A>, K extends Key<A>,A extends 
 			datos.add(new Tuple<List<A>, E>(atoms, element));
 		}
 		return new LeafPartitionNode<E, K, A>(this.diskTrie.getLeafLevel(), this.diskTrie.getLeafPartitionSize(), datos);
+	}
+
+	public void dehydrateNull(OutputBuffer buffer) {
+		shortSerializer.dehydrate(buffer, (short)0);
 	}
 
 }

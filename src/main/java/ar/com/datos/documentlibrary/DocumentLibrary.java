@@ -30,7 +30,7 @@ public class DocumentLibrary {
 			throw new RuntimeException();
 		}
 		
-		return (Document) this.documentFile.get(offset);
+		return ((LibraryDocumentData)this.documentFile.get(offset)).getDocument();
 		
 	}
 	
@@ -44,7 +44,7 @@ public class DocumentLibrary {
 			throw new RuntimeException();
 		}
 		this.incrementDocumentCounter();
-		return documentFile.addEntity((LibraryData) document);
+		return documentFile.addEntity(new LibraryDocumentData(document));
 	}
 	
 	protected void incrementDocumentCounter() {

@@ -7,6 +7,7 @@ import ar.com.datos.buffer.InputBuffer;
 import ar.com.datos.buffer.OutputBuffer;
 import ar.com.datos.file.address.BlockAddress;
 import ar.com.datos.indexer.serializer.VariableLengthAddressSerializer;
+import ar.com.datos.serializer.NullableSerializer;
 import ar.com.datos.serializer.Serializer;
 import ar.com.datos.serializer.common.SerializerCache;
 import ar.com.datos.serializer.common.ShortSerializer;
@@ -20,7 +21,7 @@ import ar.com.datos.trie.node.NodeFactory;
 import ar.com.datos.trie.node.NodeReference;
 
 public class InternalNodeSerializer<E extends Element<K, A>, K extends Key<A>,A extends KeyAtom> 
-implements Serializer<InternalNode<E,K,A>>{
+implements NullableSerializer<InternalNode<E,K,A>>{
 
 	private ShortSerializer shortSerializer = SerializerCache.getInstance().getSerializer(ShortSerializer.class);
 	private VariableLengthAddressSerializer addressSerializer = new VariableLengthAddressSerializer();
@@ -35,6 +36,10 @@ implements Serializer<InternalNode<E,K,A>>{
 
 	@Override
 	public void dehydrate(OutputBuffer output, InternalNode<E, K, A> node) throws SerializerException {
+		if (node == null) {
+			this.dehydrateNull(output);
+			return;
+		}
 		// Deshidrato el nivel del nodo a serializar
 		this.shortSerializer.dehydrate(output, (short) node.getLevel());
 		// Deshidrato el elemento para este nivel
@@ -59,6 +64,7 @@ implements Serializer<InternalNode<E,K,A>>{
 
 	@Override
 	public long getDehydrateSize(InternalNode<E, K, A> node) {
+		
 		// Deshidrato el nivel del nodo a serializar
 		Long acumulado = this.shortSerializer.getDehydrateSize((short) node.getLevel());
 		// Deshidrato el elemento para este nivel
@@ -84,8 +90,12 @@ implements Serializer<InternalNode<E,K,A>>{
 
 	@Override
 	public InternalNode<E, K, A> hydrate(InputBuffer input) throws SerializerException {
+		
 		// Hidrato el nivel del nodo a serializar
 		Short nivel = this.shortSerializer.hydrate(input);
+		// Trato el caso de que se haya almacenado null
+		if (nivel.equals(Short.MIN_VALUE)) return null;
+		
 		// Hidrato el elemento para este nivel
 		E element = this.diskTrie.getElementSerializer().hydrate(input);
 		
@@ -104,6 +114,10 @@ implements Serializer<InternalNode<E,K,A>>{
 			childNodesReferences.add(nodeReference);
 		}
 		return (InternalNode<E, K, A>) this.nodeFactory.createNode(nivel, element, childNodesReferences);
+	}
+
+	public void dehydrateNull(OutputBuffer buffer) {
+		this.shortSerializer.dehydrate(buffer, Short.MIN_VALUE);
 	}
 
 }

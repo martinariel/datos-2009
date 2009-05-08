@@ -246,7 +246,8 @@ public class Main implements IWordsRecorderConector{
             Document doc = result.getSecond();
             doc.open();
 
-            String line = doc.readLine().substring(0, 20);
+            String line = doc.readLine();
+            line = line.substring(0,  line.length() >= 20? 20 : line.length());
 
             if (line != null){
                 sendMessage(new Integer(++i).toString() + " - " + new Double(docValue).toString() + " - "+ line);

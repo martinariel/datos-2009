@@ -23,7 +23,7 @@ public class IndexerTreeElement<T> implements Element<IndexerTreeKey>, IndexedTe
 	private OffsetAddress addressInLexicon;
 	private BlockAddress<Long, Short> dataCountAddress;
 	private SimpleSessionIndexer<T> indexer;
-	private Integer dataCount;
+	private Integer dataCount = 0;
 	private List<KeyCount<T>> temporalCount = new ArrayList<KeyCount<T>>(0);
 	/**
 	 * Crea un nuevo indexerTreeElement cuya clave es la recibida en key 
@@ -128,5 +128,10 @@ public class IndexerTreeElement<T> implements Element<IndexerTreeKey>, IndexedTe
 	@Override
 	public Integer getNumberOfAssociatedData() {
 		return this.dataCount;
+	}
+
+	public void setNumberOfAssociatedData(Integer dataCount) {
+		this.dataCount = dataCount;
+		
 	}
 }
