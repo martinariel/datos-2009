@@ -39,8 +39,8 @@ public class WordService {
     private static final String wordsFileName 		= "palabras";
     private static final String documentsFileName 	= "documentos";
     private static final String indexFileName			= "indice";
-    private static final String stopWordsFileName 	= "stop_words.txt";
-    private static final String stopPhrasesFileName 	= "stop_phrases.txt";
+    private static final String stopWordsFileName 	= "resources/stopWords/stopWordsFile.txt";
+    private static final String stopPhrasesFileName 	= "resources/stopWords/stopWordsPhrases.txt";
 
     /**
      * Crea la instancia del backend
