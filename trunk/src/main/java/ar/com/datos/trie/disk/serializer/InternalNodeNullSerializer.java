@@ -2,6 +2,7 @@ package ar.com.datos.trie.disk.serializer;
 
 import ar.com.datos.buffer.InputBuffer;
 import ar.com.datos.buffer.OutputBuffer;
+import ar.com.datos.serializer.NullableSerializer;
 import ar.com.datos.serializer.Serializer;
 import ar.com.datos.serializer.exception.SerializerException;
 import ar.com.datos.trie.Element;
@@ -18,7 +19,7 @@ import ar.com.datos.trie.node.InternalNode;
  * @param <A>
  */
 public class InternalNodeNullSerializer<E extends Element<K, A>, K extends Key<A>,A extends KeyAtom> 
-implements Serializer<InternalNode<E,K,A>> {
+implements NullableSerializer<InternalNode<E,K,A>> {
 
 	private Integer dataSize;
 	private InternalNodeSerializer<E,K,A> realSerializer;
@@ -43,6 +44,10 @@ implements Serializer<InternalNode<E,K,A>> {
 	public InternalNode<E, K, A> hydrate(InputBuffer input) throws SerializerException {
 		// No debería hidratarse con este serializador
 		return this.realSerializer.hydrate(input);
+	}
+
+	public void dehydrateNull(OutputBuffer buffer) {
+		this.realSerializer.dehydrateNull(buffer);
 	}
 
 }

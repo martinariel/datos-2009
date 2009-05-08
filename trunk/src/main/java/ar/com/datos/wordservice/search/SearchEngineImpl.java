@@ -77,7 +77,7 @@ public class SearchEngineImpl implements SearchEngine {
 		}
 
 		// Resulvo la consulta delegando al queryResolver.
-		long documentCount = this.indexer.getNumberOfIndexedTerms(); // FIXME: Es el total de documentos !!
+		long documentCount = this.documentLibrary.getNumberOfDocuments();
 		Iterator<Tuple<Double, OffsetAddress>> itSimilarityOffset = queryResolver.resolveQuery(termsData, documentCount, query, maxResults).iterator();
 
 		List<Tuple<Double, Document>> returnValue = new LinkedList<Tuple<Double,Document>>();

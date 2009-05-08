@@ -12,7 +12,7 @@ public class LibraryDocumentDataSerializer implements Serializer<LibraryData> {
 	private StringSerializerDelimiter serializer = SerializerCache.getInstance().getSerializer(StringSerializerDelimiter.class);
 	@Override
 	public void dehydrate(OutputBuffer output, LibraryData object) throws SerializerException {
-		Document document = (Document) object;
+		Document document = ((LibraryDocumentData) object).getDocument();
 		StringBuilder fileContent = new StringBuilder();
 		document.close();
 		document.open();
@@ -45,7 +45,7 @@ public class LibraryDocumentDataSerializer implements Serializer<LibraryData> {
 		
 		String fileContent = serializer.hydrate(input);
 		document.addLine(fileContent);
-		return (LibraryData) document;
+		return new LibraryDocumentData(document);
 	}
 
 }

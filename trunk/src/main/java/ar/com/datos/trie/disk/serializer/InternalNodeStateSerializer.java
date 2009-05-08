@@ -2,7 +2,7 @@ package ar.com.datos.trie.disk.serializer;
 
 import ar.com.datos.buffer.InputBuffer;
 import ar.com.datos.buffer.OutputBuffer;
-import ar.com.datos.serializer.Serializer;
+import ar.com.datos.serializer.NullableSerializer;
 import ar.com.datos.serializer.exception.SerializerException;
 import ar.com.datos.trie.Element;
 import ar.com.datos.trie.Key;
@@ -10,18 +10,18 @@ import ar.com.datos.trie.KeyAtom;
 import ar.com.datos.trie.node.InternalNode;
 
 public class InternalNodeStateSerializer<E extends Element<K, A>, K extends Key<A>,A extends KeyAtom> 
-implements Serializer<InternalNode<E,K,A>>{
+implements NullableSerializer<InternalNode<E,K,A>>{
 
-	private Serializer<InternalNode<E,K,A>> realSerializer;
+	private NullableSerializer<InternalNode<E,K,A>> realSerializer;
 	
-	public InternalNodeStateSerializer(Serializer<InternalNode<E,K,A>> realSerializer) {
+	public InternalNodeStateSerializer(NullableSerializer<InternalNode<E,K,A>> realSerializer) {
 		this.setRealSerializer(realSerializer);
 	}
 	
 	public InternalNodeStateSerializer() {
 	}
 
-	public void setRealSerializer(Serializer<InternalNode<E,K,A>> realSerializer){
+	public void setRealSerializer(NullableSerializer<InternalNode<E,K,A>> realSerializer){
 		this.realSerializer = realSerializer;
 	}
 	
@@ -38,6 +38,10 @@ implements Serializer<InternalNode<E,K,A>>{
 	@Override
 	public InternalNode<E, K, A> hydrate(InputBuffer input) throws SerializerException {
 		return this.realSerializer.hydrate(input);
+	}
+
+	public void dehydrateNull(OutputBuffer buffer) {
+		this.realSerializer.dehydrateNull(buffer);
 	}
 
 }

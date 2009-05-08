@@ -15,6 +15,7 @@ import ar.com.datos.file.variableLength.address.OffsetAddressSerializer;
 import ar.com.datos.indexer.tree.IndexerTreeElement;
 import ar.com.datos.indexer.tree.IndexerTreeKey;
 import ar.com.datos.serializer.Serializer;
+import ar.com.datos.serializer.common.IntegerSerializer;
 import ar.com.datos.serializer.common.SerializerCache;
 
 public class ListIndexerTreeElementSerializer implements ListElementsSerializer<IndexerTreeElement<?>, IndexerTreeKey> {
@@ -29,6 +30,7 @@ public class ListIndexerTreeElementSerializer implements ListElementsSerializer<
 	private Serializer<OffsetAddress> addressInLexiconSerializer = SerializerCache.getInstance().getSerializer(OffsetAddressSerializer.class);
 	private Serializer<BlockAddress<Long, Short>> dataCountAddress = SerializerCache.getInstance().getSerializer(VariableLengthAddressSerializer.class);
 	private FrontCodingSerializer serializadorClaves = SerializerCache.getInstance().getSerializer(FrontCodingSerializer.class);
+	private IntegerSerializer serializadorCantidad = SerializerCache.getInstance().getSerializer(IntegerSerializer.class);
 	@SuppressWarnings("unchecked")
 	@Override
 	public void dehydrate(OutputBuffer output, List<IndexerTreeElement<?>> object) {
@@ -42,6 +44,7 @@ public class ListIndexerTreeElementSerializer implements ListElementsSerializer<
 		}));
 		for (IndexerTreeElement<?> treeElement : object) {
 			this.addressInLexiconSerializer.dehydrate(output, treeElement.getAddressInLexicon());
+			this.serializadorCantidad.dehydrate(output, treeElement.getNumberOfAssociatedData());
 			this.dataCountAddress.dehydrate(output, treeElement.getDataCountAddress());
 		}
 	}
@@ -60,6 +63,7 @@ public class ListIndexerTreeElementSerializer implements ListElementsSerializer<
 
 		for (IndexerTreeElement<?> treeElement : object) {
 			acumulado += this.addressInLexiconSerializer.getDehydrateSize(treeElement.getAddressInLexicon());
+			acumulado += this.serializadorCantidad.getDehydrateSize(treeElement.getNumberOfAssociatedData());
 			acumulado += this.dataCountAddress.getDehydrateSize(treeElement.getDataCountAddress());
 		}
 		return acumulado;
@@ -73,6 +77,7 @@ public class ListIndexerTreeElementSerializer implements ListElementsSerializer<
 		for (String termino : b) {
 			IndexerTreeElement<?> treeElement = new IndexerTreeElement(new IndexerTreeKey(termino));
 			treeElement.setAddressInLexicon(this.addressInLexiconSerializer.hydrate(input));
+			treeElement.setNumberOfAssociatedData(this.serializadorCantidad.hydrate(input));
 			treeElement.setDataCountAddress(this.dataCountAddress.hydrate(input));
 			collection.add(treeElement);
 		}
