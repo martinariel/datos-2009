@@ -46,5 +46,10 @@ public class TestTrie extends TestCase {
 		trie.addElement(new AddressForStringElement(new StringKey("p2aabc"),new OffsetAddress(89L)));
 		AddressForStringElement c = trie.findElement(new StringKey("p2aabc"));
 		assertEquals(89L, c.getAddress().getOffset().longValue());
+		trie.close();
+		trie = new DiskTrie<AddressForStringElement, StringKey, CharAtom>(ARCHIVOS,128,128, new AddressForStringSerializer(), new CharAtomSerializer());
+		c = trie.findElement(new StringKey("p2aabc"));
+		assertEquals(89L, c.getAddress().getOffset().longValue());
+		
 	}
 }

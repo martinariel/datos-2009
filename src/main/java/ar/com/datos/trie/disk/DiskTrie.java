@@ -3,6 +3,8 @@
  */
 package ar.com.datos.trie.disk;
 
+import java.io.IOException;
+
 import ar.com.datos.file.BlockAccessor;
 import ar.com.datos.file.address.BlockAddress;
 import ar.com.datos.file.variableLength.InvalidAddressException;
@@ -26,7 +28,7 @@ import ar.com.datos.trie.node.NodeFactory;
  * @author marcos
  *
  */
-public class DiskTrie<E extends Element<K, A>, K extends Key<A>,A extends KeyAtom> implements Trie<E,K,A>{
+public class DiskTrie<E extends Element<K, A>, K extends Key<A>,A extends KeyAtom> implements Trie<E,K,A> {
 
 	private static final int DEFAULT_LEVELS = 4;
 	private static final int DEFAULT_LEAF_PARTITON_SIZE = 10;
@@ -118,6 +120,12 @@ public class DiskTrie<E extends Element<K, A>, K extends Key<A>,A extends KeyAto
 
 	public Integer getLeafPartitionSize() {
 		return this.leafPartitionSize;
+	}
+
+	@Override
+	public void close() throws IOException {
+		this.leafNodesFile.close();
+		this.internalNodesFile.close();
 	}
 	
 }
