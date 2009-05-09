@@ -115,7 +115,7 @@ public class AudioServiceHandler {
                 recording = false;
             }
             catch(Exception e){
-                //Que hago aca?
+                e.printStackTrace();
             }
         }
 
@@ -132,7 +132,7 @@ public class AudioServiceHandler {
                 playing = false;
             }
             catch (Exception e){
-                    //Que hago aca?
+            	e.printStackTrace();
             }
         }
 

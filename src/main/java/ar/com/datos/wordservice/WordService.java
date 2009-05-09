@@ -1,10 +1,12 @@
 package ar.com.datos.wordservice;
+import java.io.Closeable;
 import java.io.IOException;
 import java.util.List;
 
 import ar.com.datos.audio.DocumentPlayer;
 import ar.com.datos.audio.IWordsRecorderConector;
 import ar.com.datos.audio.WordsRecorder;
+import ar.com.datos.audio.exception.AudioServiceHandlerException;
 import ar.com.datos.documentlibrary.Document;
 import ar.com.datos.documentlibrary.DocumentLibrary;
 import ar.com.datos.file.variableLength.address.OffsetAddress;
@@ -26,7 +28,7 @@ import ar.com.datos.wordservice.stopwords.StopWordsDiscriminatorBuilder;
  *
  *
  */
-public class WordService {
+public class WordService implements Closeable {
 
     private Crawler crawler;
     private SoundPersistenceService soundPersistenceService;
@@ -34,7 +36,7 @@ public class WordService {
     private DocumentLibrary documentLibrary;
     private SearchEngine searchEngine;
     private StopWordsDiscriminator stopWords;
-
+    private Boolean closed = false;
     private static final String soundsFileName 		= "sonidos";
     private static final String wordsFileName 		= "palabras";
     private static final String documentsFileName 	= "documentos";
@@ -73,7 +75,17 @@ public class WordService {
      */
     public void addDocument(Document document , IWordsRecorderConector view){
         WordsRecorder recorder = new WordsRecorder(view, soundPersistenceService);
-        recorder.recordWords(crawler.addDocument(document));
+        
+        try {
+        	recorder.recordWords(crawler.addDocument(document));
+        }
+        catch(AudioServiceHandlerException e){
+        	view.sendMessage("Audio device busy");
+        }
+        catch(Exception e){
+        	e.printStackTrace();
+        }
+        
     }
 
 
@@ -111,25 +123,30 @@ public class WordService {
         try {
             player.play(document);
         }
+        catch (AudioServiceHandlerException e){
+        	view.sendMessage("Audio device busy");
+        }
         catch (Exception e){
         	e.printStackTrace();
-            view.sendMessage("Audio device busy");
         }
 
     }
-
-
-    /**
-     * Finaliza el servicio
-     */
-    public void end() {
-        try{
-            soundPersistenceService.close();
-        }
-        catch (IOException e){
-             e.printStackTrace();
-        }
+    
+    @Override
+    protected void finalize() throws Throwable {
+    	if (!closed) {
+        	this.close();
+    	}
+    	super.finalize();
     }
+
+
+	public void close() throws IOException {
+		closed = true;
+        soundPersistenceService.close();
+        documentLibrary.close();
+        indexer.close();
+	}
 
 
 }

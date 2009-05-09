@@ -21,6 +21,7 @@ import ar.com.datos.indexer.serializer.ListSerializer;
 import ar.com.datos.indexer.tree.IndexerTreeElement;
 import ar.com.datos.indexer.tree.IndexerTreeKey;
 import ar.com.datos.serializer.Serializer;
+import ar.com.datos.serializer.common.NullableTupleSerializer;
 import ar.com.datos.serializer.common.TupleSerializer;
 import ar.com.datos.util.Tuple;
 import ar.com.datos.utils.sort.external.FixedLengthKeyCounter;
@@ -39,7 +40,7 @@ import ar.com.datos.wordservice.exception.InactiveSessionException;
  *
  * @param <T>
  */
-public class SimpleSessionIndexer<T> implements SessionIndexer<T>, Closeable {
+public class SimpleSessionIndexer<T> implements SessionIndexer<T> {
 
 	public static final String LEXICON_SUFFIX = ".lex"; 
 	public static final String INDEX_NODE_SUFFIX = ".idx.node"; 
@@ -159,7 +160,7 @@ public class SimpleSessionIndexer<T> implements SessionIndexer<T>, Closeable {
 
 	protected BlockAccessor<BlockAddress<Long, Short>, Tuple<OffsetAddress, List<KeyCount<T>>>> constructListForTerms(String fileName) {
 		return new VariableLengthWithCache<Tuple<OffsetAddress, List<KeyCount<T>>>>(fileName + LIST_SUFFIX, LIST_BLOCK_SIZE, 
-				new TupleSerializer<OffsetAddress, List<KeyCount<T>>>(new OffsetAddressSerializer(), new ListSerializer<KeyCount<T>>(new KeyCountSerializer<T>(this.indexedSerializer))));
+				new NullableTupleSerializer<OffsetAddress, List<KeyCount<T>>>(new OffsetAddressSerializer(), new ListSerializer<KeyCount<T>>(new KeyCountSerializer<T>(this.indexedSerializer))));
 	}
 
 	@SuppressWarnings("unchecked")

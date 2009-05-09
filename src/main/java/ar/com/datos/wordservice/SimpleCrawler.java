@@ -1,16 +1,16 @@
 package ar.com.datos.wordservice;
 
-import java.util.Set;
-import java.util.List;
-import java.util.HashSet;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
-import ar.com.datos.parser.Parser;
-import ar.com.datos.indexer.SessionIndexer;
 import ar.com.datos.documentlibrary.Document;
 import ar.com.datos.documentlibrary.DocumentLibrary;
-import ar.com.datos.wordservice.stopwords.StopWordsDiscriminator;
 import ar.com.datos.file.variableLength.address.OffsetAddress;
+import ar.com.datos.indexer.SessionIndexer;
+import ar.com.datos.parser.Parser;
+import ar.com.datos.wordservice.stopwords.StopWordsDiscriminator;
 
 /**
  * Implementacion sencilla de Crawler.

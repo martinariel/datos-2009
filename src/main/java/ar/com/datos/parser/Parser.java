@@ -110,7 +110,7 @@ public class Parser implements Iterable<List<String>> {
     }
 
     private static String cleanLine(String line){
-        return limpiarTildes(cleanRegex(line.toLowerCase()));
+        return cleanRegex(limpiarTildes(line.toLowerCase()));
 
     }
 
