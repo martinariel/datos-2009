@@ -50,6 +50,22 @@ public class TestTrie extends TestCase {
 		trie = new DiskTrie<AddressForStringElement, StringKey, CharAtom>(ARCHIVOS,128,128, new AddressForStringSerializer(), new CharAtomSerializer());
 		c = trie.findElement(new StringKey("p2aabc"));
 		assertEquals(89L, c.getAddress().getOffset().longValue());
+		b = trie.findElement(new StringKey("abcdefg"));
+		assertEquals(55L, b.getAddress().getOffset().longValue());
+		a = trie.findElement(new StringKey("p2"));
+		assertEquals(25L, a.getAddress().getOffset().longValue());
 		
+	}
+	public void testProblemaNumeroUno() throws Exception {
+		Trie<AddressForStringElement, StringKey, CharAtom> trie = 
+			new DiskTrie<AddressForStringElement, StringKey, CharAtom>(ARCHIVOS,128,256, new AddressForStringSerializer(), new CharAtomSerializer());
+		String[] elementos = new String[] {"con", "tutti", "prueba", "peor", "bueno", "consecuentemente", "en", "pero" };
+		for (String elemento: elementos) {
+			trie.addElement(new AddressForStringElement(new StringKey(elemento), new OffsetAddress(new Long(elemento.hashCode()))));
+		}
+		
+		for(String elemento : elementos) {
+			assertEquals(new Long(elemento.hashCode()), trie.findElement(new StringKey(elemento)).getAddress().getOffset());
+		}
 	}
 }

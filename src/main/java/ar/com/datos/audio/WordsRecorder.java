@@ -62,6 +62,7 @@ public class WordsRecorder implements AudioStopper{
             Thread reproduccion = servicioAudio.play(inputAudio);
 
             try {
+                // FIXME tarda en devolver el control
                 reproduccion.join();
             }
             catch(InterruptedException e){

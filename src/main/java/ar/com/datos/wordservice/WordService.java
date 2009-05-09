@@ -101,10 +101,18 @@ public class WordService {
 
         DocumentPlayer player = new DocumentPlayer(soundPersistenceService);
 
+        document.close();
+        document.open();
+        
+        for (String line = document.readLine(); line != null; line = document.readLine()){
+        	view.sendMessage(line);
+        } 
+        
         try {
             player.play(document);
         }
         catch (Exception e){
+        	e.printStackTrace();
             view.sendMessage("Audio device busy");
         }
 

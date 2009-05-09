@@ -58,8 +58,9 @@ public class DiskTrie<E extends Element<K, A>, K extends Key<A>,A extends KeyAto
 	
 	public DiskTrie(int nLevels, String filename, int internalBlockSize, int leafBlockSize,
 			NullableSerializer<E> elementSerializer, Serializer<A> atomSerializer){
-
-		this.nLevels = nLevels;
+		if (nLevels < 1) throw new RuntimeException("Valor incorrecto para niveles");
+		
+		this.nLevels = nLevels - 1;
 	
 		this.elementSerializer = elementSerializer;
 		this.atomSerializer = atomSerializer;
