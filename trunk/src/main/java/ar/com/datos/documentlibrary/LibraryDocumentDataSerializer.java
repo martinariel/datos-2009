@@ -17,10 +17,10 @@ public class LibraryDocumentDataSerializer implements Serializer<LibraryData> {
 		document.close();
 		document.open();
 		for (String linea = document.readLine(); linea != null; linea = document.readLine()) {
-            fileContent.append(linea);
+            fileContent.append(linea).append('\n');
         }
 		document.close();
-		serializer.dehydrate(output, fileContent.toString());
+		serializer.dehydrate(output, fileContent.substring(0, fileContent.length()-1));
 	}
 
 	@Override
@@ -31,7 +31,7 @@ public class LibraryDocumentDataSerializer implements Serializer<LibraryData> {
 		Integer acumulado = 0;
 		for (String linea = document.readLine(); linea != null; linea = document.readLine()) {
 			// Utilizo el conocimiento de como funciona el String Delimiter, utiliza Unicode (2 bytes por caracter
-			acumulado += linea.length() * 2;
+			acumulado += linea.length() * 2 + 2;
 		}
 		document.close();
 		// Y utiliza un único delimitador al final

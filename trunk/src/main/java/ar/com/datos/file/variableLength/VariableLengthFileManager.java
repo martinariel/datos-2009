@@ -15,6 +15,7 @@ import ar.com.datos.file.exception.OutOfBoundsException;
 import ar.com.datos.persistencia.variableLength.BlockMetaData;
 import ar.com.datos.persistencia.variableLength.BlockReader;
 import ar.com.datos.persistencia.variableLength.BlockWriter;
+import ar.com.datos.persistencia.variableLength.ReplaceResponsable;
 import ar.com.datos.serializer.Serializer;
 /**
  * Esta entidad permite manejar la persistencia de objetos Serializables en un archivo de longitud variable.
@@ -75,6 +76,9 @@ public class VariableLengthFileManager<T> implements BlockAccessor<BlockAddress<
 		bloque.getData().remove(direccion.getObjectNumber().intValue());
 		bloque.getData().add(direccion.getObjectNumber(), entity);
 		BlockWriter writer = getCleanWriterForBlock(bloque);
+		// XXX debido a que el getCleanWriter me devuelve el lastEntity para los casos de actualización
+		// en último bloque a veces tengo que volver a setear el requireResponsable anterior
+		ReplaceResponsable oldResponsable = writer.getRequireResponsable();
 		Integer cantidadEnElBloque = bloque.getData().size(); 
 		
 		if (cantidadEnElBloque > 1) {
@@ -89,7 +93,12 @@ public class VariableLengthFileManager<T> implements BlockAccessor<BlockAddress<
 			writer.closeEntity();
 		}
 		writer.flush();
-		if (writer.isReplaceRequiredEnabled() && writer.getRequireResponsable().hasReplacedOccurred()) return addEntity(entity); 
+		if (writer.isReplaceRequiredEnabled() && writer.getRequireResponsable().hasReplacedOccurred()) {
+			writer.requireReplaceTo(oldResponsable);
+			return addEntity(entity); 
+		}
+
+		writer.requireReplaceTo(oldResponsable);
 		
 		return direccion;
 		

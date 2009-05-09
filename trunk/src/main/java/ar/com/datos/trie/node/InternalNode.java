@@ -84,7 +84,7 @@ public class InternalNode <E extends Element<K, A>, K extends Key<A>,A extends K
 		    wasChildModified = child.addElement(element);
 		    // si el child fue modificado guardo primero el child
 		    if (wasChildModified){ 
-		    	childNodeReference.saveNode(child);
+		    	wasThisNodeModified |= childNodeReference.saveNode(child);
 		    }
 		} catch(LeafPartitionLimitException e){
 			// estoy en un nodo hoja, en una particion que esta completa

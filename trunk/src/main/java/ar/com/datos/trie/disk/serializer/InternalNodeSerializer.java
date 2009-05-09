@@ -8,7 +8,6 @@ import ar.com.datos.buffer.OutputBuffer;
 import ar.com.datos.file.address.BlockAddress;
 import ar.com.datos.indexer.serializer.VariableLengthAddressSerializer;
 import ar.com.datos.serializer.NullableSerializer;
-import ar.com.datos.serializer.Serializer;
 import ar.com.datos.serializer.common.SerializerCache;
 import ar.com.datos.serializer.common.ShortSerializer;
 import ar.com.datos.serializer.exception.SerializerException;
@@ -104,9 +103,9 @@ implements NullableSerializer<InternalNode<E,K,A>>{
 		List<NodeReference<E, K, A>> childNodesReferences = new ArrayList<NodeReference<E,K,A>>(numberOfNodeReferences);
 		for (Short i = 0; i < numberOfNodeReferences; i++) {
 			A atom = this.diskTrie.getAtomSerializer().hydrate(input);
-			Short numberOfReferences = (nivel == this.diskTrie.getLeafLevel() - 1)? this.shortSerializer.hydrate(input) : 1;
+			Short numberOfReferences = (nivel.intValue() == this.diskTrie.getLeafLevel() - 1)? this.shortSerializer.hydrate(input) : 1;
 			List<BlockAddress<Long, Short>> addresses = new ArrayList<BlockAddress<Long,Short>>(numberOfReferences); 
-			for (Short j = 0; j < numberOfNodeReferences; j++)  {
+			for (Short j = 0; j <  numberOfReferences; j++)  {
 				addresses.add(this.addressSerializer.hydrate(input));
 			}
 			NodeReference<E,K,A> nodeReference = this.nodeFactory.createNodeReference(nivel + 1, atom);
