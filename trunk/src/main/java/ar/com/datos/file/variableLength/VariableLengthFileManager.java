@@ -94,6 +94,8 @@ public class VariableLengthFileManager<T> implements BlockAccessor<BlockAddress<
 		}
 		writer.flush();
 		if (writer.isReplaceRequiredEnabled() && writer.getRequireResponsable().hasReplacedOccurred()) {
+			bloque.getData().remove(direccion.getObjectNumber().intValue());
+			bloque.getData().add(direccion.getObjectNumber(), null);
 			writer.requireReplaceTo(oldResponsable);
 			return addEntity(entity); 
 		}

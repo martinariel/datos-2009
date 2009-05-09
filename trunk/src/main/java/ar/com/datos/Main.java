@@ -56,6 +56,7 @@ public class Main implements IWordsRecorderConector{
     public boolean canStartRecording(){
         sendMessage("Ingrese 'i' si quiere grabar la palabra.");
         return readKeyBoardChar() == 'i';
+//        return true;
     }
 
     @Override
@@ -65,6 +66,7 @@ public class Main implements IWordsRecorderConector{
         sendMessage("Grabar nuevamente (cualquier otra tecla).");
 
         return readKeyBoardChar() == 's';
+//        return true;
     }
 
     @Override
@@ -75,19 +77,28 @@ public class Main implements IWordsRecorderConector{
     @Override
     public void recordingWordStarted(){
         sendMessage("Grabando!!!!, ingrese 'f' para finalizar la grabacion.");
+//        try {
+//			Thread.sleep(200);
+//		} catch (InterruptedException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 
+//
         if (readKeyBoardChar() == 'f'){
             stopper.stop();
+/**/
         }
         else {
             recordingWordStarted();
         }
+/**/
     }
 
     @Override
     public void recordingAllWordsEnd(){
         sendMessage("Grabacion de palabras finalizada!!!");
-        showMenu();
+
     }
 
     @Override
@@ -128,11 +139,14 @@ public class Main implements IWordsRecorderConector{
 
     /**
      * @return Integer leido del teclado
-     *  TODO Validacion
      */
     private int readKeyBoardInt(){
-        int returnValue = Integer.parseInt(readKeyboardString());
-        return returnValue;
+    	try {
+            return Integer.parseInt(readKeyboardString());
+    	} catch (NumberFormatException nfe) {
+        	sendMessage("ingrese SOLO números");
+        	return readKeyBoardInt();
+        }
     }
 
     /**
@@ -140,21 +154,29 @@ public class Main implements IWordsRecorderConector{
      *
      */
     private void showMenu() {
-        sendMessage("Opciones:");
-        sendMessage("1 - Carga de documentos");
-        sendMessage("2 - Reproduccion documento de FileSystem");
-        sendMessage("3 - Busqueda de documentos.");
-        sendMessage("Cualquier otra tecla: Salir");
-        sendMessage("Seleccione una opcion:");
-
-        switch(readKeyBoardChar()){
-        case '1': loadDocument();break;
-        case '2': playDocument();break;
-        case '3': searchDocument();break;
+        boolean getOut = false;
+        while (!getOut) {
+        	sendMessage("Opciones:");
+        	sendMessage("1 - Carga de documentos");
+        	sendMessage("2 - Reproduccion documento de FileSystem");
+	        sendMessage("3 - Busqueda de documentos.");
+	        sendMessage("Cualquier otra tecla: Salir");
+	        sendMessage("Seleccione una opcion:");
+	
+	        switch(readKeyBoardChar()){
+	        case '1': loadDocument();break;
+	        case '2': playDocument();break;
+	        case '3': searchDocument();break;
+	        default :  
+	            //Finalizo el backend
+	            try {
+	            	getOut = true;
+	            	backend.close();
+	    		} catch (IOException e) {
+	    			e.printStackTrace();
+	    		}
+	        }
         }
-
-        //Finalizo el backend
-        backend.end();
     }
 
 
@@ -209,7 +231,6 @@ public class Main implements IWordsRecorderConector{
         catch(Exception e){
             e.printStackTrace();
         }
-        showMenu();
 
     }
 
@@ -227,7 +248,6 @@ public class Main implements IWordsRecorderConector{
 
         searchResult = backend.searchDocument(document);
         showSearchResult();
-        showMenu();
 
     }
 
@@ -256,20 +276,31 @@ public class Main implements IWordsRecorderConector{
             doc.close();
         }
 
-        if (i == 0){
+        if ( i == 0 ){
             sendMessage("No se han encontrado documentos. ");
         }
         else {
+        	
             sendMessage("Desea reproducir un documento(s/n):");
-            if (readKeyBoardChar() == 's'){
+            
+            while (readKeyBoardChar() == 's') {
 
-                sendMessage("Ingrese el numero de documento:");
+            	if (i > 1) {
+                	
+               		sendMessage("Ingrese el numero de documento: (1 - " + i + ")");
 
-                int searchOption = readKeyBoardInt();
+               		int searchOption = readKeyBoardInt();
 
-                if (searchOption > 0 && searchOption <= searchResult.size())
-                    backend.playDocument(searchResult.get(searchOption - 1).getSecond(), this);
-            }
+               		if (searchOption > 0 && searchOption <= searchResult.size()) {
+               			backend.playDocument(searchResult.get(searchOption - 1).getSecond(), this);
+               		} else {
+               			sendMessage("No es un número de documento valido");
+               		}
+           			sendMessage("Desea reproducir otro documento(s/n):");
+            	} else {
+                	backend.playDocument(searchResult.get(0).getSecond(), this);
+                }
+        	}
         }
     }
 

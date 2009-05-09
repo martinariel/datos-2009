@@ -112,7 +112,7 @@ public class BlockWriter implements RestrictedBufferRealeaser, OutputBuffer {
 			writeExistentOneBlock(d);
 			writeExistent(last, ob);
 		} else {
-			if (!loadedSize.equals(getSimpleDataSize()) || this.availableBlocks.size() > 1)
+			if (loadedSize > getSimpleDataSize() || this.availableBlocks.size() > 1)
 				writeExistentMultipleBlock(last);
 			else {
 				writeExistentOneBlock(last);

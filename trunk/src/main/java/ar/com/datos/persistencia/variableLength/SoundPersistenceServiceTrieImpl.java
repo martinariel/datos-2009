@@ -50,9 +50,12 @@ public class SoundPersistenceServiceTrieImpl implements SoundPersistenceService 
     }
 
     public boolean isRegistered(String word) {
-    	return getWord(word) != null;
+    	return isDataValid(getWord(word));
     }
 
+    protected boolean isDataValid(AddressForStringElement data) {
+    	return data != null && data.getAddress() != null;
+    }
 
 	private AddressForStringElement getWord(String word) {
 		return wordsWithAudio.findElement(new StringKey(word));
@@ -60,7 +63,7 @@ public class SoundPersistenceServiceTrieImpl implements SoundPersistenceService 
 
     public InputStream readWord(String word) throws UnregisteredWordException {
     	AddressForStringElement wordData = getWord(word);
-    	if (wordData == null) throw new UnregisteredWordException();
+    	if (!isDataValid(wordData)) throw new UnregisteredWordException();
         return audioData.get(wordData.getAddress()).getStream();
     }
 

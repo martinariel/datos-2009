@@ -58,9 +58,10 @@ public class DiskTrie<E extends Element<K, A>, K extends Key<A>,A extends KeyAto
 	
 	public DiskTrie(int nLevels, String filename, int internalBlockSize, int leafBlockSize,
 			NullableSerializer<E> elementSerializer, Serializer<A> atomSerializer){
-		if (nLevels < 1) throw new RuntimeException("Valor incorrecto para niveles");
-		
 		this.nLevels = nLevels - 1;
+
+		if (this.nLevels < 0) throw new RuntimeException("Valor incorrecto para niveles");
+		
 	
 		this.elementSerializer = elementSerializer;
 		this.atomSerializer = atomSerializer;
@@ -68,7 +69,7 @@ public class DiskTrie<E extends Element<K, A>, K extends Key<A>,A extends KeyAto
 		this.internalNodeSerializer = new InternalNodeStateSerializer<E,K,A>();
 		this.leafNodesFile = new VariableLengthFileManager<LeafPartitionNode<E,K,A>>(filename + leafSuffix, leafBlockSize, new LeafPartitionNodeSerializer<E,K,A>(this));
 		this.internalNodesFile = new VariableLengthFileManager<InternalNode<E,K,A>>(filename + internalSuffix, internalBlockSize, internalNodeSerializer);
-		this.nodeFactory = new NodeFactory<E, K, A>(nLevels, DEFAULT_LEAF_PARTITON_SIZE, this.leafNodesFile,this.internalNodesFile);
+		this.nodeFactory = new NodeFactory<E, K, A>(this.nLevels, DEFAULT_LEAF_PARTITON_SIZE, this.leafNodesFile,this.internalNodesFile);
 
 		this.initializeTrie();
 	}
