@@ -299,8 +299,9 @@ public class Main implements IWordsRecorderConector{
            			sendMessage("Desea reproducir otro documento(s/n):");
             	} else {
                 	backend.playDocument(searchResult.get(0).getSecond(), this);
+                	sendMessage("Desea reproducirlo nuevamente(s/n):");
                 }
-        	}
+            }
         }
     }
 
