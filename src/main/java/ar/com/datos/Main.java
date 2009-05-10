@@ -49,6 +49,9 @@ public class Main implements IWordsRecorderConector{
         this.openMic 			 = openMic;
         
         this.backend.setBoostMic(boostAudio);
+        
+        if (openMic) sendMessageLn("open-mic on");
+        if (boostAudio) sendMessageLn("boost-audio on");
     }
 
     /**
@@ -281,7 +284,7 @@ public class Main implements IWordsRecorderConector{
             doc.open();
 
             String line = doc.readLine();
-            line = line.substring(0,  line.length() >= 20? 20 : line.length());
+            line = line.substring(0,  line.length() >= 40? 40 : line.length());
 
             if (line != null){
                 sendMessageLn(new Integer(++i).toString() + " - " + new Double(docValue).toString() + " - "+ line);
