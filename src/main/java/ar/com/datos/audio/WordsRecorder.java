@@ -41,7 +41,7 @@ public class WordsRecorder implements AudioStopper{
 
         if (interfazUsuario.canStartRecording()){
             //Grabo en memoria!!
-        	audio = new SoundByteArrayOutputStream(4096 * 1024);
+        	audio = new SoundByteArrayOutputStream(512 * 1024);
 			servicioAudio.record(audio);
             interfazUsuario.recordingWordStarted();
         }
