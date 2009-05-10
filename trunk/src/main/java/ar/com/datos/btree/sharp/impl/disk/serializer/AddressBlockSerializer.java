@@ -10,7 +10,7 @@ import ar.com.datos.serializer.common.LongSerializer;
 import ar.com.datos.serializer.common.SerializerCache;
 
 /**
- * Serializador de {@link Address} que ignora el número de objeto (lo maneja como 0).
+ * Serializador de {@link BlockAddress} que ignora el número de objeto (lo maneja como 0).
  * Esto es usado por el {@link BTreeSharp} en disco puesto que en él un nodo es igual
  * a un bloque (es decir hay un solo nodo por bloque).
  * 

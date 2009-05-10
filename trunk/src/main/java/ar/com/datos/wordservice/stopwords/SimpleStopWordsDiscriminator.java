@@ -13,10 +13,6 @@ public class SimpleStopWordsDiscriminator implements StopWordsDiscriminator {
 	private Hashtable stopPhrases;
 	private Set<String> stopWords;
 	
-	/**
-	 * @param
-	 * @param
-	 */
 	public SimpleStopWordsDiscriminator(Set<String> stopWords, List<List<String>> stopPhrases){
 		this.stopWords = stopWords;
 		this.stopPhrases = new Hashtable();
@@ -71,7 +67,7 @@ public class SimpleStopWordsDiscriminator implements StopWordsDiscriminator {
 			return nonStopWords;
 		}
 		// we have at least 2 words in phrase
-		/**
+		/*
 		 * sin distincion alguna
 		 * 
 		 * 1) en todas sus formas

@@ -17,7 +17,6 @@ public interface IndexedTerm<T> {
 
 	/**
 	 * Devuelve todos los datos asociados al este término con la cantidad de asociaciones existentes
-	 * @return
 	 */
 	public List<KeyCount<T>> getAssociatedData();
 

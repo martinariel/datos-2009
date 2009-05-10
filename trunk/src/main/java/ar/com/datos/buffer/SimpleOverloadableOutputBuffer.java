@@ -47,9 +47,6 @@ public class SimpleOverloadableOutputBuffer implements OverloadableOutputBuffer 
 		this.releaser = releaser;
 	}	
 	
-	/**
-	 * @see ar.com.datos.buffer.OutputBuffer#closeEntity()
-	 */
 	@Override
 	public void closeEntity() {
 		this.nEntities++;
@@ -62,9 +59,6 @@ public class SimpleOverloadableOutputBuffer implements OverloadableOutputBuffer 
 		this.lastEntity.clear();
 	}
 	
-	/**
-	 * @see ar.com.datos.buffer.OutputBuffer#extractAllButLast()
-	 */
 	@Override
 	public Collection<ArrayByte> extractAllButLast() {
 		ArrayList<ArrayByte> retorno = new ArrayList<ArrayByte>(this.bufferedEntities);
@@ -75,9 +69,6 @@ public class SimpleOverloadableOutputBuffer implements OverloadableOutputBuffer 
 		return retorno;
 	}
 
-	/**
-	 * @see ar.com.datos.buffer.OutputBuffer#extractLast()
-	 */
 	@Override
 	public Collection<ArrayByte> extractLast() {
 		ArrayList<ArrayByte> retorno = new ArrayList<ArrayByte>(this.lastEntity);
@@ -88,34 +79,22 @@ public class SimpleOverloadableOutputBuffer implements OverloadableOutputBuffer 
 		return retorno;
 	}
 
-	/**
-	 * @see ar.com.datos.buffer.OutputBuffer#getEntitiesCount()
-	 */
 	@Override
 	public Short getEntitiesCount() {
 		return this.nEntities;
 	}
 
-	/**
-	 * @see ar.com.datos.buffer.OutputBuffer#isOverloaded()
-	 */
 	@Override
 	public Boolean isOverloaded() {
 		return this.currentSize > this.bufferSize;
 	}
 
-	/**
-	 * @see ar.com.datos.buffer.OutputBuffer#write(byte[])
-	 */
 	@Override
 	public void write(byte[] data) {
 		this.lastEntity.add(new SimpleArrayByte(data));
 		this.currentSize += data.length;
 	}
 
-	/**
-	 * @see ar.com.datos.buffer.OutputBuffer#write(byte)
-	 */
 	@Override
 	public void write(byte data) {
 		byte[] aByte = new byte[1];

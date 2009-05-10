@@ -22,8 +22,6 @@ public class StandardFileWrapper implements Closeable {
 	/**
 	 * Construye un SimpleBlockFile que usa un archivo temporal de Java
 	 * <code>File.createTempFile()</code>
-	 * @param string
-	 * @param blockSize
 	 */
 	public StandardFileWrapper() {
 		super();
@@ -32,8 +30,6 @@ public class StandardFileWrapper implements Closeable {
 
 	/**
 	 * Construye un SimpleBlockFile que usa el archivo en la ruta especificada
-	 * @param string
-	 * @param blockSize
 	 */
 	public StandardFileWrapper(String string) {
 		super();
@@ -62,8 +58,6 @@ public class StandardFileWrapper implements Closeable {
 	 * Método de construcción del randomAccesFile
 	 * Puede ser rescrito por las subclases o modificado para que los tests no trabajen con archivos
 	 * reales
-	 * @param archivo
-	 * @return
 	 */
 	protected RandomAccessFile constructAccesor() {
 		try {
@@ -77,8 +71,6 @@ public class StandardFileWrapper implements Closeable {
 	 * Método de construcción del File
 	 * Puede ser rescrito por las subclases o modificado para que los tests no trabajen con archivos
 	 * reales
-	 * @param archivo
-	 * @return
 	 */
 	protected File constructFile(String string) {
 		return new File(string);

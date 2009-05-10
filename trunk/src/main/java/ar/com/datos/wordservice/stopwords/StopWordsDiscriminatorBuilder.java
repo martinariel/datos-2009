@@ -20,9 +20,6 @@ public class StopWordsDiscriminatorBuilder {
      * Devuelve un StopWordsDiscriminator cargado con stopwords y stopphrases
      * buscando en los archivos stop_words.txt y stop_phrases.txt del directorio
      * especificado.
-     *
-     * @param fileDirectory
-     * @return
      */
     public static StopWordsDiscriminator build(String stopWordsFilePath, String stopPhrasesFilePath){
 

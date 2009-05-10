@@ -34,6 +34,9 @@
 	<target name="javadoc">
 		<mkdir dir="docs/javadoc"/>
 		<javadoc sourcepath="src/main/java" destdir="docs/javadoc" encoding="latin1">
+			<classpath id="path.compile">
+				<pathelement location="lib/commons-collections-3.2.1/commons-collections-3.2.1.jar" />
+			</classpath>
 		</javadoc>
 	</target>
 	<target name="clean">

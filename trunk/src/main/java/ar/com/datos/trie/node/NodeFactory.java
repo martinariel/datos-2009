@@ -42,7 +42,6 @@ public class NodeFactory<E extends Element<K, A>, K extends Key<A>,A extends Key
 	 * Esto libera a los nodos de la logica de que tipo de nodo crear.
 	 * 
 	 * @param nodeLevel el nivel donde se creara el nodo
-	 * @param keyAtom la porcion de clave que contendra el nodo a crear
 	 * @return el nodo ya creado (puede ser un nodo hoja o un nodo interno)
 	 */
 	public Node<E,K,A> createNode(int nodeLevel){

@@ -34,7 +34,7 @@ public class SimpleRestrictedOutputBuffer implements RestrictedOutputBuffer {
 	
 	/**
 	 * Crea un SimpleOuputBuffer con un size de buffer recibido por parametro.
-	 * @param integer size del buffer. 
+	 * @param bufferSize size del buffer. 
 	 * @param releaser un BufferReleaser para este buffer.
 	 */
 	public SimpleRestrictedOutputBuffer(Integer bufferSize, RestrictedBufferRealeaser releaser){
@@ -45,9 +45,7 @@ public class SimpleRestrictedOutputBuffer implements RestrictedOutputBuffer {
 		this.releaser = releaser;
 	}	
 	
-	/**
-	 * @see ar.com.datos.buffer.OutputBuffer#closeEntity()
-	 */
+
 	@Override
 	public void closeEntity() {
 		
@@ -58,17 +56,11 @@ public class SimpleRestrictedOutputBuffer implements RestrictedOutputBuffer {
 
 	}
 	
-	/**
-	 * @see ar.com.datos.buffer.OutputBuffer#getEntitiesCount()
-	 */
 	@Override
 	public Short getEntitiesCount() {
 		return (short)this.bufferedEntities.size();
 	}
 
-	/**
-	 * @see ar.com.datos.buffer.OutputBuffer#isOverloaded()
-	 */
 	@Override
 	public Boolean isOverloaded() {
 		return getCurrentSize() >= this.bufferSize;
@@ -78,24 +70,15 @@ public class SimpleRestrictedOutputBuffer implements RestrictedOutputBuffer {
 		return this.currentSize;
 	}
 
-	/**
-	 * @see ar.com.datos.buffer.OutputBuffer#write(byte[])
-	 */
 	@Override
 	public void write(byte[] data) {
 		this.write(new SimpleArrayByte(data));
 	}
 
-	/**
-	 * @see ar.com.datos.buffer.OutputBuffer#write(byte[])
-	 */
 	protected void write(ArrayByte data) {
 		this.lastEntity.add(data);
 		this.currentSize += data.getLength();
 	}
-	/**
-	 * @see ar.com.datos.buffer.OutputBuffer#write(byte)
-	 */
 	@Override
 	public void write(byte data) {
 		this.write(new byte[] {data});

@@ -65,7 +65,6 @@ public class BlockMetaData {
 	/**
 	 * En registros multipartes es el numero de bloque que tiene la siguiente parte, salvo que isTail() en cuyo caso es igual al número de bloque
 	 * En registros que se encuentran en un único bloque es blockNumber +1;
-	 * @return
 	 */
 	public Long getNextBlockNumber() {
 		return nextBlockNumber;

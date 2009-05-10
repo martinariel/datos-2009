@@ -79,7 +79,7 @@ public class BTreeSharpFactory<E extends Element<K>, K extends Key> {
 	 * Si el archivo no existe previamente o si overwrite es true se creará un nuevo árbol
 	 * cuyos nodos internos y configuración serán almacenados en este archivo.
 	 * El efecto de llamar a este método pasando un archivo internalFile existente y
-	 * overwrite en false es el mismo que llamar a {@link #createBTreeSharpDisk(String)}.
+	 * overwrite en false es el mismo que llamar a {@link #createBTreeSharpDisk(String, int)}.
 	 *
 	 * @param leafFile
 	 * Archivo para los nodos hoja.
@@ -87,7 +87,7 @@ public class BTreeSharpFactory<E extends Element<K>, K extends Key> {
 	 * @param blockSize
 	 * Tamaño de los bloques.
 	 *
-	 * @param elementAndKeyListSerializerFactory
+	 * @param serializerFactoryClass
 	 * Implementación de {@link ElementAndKeyListSerializerFactory} que permite obtener los 
 	 * serializadores correspondientes a la lista de {@link Element} y a la lista de {@link Key}.
 	 *

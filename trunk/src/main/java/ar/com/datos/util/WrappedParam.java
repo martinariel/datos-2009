@@ -16,7 +16,7 @@ public class WrappedParam<T> {
 	private T parameter;
 	
 	/**
-	 * Construye un wrapper vacio. Debería ser llenado mediante {@link #setParameter(Object)}.
+	 * Construye un wrapper vacio. Debería ser llenado mediante {@link #setValue(Object)}
 	 */
 	public WrappedParam() {
 	}

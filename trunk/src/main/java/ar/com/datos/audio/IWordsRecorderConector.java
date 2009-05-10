@@ -8,19 +8,16 @@ package ar.com.datos.audio;
 public interface IWordsRecorderConector {
     /**
      * Notifica la grabacion de una palabra
-     * @param palabra
      */
     void notifyNextWord(String palabra);
 
     /**
      * Determina si puede empezar a grabar
-     * @return
      */
     boolean canStartRecording();
 
     /**
      * Determina si la grabacion es correcta
-     * @return
      */
     boolean recordingWordOK();
 
@@ -43,19 +40,16 @@ public interface IWordsRecorderConector {
 
     /**
      * Recibe un mensaje.
-     * @param message
      */
     void sendMessageLn(String message);
 
     /**
      * Recibe un mensaje.
-     * @param message
      */
     void sendMessage(String message);
     
     /**
      * Recibe el stopper de audio
-     * @param stopper
      */
     void sendStopper(AudioStopper stopper);
 }
