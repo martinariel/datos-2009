@@ -1,0 +1,11 @@
+WordService.
+
+Dentro de este paquete se encuentra la clase principal de interaccion con el sistema, basicamente es lo unico que una View conoceria.
+
+Se encarga de instanciar el Indexer, Crawler, SoundPersistenceService utilizando un Trie, DocumentLibrary, SearchEngine, StopWordsDiscriminator y orquestar las relaciones entre ellos.
+
+Expone los metodos principales para agregar, buscar y reproducir documentos. Que son delegados a los demas objetos.
+
+ La conexion con la View se hace explicitamente en los metodos par agregar y reproducir a traves de una interfase, de esta manera el servicio no conoce especificamente que view lo utiliza.
+
+
