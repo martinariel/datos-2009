@@ -27,7 +27,7 @@ public abstract class BTreeSharpConfiguration<E extends Element<K>, K extends Ke
 	 *
 	 * @param maxCapacityNode
 	 * Máxima capacidad para un nodo.
-	 * @param maxCapacityRootNode.
+	 * @param maxCapacityRootNode
 	 * Máxima capacidad para un nodo raiz (Normalmente será 2 * maxCapacityNode)
 	 * @param bTreeSharpNodeFactory
 	 * Factory correspondiente a la implementación del árbol B# que se esté usando.

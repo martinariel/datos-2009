@@ -9,14 +9,11 @@ public interface SequentialAccesor<A extends Address, T> extends Iterable<T>, Cl
 
 	/**
 	 * Agrega una entidad al manejador de persistencia
-	 * @param campos
-	 * @return
 	 */
 	public A addEntity(T campos);
 
 	/**
 	 * Indica si no hay entidades a las que se pueden acceder
-	 * @return
 	 */
 	public Boolean isEmpty();
 	

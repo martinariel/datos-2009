@@ -27,7 +27,6 @@ public class IndexerTreeElement<T> implements Element<IndexerTreeKey>, IndexedTe
 	private List<KeyCount<T>> temporalCount = new ArrayList<KeyCount<T>>(0);
 	/**
 	 * Crea un nuevo indexerTreeElement cuya clave es la recibida en key 
-	 * @param key
 	 */
 	public IndexerTreeElement(IndexerTreeKey key) {
 		super();
@@ -76,8 +75,6 @@ public class IndexerTreeElement<T> implements Element<IndexerTreeKey>, IndexedTe
 	 * Esta información será persistida cuando se agregue el elemento al árbol y este ejecute un 
 	 * {@link Element#updateElement(Element)} sobre el que ya existe en el árbol.
 	 * Usar cuando se creó un elemento para actualizar otro que ya existe en el árbol.
-	 * @param data
-	 * @param count
 	 */
 	public void addTemporalDataCount(T data, Integer count) {
 		this.temporalCount.add(new KeyCount<T>(data, count));
@@ -93,8 +90,6 @@ public class IndexerTreeElement<T> implements Element<IndexerTreeKey>, IndexedTe
 	}
 
 	/**
-	 * dirección de la lista de datos para este término 
-	 * @return
 	 */
 	public BlockAddress<Long, Short> getDataCountAddress() {
 		return dataCountAddress;

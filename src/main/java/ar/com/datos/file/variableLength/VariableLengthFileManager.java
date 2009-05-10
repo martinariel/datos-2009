@@ -37,10 +37,6 @@ public class VariableLengthFileManager<T> implements BlockAccessor<BlockAddress<
 	
 	/**
 	 * Permite crear una instancia indicando cual es el serializador a usar en lugar de usar el nativo de los objetos de tipo T
-	 * 
-     * @param fileName nombre de
-     * @param blockSize
-     * @param blockSize
 	 */
     public VariableLengthFileManager(String fileName, Integer blockSize, Serializer<T> entitySerializer) {
 		setRealFile(constructFile(fileName, blockSize));
@@ -136,7 +132,7 @@ public class VariableLengthFileManager<T> implements BlockAccessor<BlockAddress<
 	}
 
 	/**
-	 * @see ar.com.datos.file.DynamicAccesor#get(BlockAddress)
+	 * @see ar.com.datos.file.DynamicAccesor#get(ar.com.datos.file.address.Address)
 	 */
 	@Override
 	public T get(BlockAddress<Long, Short> address) {
@@ -150,9 +146,7 @@ public class VariableLengthFileManager<T> implements BlockAccessor<BlockAddress<
 	}
 
 	/**
-	 * recupera un bloque hidratado con objetos. Puede obtenerlos de la cache {@link}
-	 * @param blockNumber
-	 * @return
+	 * recupera un bloque hidratado con objetos. Puede obtenerlos de la cache
 	 */
 	protected HydratedBlock<T> getBlock(Long blockNumber) {
 		if (this.isEmpty()) return new HydratedBlock<T>(new ArrayList<T>(0),0L, getRealFile()); 
@@ -176,9 +170,6 @@ public class VariableLengthFileManager<T> implements BlockAccessor<BlockAddress<
 	}
 	/**
 	 * Construye el archivo de bloques que a utilizar para la persistencia 
-	 * @param fileName
-	 * @param blockSize
-	 * @return
 	 */
 	protected BlockFile constructFile(String fileName, Integer blockSize) {
 		return new SimpleBlockFile(fileName, blockSize);
@@ -203,7 +194,6 @@ public class VariableLengthFileManager<T> implements BlockAccessor<BlockAddress<
 	}
 	/**
 	 * Actualiza la información del iterador que itera sobre este archivo
-	 * @param iterator
 	 */
 	protected void updateInformation(VLFMIterator iterator) {
 		if (iterator.getNextBlock() == BlockFile.END_BLOCK) return;

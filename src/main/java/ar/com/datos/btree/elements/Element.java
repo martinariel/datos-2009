@@ -16,7 +16,7 @@ public interface Element<K extends Key> {
 	 * Permite actualizar este elemento con el elemento pasado.
 	 * PRE: La {@link Key} del elemento pasado debe ser igual a la {@link Key} de este elemento.
 	 *
-	 * @return
+	 * @return 
 	 * true si el elemento sufrió una modificación que pudo haber modificado
 	 * al nodo; false en caso contrario.
 	 * Esto queda a criterio del implementador.

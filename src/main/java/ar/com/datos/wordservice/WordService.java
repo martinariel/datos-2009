@@ -49,7 +49,7 @@ public class WordService implements Closeable {
     /**
      * Crea la instancia del backend
      *
-     * @param directorioArchivos
+     * @param directory
      * Directorio de trabajo, donde se localizaran todos los archivos del sistema.
      */
     public WordService (String directory){
@@ -74,7 +74,7 @@ public class WordService implements Closeable {
      *
      * @param document
      * Documento a agregar
-     * @param vista
+     * @param view
      * IWordsRecorderConector a notificar la grabacion de las palabras
      *
      */

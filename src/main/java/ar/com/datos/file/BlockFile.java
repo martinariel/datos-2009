@@ -15,36 +15,27 @@ public interface BlockFile extends Iterable<byte[]> {
 	Long END_BLOCK = -1L;
 	/**
 	 * Intenta leer el bloque con número blockNumber 
-	 * @param blockNumber
-	 * @return
 	 */
 	public byte[] readBlock(Long blockNumber);
 	/**
 	 * Intenta escribir el bloque con número blockNumber 
-	 * @param blockNumber
-	 * @return
 	 */
 	public void writeBlock(Long blockNumber, byte[] block);
 	/**
 	 * Intenta escribir el bloque formado por las partes con número blockNumber 
-	 * @param blockNumber
-	 * @return
 	 */
 	public void writeBlock(Long blockNumber, Collection<ArrayByte> partes);
 	/**
 	 * Agrega al final el nuevo bloque recibido. La cantidad total de bloques
 	 * aumenta en una unidad
-	 * @param block
 	 */
 	public void appendBlock(byte[] block);
 	/**
 	 * Devuelve el tamaÃ±o de bloques configurado
-	 * @return
 	 */
 	public Integer getBlockSize();
 	/**
 	 * Devuelve la cantidad de bloques existentes.
-	 * @return
 	 */
 	public Long getTotalBlocks();
 	/**

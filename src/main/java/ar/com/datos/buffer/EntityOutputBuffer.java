@@ -10,7 +10,6 @@ public interface EntityOutputBuffer extends OutputBuffer {
 
 	/**
 	 * Devuelve la cantidad de Entidades que fueron agregadas (cantidad de closeEntity)
-	 * @return
 	 */
 	public Short getEntitiesCount();
 

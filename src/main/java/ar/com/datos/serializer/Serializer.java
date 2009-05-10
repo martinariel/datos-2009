@@ -6,7 +6,7 @@ import ar.com.datos.serializer.exception.SerializerException;
 
 
 /**
- * Permite deshidratar en una tira de byte[] un objeto del tipo {@link T} e hidratarlo
+ * Permite deshidratar en una tira de byte[] un objeto del tipo T e hidratarlo
  * de nuevo. La tira de byte[] contendra la informacion de control necesaria para poder
  * realizar la hidratacion y reconocer el objeto.
  *
@@ -18,7 +18,7 @@ import ar.com.datos.serializer.exception.SerializerException;
 public interface Serializer<T> {
 
 	/**
-	 * Deshidrata un objeto del tipo {@link T} en una tira de byte[]. Dicha tira incluira
+	 * Deshidrata un objeto del tipo T en una tira de byte[]. Dicha tira incluira
 	 * la informacion de control necesaria para realizar la hidratacion de dicho objeto.
 	 * El objeto deshidratado sera agregado al {@link OutputBuffer} recibido.
 	 * 
@@ -28,8 +28,8 @@ public interface Serializer<T> {
 	public void dehydrate(OutputBuffer output, T object) throws SerializerException;
 
 	/**
-	 * Rehidrata un objeto del tipo {@link T} a partir de una tira de byte[] que fue generada
-	 * previamente mediante el metodo {@link #dehydrate(Object)}. Esta tira de bytes es obtenida
+	 * Rehidrata un objeto del tipo T a partir de una tira de byte[] que fue generada
+	 * previamente mediante el metodo {@link #dehydrate(OutputBuffer, Object)}. Esta tira de bytes es obtenida
 	 * desde el {@link InputBuffer} recibido, solo se piden los bytes estrictamente necesarios a
 	 * este.
 	 * 

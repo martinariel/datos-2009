@@ -24,10 +24,6 @@ public class VariableLengthWithCache<T> extends VariableLengthFileManager<T> {
 	
 	/**
 	 * Permite crear una instancia indicando cual es el serializador a usar en lugar de usar el nativo de los objetos de tipo T
-	 * 
-     * @param fileName nombre de
-     * @param blockSize
-     * @param blockSize
 	 */
     public VariableLengthWithCache(String fileName, Integer blockSize, Serializer<T> entitySerializer) {
     	super(fileName, blockSize, entitySerializer);
@@ -43,9 +39,7 @@ public class VariableLengthWithCache<T> extends VariableLengthFileManager<T> {
 	}
 
 	/**
-	 * recupera un bloque hidratado con objetos. Puede obtenerlos de la cache {@link}
-	 * @param blockNumber
-	 * @return
+	 * recupera un bloque hidratado con objetos. Puede obtenerlos de la cache
 	 */
 	protected HydratedBlock<T> getBlock(Long blockNumber) {
 		if (isBlockInCache(blockNumber)) return getBlockFromCache(blockNumber);
@@ -53,7 +47,6 @@ public class VariableLengthWithCache<T> extends VariableLengthFileManager<T> {
 	}
 	/**
 	 * Manejo basico de cache
-	 * @param hb
 	 */
 	protected HydratedBlock<T> addToCache(HydratedBlock<T> hb) {
 		return this.cachedBlock = hb;
@@ -118,10 +111,6 @@ public class VariableLengthWithCache<T> extends VariableLengthFileManager<T> {
 
 	/**
 	 * El metodo esta implementado de esta manera para 
-	 * @param iBuffer
-	 * @param lastBlockNumber
-	 * @param cantidadRegistros
-	 * @return
 	 */
 	private void fillLastBlockBufferWith(InputBuffer iBuffer, Long lastBlockNumber, Integer cantidadRegistros) {
 		this.setCachedLastBlock(new HydratedBlock<T>(new ArrayList<T>(), lastBlockNumber, getRealFile()));
@@ -141,7 +130,6 @@ public class VariableLengthWithCache<T> extends VariableLengthFileManager<T> {
 	}
 	/**
 	 * Actualiza la información del iterador que itera sobre este archivo
-	 * @param iterator
 	 */
 	protected void updateInformation(VLFMIterator iterator) {
 		if (iterator.getNextBlock() == BlockFile.END_BLOCK) return;

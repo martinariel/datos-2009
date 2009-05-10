@@ -8,7 +8,7 @@ public interface DynamicAccesor<A extends Address, T> extends SequentialAccesor<
 	/**
 	 * Recupera la entidad almacenada en la direccion recibida.
 	 * Si no existe arroja <code>InvalidAddressException</code>
-	 * @param address: dirección de búsqueda
+	 * @param address dirección de búsqueda
 	 * @return objeto en la dirección <code>address</code>
 	 */
 	public T get(A address);

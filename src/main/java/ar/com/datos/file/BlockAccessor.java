@@ -6,9 +6,6 @@ public interface BlockAccessor<A extends BlockAddress<Long, Short>, T> extends D
 
 	/**
 	 * Replaces entity stored in <code>address</code> with <code>object</code>
-	 * @param address
-	 * @param object
-	 * @return
 	 */
 	public A updateEntity(A address, T object);
 

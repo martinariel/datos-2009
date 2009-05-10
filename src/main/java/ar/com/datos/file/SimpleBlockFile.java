@@ -21,8 +21,6 @@ public class SimpleBlockFile extends StandardFileWrapper implements BlockFile {
 	/**
 	 * Construye un SimpleBlockFile que usa un archivo temporal de Java
 	 * <code>File.createTempFile()</code>
-	 * @param string
-	 * @param blockSize
 	 */
 	public SimpleBlockFile(Integer blockSize) {
 		super();
@@ -32,8 +30,6 @@ public class SimpleBlockFile extends StandardFileWrapper implements BlockFile {
 
 	/**
 	 * Construye un SimpleBlockFile que usa el archivo en la ruta especificada
-	 * @param string
-	 * @param blockSize
 	 */
 	public SimpleBlockFile(String string, Integer blockSize) {
 		super(string);

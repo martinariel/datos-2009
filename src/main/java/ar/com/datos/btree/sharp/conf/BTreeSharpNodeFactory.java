@@ -23,7 +23,7 @@ public interface BTreeSharpNodeFactory<E extends Element<K>, K extends Key> {
 	/**
 	 * Permite crear una implementación en particular de {@link AbstractLeafNode}
 	 *
-	 * @see AbstractLeafNode#AbstractLeafNode(BTreeSharpConfiguration, NodeReference)
+	 * @see AbstractLeafNode#AbstractLeafNode(BTreeSharpConfiguration, NodeReference, NodeReference)
 	 */
 	public AbstractLeafNode<E, K> createLeafNode(BTreeSharpConfiguration<E, K> bTreeSharpConfiguration, 
 												 NodeReference<E, K> previous,
@@ -46,7 +46,7 @@ public interface BTreeSharpNodeFactory<E extends Element<K>, K extends Key> {
 	/**
 	 * Permite crear una implementación en particular de {@link AbstractEspecialRootNode}
 	 *  
-	 * @see AbstractEspecialRootNode#AbstractEspecialRootNode(BTreeSharpConfiguration, ar.com.datos.btree.sharp.BTreeSharp)
+	 * @see AbstractEspecialRootNode#AbstractEspecialRootNode(BTreeSharpConfiguration, BTreeSharp)
 	 */
 	public AbstractEspecialRootNode<E, K> createEspecialRootNode(BTreeSharpConfiguration<E, K> bTreeSharpConfiguration, BTreeSharp<E, K> btree);
 }

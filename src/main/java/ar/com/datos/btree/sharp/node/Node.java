@@ -50,8 +50,7 @@ public abstract class Node<E extends Element<K>, K extends Key> {
 	 * @return
 	 * En caso de haber split la {@link Key} correspondera a la clave a subir (la primera
 	 * del nodo del centro, es decir el generado) y el {@link NodeReference} corresponderá
-	 * al nodo generado. La nueva primer clave del nodo de la derecha (que también cambiará)
-	 * debe ser obtenida de él mediante {@link #getFirstKey()}.
+	 * al nodo generado.
 	 * Si no se produjo split al agregar el {@link Element}, se devolverá null.
 	 *
 	 * @throws BTreeException

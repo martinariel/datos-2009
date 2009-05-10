@@ -1,13 +1,16 @@
 package ar.com.datos.util;
 
+/**
+ * 
+ * @author fvalido
+ *
+ */
 public class ArraysUtils {
     /**
      * Incrementa si es necesario la cantidad de Bytes que pueden
      * ser guardados en el array.
      *
      * Macheteado de ArrayList :P  (Pero tambien adaptado)
-     * 
-     * @author fvalido
      */
     public static byte[] ensureCapacity(byte[] currentBytes, int size) {
     	int oldSize = currentBytes.length;

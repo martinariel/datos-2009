@@ -50,8 +50,6 @@ public class FixedLengthKeyCounter<T> implements SessionHandler, Iterable<KeyCou
 	}
 	/**
 	 * Hace un ordenamiento por merge que se encarga de contar los casos que son iguales
-	 * @param semiPartes
-	 * @return
 	 */
 	private BlockFile mergeChunksAndCount(List<BlockFile> semiPartes) {
 		BlockFile countingKeys = constructFile(data.getBlockSize() + new Long(countSerializer.getDehydrateSize(0)).intValue());
@@ -80,9 +78,6 @@ public class FixedLengthKeyCounter<T> implements SessionHandler, Iterable<KeyCou
 
 	/**
 	 * Dada la lista de currentkeys busca la que es menor
-	 * @param currentKeys
-	 * @param comparator
-	 * @return
 	 */
 	private byte[] getMinimumKey(List<byte[]> currentKeys, ArrayOfBytesComparator comparator) {
 		byte[] minimumKey = currentKeys.get(0);
@@ -93,8 +88,6 @@ public class FixedLengthKeyCounter<T> implements SessionHandler, Iterable<KeyCou
 
 	/**
 	 * Carga la lista de currentKeys con el primer dato de cada iterador
-	 * @param currentKeys
-	 * @param iteradores
 	 */
 	private void cargarInitialKeys(List<byte[]> currentKeys, List<Iterator<byte[]>> iteradores) {
 		for (Iterator<byte[]> it: iteradores)  {
@@ -105,9 +98,6 @@ public class FixedLengthKeyCounter<T> implements SessionHandler, Iterable<KeyCou
 	/**
 	 * Actualiza la siguiente clave del iterador {@code it}, en caso que dicho iterador no tenga mas datos lo remueve tanto
 	 * de la lista de currentkeys como de la lista de iteradores 
-	 * @param currentKeys
-	 * @param iteradores
-	 * @param it
 	 * @return <code>true</code> si se pudo obtener una siguiente clave. <code>false</code> si no había una siguiente clave para el iterador
 	 */
 	private boolean getNextKey(List<byte[]> currentKeys, List<Iterator<byte[]>> iteradores, Iterator<byte[]> it) {
@@ -150,7 +140,6 @@ public class FixedLengthKeyCounter<T> implements SessionHandler, Iterable<KeyCou
 
 	/**
 	 * Construye el archivo temporal donde almacenará las claves a contar
-	 * @return
 	 */
 	protected BlockFile constructFile(Integer blockSize) {
 		return new SimpleBlockFile(blockSize);

@@ -16,9 +16,6 @@ public class HydratedBlock<T> {
 	/**
 	 * Construye un bloque como un contenedor de registros de tipo T que conocen el número
 	 * de bloque en el que están y el próximo bloque (necesario para poder iterar)
-	 * @param datos
-	 * @param blocks
-	 * @param nextBlockNumber
 	 */
 	public HydratedBlock(List<T> datos, List<Long> blocks, BlockFile file) {
 		super();
@@ -30,9 +27,6 @@ public class HydratedBlock<T> {
 	/**
 	 * Construye un bloque como un contenedor de registros de tipo T que conocen el número
 	 * de bloque en el que están y el próximo bloque (necesario para poder iterar)
-	 * @param datos
-	 * @param blockNumber
-	 * @param nextBlockNumber
 	 */
 	public HydratedBlock(List<T> datos, Long blockNumber, BlockFile file) {
 		super();

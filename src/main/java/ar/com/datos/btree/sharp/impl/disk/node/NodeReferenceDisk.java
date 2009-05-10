@@ -24,8 +24,8 @@ public class NodeReferenceDisk<E extends Element<K>, K extends Key> implements N
 	/**
 	 * Constructor.
 	 *
-	 * @param nodeNumber
-	 * Numero de nodo asociado.
+	 * @param nodeAddress
+	 * Dirección de nodo asociado.
 	 * @param nodeFileManager
 	 * VLFM para el archivo que guarda este nodo.
 	 * @param nodeType
@@ -38,7 +38,7 @@ public class NodeReferenceDisk<E extends Element<K>, K extends Key> implements N
 	}
 
 	/**
-	 * Constructor. No referenciará a nada hasta que se llame a {@link #saveNode()}.
+	 * Constructor. No referenciará a nada hasta que se llame a {@link #saveNode(Node)}
 	 * 
 	 * @param nodeFileManager
 	 * VLFM para el archivo que guarda este nodo.

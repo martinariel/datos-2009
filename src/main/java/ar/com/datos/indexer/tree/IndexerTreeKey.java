@@ -22,7 +22,6 @@ public class IndexerTreeKey implements Key {
 	}
 	/**
 	 * Término indexado
-	 * @return
 	 */
 	public String getTerm() {
 		return term;

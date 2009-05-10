@@ -14,8 +14,6 @@ public interface Indexer<T> {
 
 	/**
 	 * Relaciona los términos recibidos por parámetro al objeto T
-	 * @param dato
-	 * @param terms
 	 */
 	public void addTerms(T dato, String... terms);
 
@@ -23,8 +21,6 @@ public interface Indexer<T> {
 	 * Recupera, para el término <code>term</code>, la lista completa de objetos que
 	 * lo tienen relacionado junto con la cantidad de veces que existe la relación entre
 	 * dicho objeto y el término.
-	 * @param term
-	 * @return
 	 */
 	public IndexedTerm<T> findTerm(String term);
 
