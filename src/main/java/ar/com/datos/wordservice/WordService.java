@@ -95,7 +95,7 @@ public class WordService implements Closeable {
 
 
     /**
-     * TODO: Obteniene una coleccion de documentos relacionados
+     * Obteniene una coleccion de documentos relacionados
      * con el documento parametro ordenados por relevancia
      *
      * @param query

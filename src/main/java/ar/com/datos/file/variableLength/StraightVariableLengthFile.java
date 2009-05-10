@@ -117,8 +117,7 @@ public class StraightVariableLengthFile<T> implements DynamicAccesor<OffsetAddre
 
 		@Override
 		public void remove() {
-			// TODO Auto-generated method stub
-			
+			throw new UnsupportedOperationException();
 		}
 		protected void setCurrent(T object) {
 			this.current = object;

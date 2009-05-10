@@ -3,7 +3,6 @@ package ar.com.datos.trie.disk.serializer;
 import ar.com.datos.buffer.InputBuffer;
 import ar.com.datos.buffer.OutputBuffer;
 import ar.com.datos.serializer.NullableSerializer;
-import ar.com.datos.serializer.Serializer;
 import ar.com.datos.serializer.exception.SerializerException;
 import ar.com.datos.trie.Element;
 import ar.com.datos.trie.Key;

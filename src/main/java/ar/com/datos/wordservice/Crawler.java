@@ -1,6 +1,5 @@
 package ar.com.datos.wordservice;
 
-import java.io.Closeable;
 import java.util.Collection;
 
 import ar.com.datos.documentlibrary.Document;

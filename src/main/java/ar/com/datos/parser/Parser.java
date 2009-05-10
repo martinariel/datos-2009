@@ -25,7 +25,7 @@ public class Parser implements Iterable<List<String>> {
     static {
 
         //TODO: Completar con los separators que falten
-        separators = new String[] {"?", ";", ".", "!", ":", "(", ")" };
+        separators = new String[] {"?", ";", ".", "!", ":", "(", ")", "\"", "'", ",", "-"};
 
         //Reemplazar todos los caracteres excepto:
         stringRegex = "[^a-z\\ñ";
