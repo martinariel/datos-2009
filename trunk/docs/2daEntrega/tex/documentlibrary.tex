@@ -1,3 +1,20 @@
 \section{Document Library}
+Este modulo representa la abstraccion de Documentos que utilizamos, dentro de el existen las clases para la persistencia de los mismos, la interfase de un documento y tres distintas implementaciones: FileSystemDocument, MemoryDocument y DocumentFromDocumentLibrary.
 
-\subsection{bla}
+
+\subsection{Persistencia en Disco}
+Respecto a la persistencia la implementamos utilizando un StraigthVariableLenthFile, teniendo la posibilidad de agregar un documento al archivo de documentos y recuperando su OffsetAdress; y a partir de este ultimo recuperar una instancia de una implementacion (DocumentFromDocumentLibrary) de Document persistida. Ademas de estos dos metodos existe uno para recuperar la cantidad de Document's persistidos, este valor es almacenado en el principio del archivo y es utilizado por el SearchEngine para resolver las consultas de busquedas.
+
+\subsection[Document}
+La interfase Documento es realmente simple, contiene un metodo para la apertura, cerrado, otro para determinar si se puede abrir y el metodo para obtener la linea actual, siendo iterable por este ultimo.
+
+\subsection{Implementaciones de Document}
+
+\paragraph[FileSystemDocument}
+Las distintas implementaciones de la abstraccion de Document cumplen diferentes requerimientos segun su implementacion. La primera de ellas, FileSystemDocument, como indica su nombre permite recuperar las lineas de un archivo del fileSystem, siendo instanciada con su path, y es utilizado exclusivamente por el Main para abrir los documentos que el usuario desea agregar al sistema y reproducirlos.
+
+\paragraph{MemoryDocument}
+MemoryDocument permite tener un Document completamente independiente de su representacion en el fileSystem, simplemente se lo instancia y se le agregan lineas con su metodo addLine. Lo utilizamos para todo el manejo de documentos, entre esos usos, como criterio de busqueda al SearchEngine y recuperacion de un documento a partir de su OffSetAdress en el servicio de persistencia (DocumentLibrary).
+
+\paragraph{DocumentFronDocumentLibrary}
+DocumentFromDocumentLibrary es una capa de abstraccion que implementa Lazy Loading, es decir, hasta que realmente no se abra el documento el no lo buscara en DocumentLibrary.
