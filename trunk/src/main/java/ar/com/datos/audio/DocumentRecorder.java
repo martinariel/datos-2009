@@ -66,12 +66,17 @@ public class DocumentRecorder implements IWordsRecorderConector, AudioStopper {
         vista.recordingWordStarted();
     }
 
-    public void sendMessage(String message){
-        vista.sendMessage(message);
+    public void sendMessageLn(String message){
+        vista.sendMessageLn(message);
     }
 
     public void sendStopper(AudioStopper stopper){
         vista.sendStopper(stopper);
     }
+
+	public void sendMessage(String message) {
+		vista.sendMessage(message);
+		
+	}
 
 }

@@ -49,21 +49,21 @@ public class Main implements IWordsRecorderConector{
 
     @Override
     public void notifyNextWord(String palabra){
-        sendMessage("Se ha encontrado la palabra: " + palabra);
+        sendMessageLn("Se ha encontrado la palabra: " + palabra);
     }
 
     @Override
     public boolean canStartRecording(){
-        sendMessage("Ingrese 'i' si quiere grabar la palabra.");
+        sendMessageLn("Ingrese 'i' si quiere grabar la palabra.");
         return readKeyBoardChar() == 'i';
 //        return true;
     }
 
     @Override
     public boolean recordingWordOK(){
-        sendMessage("Opciones:");
-        sendMessage("s: Guardar la palabra.");
-        sendMessage("Grabar nuevamente (cualquier otra tecla).");
+        sendMessageLn("Opciones:");
+        sendMessageLn("s: Guardar la palabra.");
+        sendMessageLn("Grabar nuevamente (cualquier otra tecla).");
 
         return readKeyBoardChar() == 's';
 //        return true;
@@ -76,7 +76,7 @@ public class Main implements IWordsRecorderConector{
 
     @Override
     public void recordingWordStarted(){
-        sendMessage("Grabando!!!!, ingrese 'f' para finalizar la grabacion.");
+        sendMessageLn("Grabando!!!!, ingrese 'f' para finalizar la grabacion.");
 //        try {
 //			Thread.sleep(200);
 //		} catch (InterruptedException e) {
@@ -97,12 +97,12 @@ public class Main implements IWordsRecorderConector{
 
     @Override
     public void recordingAllWordsEnd(){
-        sendMessage("Grabacion de palabras finalizada!!!");
+        sendMessageLn("Grabacion de palabras finalizada!!!");
 
     }
 
     @Override
-    public void sendMessage(String message){
+    public void sendMessageLn(String message){
         System.out.println(message);
     }
 
@@ -144,7 +144,7 @@ public class Main implements IWordsRecorderConector{
     	try {
             return Integer.parseInt(readKeyboardString());
     	} catch (NumberFormatException nfe) {
-        	sendMessage("ingrese SOLO números");
+        	sendMessageLn("ingrese SOLO números");
         	return readKeyBoardInt();
         }
     }
@@ -156,12 +156,12 @@ public class Main implements IWordsRecorderConector{
     private void showMenu() {
         boolean getOut = false;
         while (!getOut) {
-        	sendMessage("Opciones:");
-        	sendMessage("1 - Carga de documentos");
-        	sendMessage("2 - Reproduccion documento de FileSystem");
-	        sendMessage("3 - Busqueda de documentos.");
-	        sendMessage("Cualquier otra tecla: Salir");
-	        sendMessage("Seleccione una opcion:");
+        	sendMessageLn("Opciones:");
+        	sendMessageLn("1 - Carga de documentos");
+        	sendMessageLn("2 - Reproduccion documento de FileSystem");
+	        sendMessageLn("3 - Busqueda de documentos.");
+	        sendMessageLn("Cualquier otra tecla: Salir");
+	        sendMessageLn("Seleccione una opcion:");
 	
 	        switch(readKeyBoardChar()){
 	        case '1': loadDocument();break;
@@ -186,7 +186,7 @@ public class Main implements IWordsRecorderConector{
      */
     private void loadDocument(){
 
-        sendMessage("Ingrese una ruta valida:");
+        sendMessageLn("Ingrese una ruta valida:");
 
         String ruta = readKeyboardString();
 
@@ -213,7 +213,7 @@ public class Main implements IWordsRecorderConector{
      *
      */
     private void playDocument(){
-        sendMessage("Ingrese una ruta valida:");
+        sendMessageLn("Ingrese una ruta valida:");
 
         String ruta = readKeyboardString();
 
@@ -240,7 +240,7 @@ public class Main implements IWordsRecorderConector{
      */
     private void searchDocument(){
 
-        sendMessage("Ingrese el criterio de busqueda:");
+        sendMessageLn("Ingrese el criterio de busqueda:");
         String busqueda = readKeyboardString();
 
         MemoryDocument document = new MemoryDocument();
@@ -258,7 +258,7 @@ public class Main implements IWordsRecorderConector{
     private void showSearchResult(){
         int i = 0;
 
-        sendMessage("Resultado de busqueda:");
+        sendMessageLn("Resultado de busqueda:");
 
         for (Tuple<Double, Document> result : searchResult){
 
@@ -270,36 +270,36 @@ public class Main implements IWordsRecorderConector{
             line = line.substring(0,  line.length() >= 20? 20 : line.length());
 
             if (line != null){
-                sendMessage(new Integer(++i).toString() + " - " + new Double(docValue).toString() + " - "+ line);
+                sendMessageLn(new Integer(++i).toString() + " - " + new Double(docValue).toString() + " - "+ line);
             }
 
             doc.close();
         }
 
         if ( i == 0 ){
-            sendMessage("No se han encontrado documentos. ");
+            sendMessageLn("No se han encontrado documentos. ");
         }
         else {
         	
-            sendMessage("Desea reproducir un documento(s/n):");
+            sendMessageLn("Desea reproducir un documento(s/n):");
             
             while (readKeyBoardChar() == 's') {
 
             	if (i > 1) {
                 	
-               		sendMessage("Ingrese el numero de documento: (1 - " + i + ")");
+               		sendMessageLn("Ingrese el numero de documento: (1 - " + i + ")");
 
                		int searchOption = readKeyBoardInt();
 
                		if (searchOption > 0 && searchOption <= searchResult.size()) {
                			backend.playDocument(searchResult.get(searchOption - 1).getSecond(), this);
                		} else {
-               			sendMessage("No es un número de documento valido");
+               			sendMessageLn("No es un número de documento valido");
                		}
-           			sendMessage("Desea reproducir otro documento(s/n):");
+           			sendMessageLn("Desea reproducir otro documento(s/n):");
             	} else {
                 	backend.playDocument(searchResult.get(0).getSecond(), this);
-                	sendMessage("Desea reproducirlo nuevamente(s/n):");
+                	sendMessageLn("Desea reproducirlo nuevamente(s/n):");
                 }
             }
         }
@@ -324,5 +324,14 @@ public class Main implements IWordsRecorderConector{
 
         app.init();
     }
+
+    /*
+     * (non-Javadoc)
+     * @see ar.com.datos.audio.IWordsRecorderConector#sendMessage(java.lang.String)
+     */
+	public void sendMessage(String message) {
+        System.out.print(message);
+        System.out.flush();
+	}
 
 }

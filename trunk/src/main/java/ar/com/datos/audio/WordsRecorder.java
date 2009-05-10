@@ -1,6 +1,5 @@
 package ar.com.datos.audio;
 
-import java.io.ByteArrayOutputStream;
 import java.util.Collection;
 
 import ar.com.datos.persistencia.SoundPersistenceService;
@@ -13,11 +12,10 @@ import ar.com.datos.persistencia.exception.WordIsAlreadyRegisteredException;
  *
  */
 public class WordsRecorder implements AudioStopper{
-
     private AudioServiceHandler servicioAudio;
     private SoundPersistenceService servicioArchivos;
     private IWordsRecorderConector interfazUsuario;
-    private ByteArrayOutputStream audio;
+    private SoundByteArrayOutputStream audio;
     private String palabraActual;
 
     public WordsRecorder(IWordsRecorderConector interfazUsuario, SoundPersistenceService servicioArchivos) {
@@ -38,8 +36,8 @@ public class WordsRecorder implements AudioStopper{
 
         if (interfazUsuario.canStartRecording()){
             //Grabo en memoria!!
-            audio = new ByteArrayOutputStream(128 * 1024);
-            servicioAudio.record(audio);
+        	audio = new SoundByteArrayOutputStream(4096 * 1024);
+			servicioAudio.record(audio);
             interfazUsuario.recordingWordStarted();
         }
     }
@@ -54,10 +52,15 @@ public class WordsRecorder implements AudioStopper{
      */
     public void stopRecording(){
         if (servicioAudio.isRecording()){
-            servicioAudio.stopRecording();
-
+        	audio.setAcceptData(false);
+        	interfazUsuario.sendMessage("Grabación detenida. Esperando a que el device devuelva el control... ");
+        	servicioAudio.stopRecording();
+        	interfazUsuario.sendMessageLn("Listo!");
+        	
             //Supongo que tengo memoria suficiente!
+
             AnotherInputStream inputAudio = new AnotherInputStream(audio.toByteArray());
+            
             inputAudio.mark(Integer.MAX_VALUE);
             Thread reproduccion = servicioAudio.play(inputAudio);
 
