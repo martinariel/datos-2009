@@ -25,9 +25,7 @@ public class NullableTupleSerializer<K,E> extends TupleSerializer<K, E> implemen
 		nullMarkerSerializer.dehydrate(output, isNull);
 		if (!isNull) {
 			super.dehydrate(output, object);
-		} else {
-			System.out.println("pero que pedazo...");
-		}
+		} 
 	}
 	@Override
 	public Tuple<K, E> hydrate(InputBuffer input) {
