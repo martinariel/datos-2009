@@ -58,10 +58,10 @@ public class AudioServiceHandler {
     public void record(OutputStream output) throws AudioServiceHandlerException{
         if (!recording && !playing){
 
-            grabador = new SimpleAudioRecorder(AudioFileFormat.Type.AU,output);
-
+    		grabador = new SimpleAudioRecorder(AudioFileFormat.Type.AU,output);
+            
             try{
-                grabador.init();
+               	grabador.init();
                 grabador.startRecording();
                 recording = true;
             }

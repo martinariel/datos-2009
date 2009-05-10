@@ -1,6 +1,7 @@
 package ar.com.datos.capturaaudio.core;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Date;
 
 import javax.sound.sampled.DataLine;
 import javax.sound.sampled.TargetDataLine;
@@ -67,9 +68,11 @@ public class SimpleAudioRecorder extends Thread{
 	/* Stops the recording.*/
 	public void stopRecording()
 	{
+		Date date = new Date();
 		m_line.stop();
 		m_line.flush();
 		m_line.close();
+		System.out.println(new Long(new Date().getTime() - date.getTime()));
 	}
 
 	public void run()

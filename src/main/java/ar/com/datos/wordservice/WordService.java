@@ -80,7 +80,7 @@ public class WordService implements Closeable {
         	recorder.recordWords(crawler.addDocument(document));
         }
         catch(AudioServiceHandlerException e){
-        	view.sendMessage("Audio device busy");
+        	view.sendMessageLn("Audio device busy");
         }
         catch(Exception e){
         	e.printStackTrace();
@@ -117,14 +117,14 @@ public class WordService implements Closeable {
         document.open();
         
         for (String line = document.readLine(); line != null; line = document.readLine()){
-        	view.sendMessage(line);
+        	view.sendMessageLn(line);
         } 
         
         try {
             player.play(document);
         }
         catch (AudioServiceHandlerException e){
-        	view.sendMessage("Audio device busy");
+        	view.sendMessageLn("Audio device busy");
         }
         catch (Exception e){
         	e.printStackTrace();

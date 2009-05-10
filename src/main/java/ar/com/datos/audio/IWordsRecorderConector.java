@@ -45,8 +45,14 @@ public interface IWordsRecorderConector {
      * Recibe un mensaje.
      * @param message
      */
-    void sendMessage(String message);
+    void sendMessageLn(String message);
 
+    /**
+     * Recibe un mensaje.
+     * @param message
+     */
+    void sendMessage(String message);
+    
     /**
      * Recibe el stopper de audio
      * @param stopper
