@@ -13,10 +13,13 @@
 	<target name="compile" description="Compilation target">
 		<echo>About to compile...</echo>
 		<mkdir dir="antbin" />
-		<javac target="6" srcdir="src/main/java" destdir="antbin" verbose="true" encoding="latin1" classpathref="path.compile">
+		<javac target="6" srcdir="src/main/java" destdir="antbin" verbose="true" encoding="ISO-8859-1" classpathref="path.compile">
       <classpath>
 		    <pathelement location="lib/commons-collections-3.2.1/commons-collections-3.2.1.jar" />
       </classpath>
+			<classpath id="path.compile">
+				<pathelement location="lib/commons-collections-3.2.1/commons-collections-3.2.1.jar" />
+			</classpath>
 		</javac>
 	</target>
 	<target name="compress" depends="compile" description="Compression target">
@@ -42,6 +45,7 @@
 	</target>
 	<target name="run" depends="compress, stopwords">
 		<java dir="${rundir}" classname="ar.com.datos.Main" fork="true">
+	<jvmarg value="-Dfile.encoding=ISO8859_1"/>
       	<arg line="${args}"/>
 		<classpath>
 		    <pathelement location="lib/commons-collections-3.2.1/commons-collections-3.2.1.jar" />
