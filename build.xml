@@ -50,22 +50,23 @@
       </classpath>
 		</java>
 	</target>
-	<target name="test1" depends="clean">
+	<target name="test2" depends="clean">
 		<echo>Copyng tests files to running enviroment...</echo>
 		<copy todir="${rundir}">
-			<fileset dir="resources/test1">
+			<fileset dir="resources/test2">
 				<include name="*" />
 			</fileset>
 		</copy>
 		<echo>Listado de archivos de prueba</echo>
-		<property name="file" value="resources/test1/saludo.txt" />
+        <property name="file" value="resources/test1/saludo.txt" />
+        <property name="catdir" value="resources/test2"/>
 		<antcall target="catFile">
 		</antcall>
 		<antcall target="run">
 		</antcall>
 	</target>
 	<target name="catFile">
-		<fileset dir="resources/test1" includes="*.txt" />
+        <fileset dir="${catdir}" includes="*.txt" />
 		<echo>Archivo ${file}</echo>
 		<echo>cat ${file}</echo>
 		<exec executable="cat">
