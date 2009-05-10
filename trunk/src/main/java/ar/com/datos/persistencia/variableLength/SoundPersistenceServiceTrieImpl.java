@@ -20,7 +20,7 @@ import ar.com.datos.trie.Trie;
 import ar.com.datos.trie.disk.DiskTrie;
 
 /**
- * TODO: SoundPersistenceService utilizando un Trie
+ * SoundPersistenceService utilizando un Trie
  *
  * @author mfernandez
  *

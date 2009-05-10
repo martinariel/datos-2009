@@ -1,6 +1,5 @@
 package ar.com.datos.indexer;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
