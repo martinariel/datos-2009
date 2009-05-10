@@ -109,5 +109,44 @@ public class TestParser extends TestCase {
     	assertTrue(25 == words);
     	
     }
+    
+    public void testOnlySeparators() {
+    	MemoryDocument document = new MemoryDocument();
+    	
+    	for (int i = 0 ; i < 1000; i++){
+	    	document.addLine(".");
+	    	document.addLine(".......");
+	    	document.addLine("?????;;;;;;;....!'''.!");
+	    	document.addLine("?????;;;;;;;....!'''.!");
+	    	document.addLine("?????;;;;;;;....!'''.!");
+	    	document.addLine("()()!!^^###%%%....@@@");
+	    	document.addLine("");
+    	}
+    	
+    	
+    	Parser parser = new Parser(document);
+    	
+    	int words = 0;
+    	
+    	for (Collection<String> oracion : parser){
+    		words += oracion.size();
+    	}
+    	
+    	assertTrue(words == 0);
+    }
+    
+    public void testNoLines() {
+    	MemoryDocument document = new MemoryDocument();    	
+    	
+    	Parser parser = new Parser(document);
+    	
+    	int words = 0;
+    	
+    	for (Collection<String> oracion : parser){
+    		words += oracion.size();
+    	}
+    	
+    	assertTrue(words == 0);
+    }
 
 }
