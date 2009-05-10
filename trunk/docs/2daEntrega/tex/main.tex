@@ -66,11 +66,13 @@ Este documento ha sido desarrollado en \LaTeX.
 \newpage
 
 % Inclusión de archivos externos
-\include{documentlibrary}  % Document, DocumentLibrary
-\include{crawler}          % Crawler, Discriminator
-\include{indexer}          % Indexer, LexicalManager
-\include{bsharptree}       % BSharp Tree
-\include{searchengine}     % SearchEngine, Queries, FTRS
-\include{trie}             % Diccionario, Trie
+\include{documentlibrary} % Document, DocumentLibrary
+\include{wordservice}     % Backend
+\include{documentfilters} % Crawler, Parser, Discriminator
+%\include{indexer}        % Indexer, LexicalManager ===> DESCOMENTAR CUANDO ESTE LA DOC DE JUAN !
+\include{bsharptree}      % B# Tree
+\include{searchengine}    % SearchEngine, Queries, FTRS, etc.
+\include{trie}            % Diccionario, Trie
+\include{audio}           % DocumentPlayer, DocumentRecorder, etc.
 
 \end{document}

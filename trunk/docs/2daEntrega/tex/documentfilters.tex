@@ -1,7 +1,9 @@
-\section{Parser}
+\section{Filtros y Normalización de Documentos}
+
+\subsection{Parser}
 El Parser se encarga a partir de un Document de separarlo en frases u oraciones, siendo iterable por este criterio, es decir, por cada frase (identificada por un distintos separadores: "." , "!", "?", etc.) se tendra disponible una List<String> con cada palabra de la misma. Es importance mencionar que este modulo es lo sufientemente inteligente como para bufferizar las lineas del documento hasta encontrar una frase. 
 
-\subsection{Ejemplo}
+\paragraph{Ejemplo}
 
 \begin{verbatim}
 1 - Primera Frase del documento. Segunda
@@ -14,3 +16,11 @@ El Parser se encarga a partir de un Document de separarlo en frases u oraciones,
 El parser devolvera estas 5 frases, siendo transparente para el que lo utilize en que linea empieza y termina cada una.
 
 Ademas de separar las frases como explicamos anteriormente, se encarga de hacer CaseFolding y reemplazar o eliminar todos los caracteres diacriticos.
+
+
+\subsection{StopWordsDiscriminator}
+
+bla
+\paragraph{stop}
+
+bla
