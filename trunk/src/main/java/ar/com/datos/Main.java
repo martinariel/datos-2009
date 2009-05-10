@@ -9,6 +9,7 @@ import ar.com.datos.documentlibrary.FileSystemDocument;
 import ar.com.datos.documentlibrary.MemoryDocument;
 
 import java.io.*;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -22,26 +23,37 @@ public class Main implements IWordsRecorderConector{
     private BufferedReader bufferReaderTeclado;
     private WordService backend;
     private AudioStopper stopper;
-    List<Tuple<Double, Document>> searchResult;
+    private List<Tuple<Double, Document>> searchResult;
+    private boolean openMic;
+    
 
     /**
      *
      * @param directorioArchivos
-     * Directorio de trabajo
+     * Directorio de trabajo.
+     * @param openMic
+     * Determina si el microfono se controla automaticamente.
+     * @param boostAudio
+     * Determina si el OutputStream de grabacion de audio es cortado inmediatamente
+     * despues del stop.
      */
-    public Main (String directorioArchivos){
+    public Main (String directorioArchivos, boolean openMic, boolean boostAudio){
 
         directorioArchivos = directorioArchivos.trim();
 
         directorioArchivos +=
             ((directorioArchivos.length() > 0) && !directorioArchivos.endsWith("/"))? "/":"";
 
-        backend = new WordService(directorioArchivos);
-
-        bufferReaderTeclado = new BufferedReader(new InputStreamReader(System.in));
-
+        this.backend 			 = new WordService(directorioArchivos);
+        this.bufferReaderTeclado = new BufferedReader(new InputStreamReader(System.in));
+        this.openMic 			 = openMic;
+        
+        this.backend.setBoostMic(boostAudio);
     }
 
+    /**
+     * Inicia la instancia 
+     */
     public void init() {
         showMenu();
     }
@@ -55,8 +67,8 @@ public class Main implements IWordsRecorderConector{
     @Override
     public boolean canStartRecording(){
         sendMessageLn("Ingrese 'i' si quiere grabar la palabra.");
-        return readKeyBoardChar() == 'i';
-//        return true;
+        
+        return (openMic)? true : readKeyBoardChar() == 'i';
     }
 
     @Override
@@ -65,8 +77,7 @@ public class Main implements IWordsRecorderConector{
         sendMessageLn("s: Guardar la palabra.");
         sendMessageLn("Grabar nuevamente (cualquier otra tecla).");
 
-        return readKeyBoardChar() == 's';
-//        return true;
+        return (openMic)? true : readKeyBoardChar() == 's';
     }
 
     @Override
@@ -77,22 +88,25 @@ public class Main implements IWordsRecorderConector{
     @Override
     public void recordingWordStarted(){
         sendMessageLn("Grabando!!!!, ingrese 'f' para finalizar la grabacion.");
-//        try {
-//			Thread.sleep(200);
-//		} catch (InterruptedException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-
-//
-        if (readKeyBoardChar() == 'f'){
-            stopper.stop();
-/**/
-        }
+        
+        if (openMic){
+          try {
+        	  
+        	  Thread.sleep(500);
+          
+          } catch (InterruptedException e) {
+			e.printStackTrace();
+          }
+          stopper.stop();
+        } 
         else {
-            recordingWordStarted();
+        	if (readKeyBoardChar() == 'f'){
+                stopper.stop();
+            }
+            else {
+                recordingWordStarted();
+            }
         }
-/**/
     }
 
     @Override
@@ -311,17 +325,21 @@ public class Main implements IWordsRecorderConector{
      * @param args
      */
     public static void main(String[] args) {
-
-        Main app;
-
-        if (args.length == 1){
-            app = new Main(args[0].trim());
+        
+        HashSet<String> parametros = new HashSet<String>();
+        
+        for (String parametro : args) parametros.add(parametro);
+        boolean openMic	   = parametros.remove("open-mic");
+        boolean boostAudio = parametros.remove("boost-audio");
+        String directory   = ".";
+      
+        if (parametros.size() == 1){
+        	//WTF
+        	for (String parametro : parametros) directory = parametro;
         }
-        else {
-            //Directorio actual
-            app = new Main(".");
-        }
-
+       
+        Main app = new Main(directory, openMic, boostAudio);
+        
         app.init();
     }
 
