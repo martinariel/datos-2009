@@ -5,13 +5,17 @@
 	<path id="path.compile">
 		<pathelement path="lib" />
 		<pathelement path="lib/jmock-2.5.1" />
+		<pathelement path="lib/commons-collections-3.2.1" />
 	</path>
     <target name="full" depends="javadoc, run">
     </target>
 	<target name="compile" description="Compilation target">
 		<echo>About to compile...</echo>
 		<mkdir dir="antbin" />
-		<javac target="6" srcdir="src/main/java" destdir="antbin" verbose="true" encoding="latin1">
+		<javac target="6" srcdir="src/main/java" destdir="antbin" verbose="true" encoding="latin1" classpathref="path.compile">
+      <classpath>
+		    <pathelement location="lib/commons-collections-3.2.1/commons-collections-3.2.1.jar" />
+      </classpath>
 		</javac>
 	</target>
 	<target name="compress" depends="compile" description="Compression target">
@@ -36,10 +40,14 @@
 		</delete>
 	</target>
 	<target name="run" depends="compress">
-		<java dir="${rundir}" jar="target/theTalker.jar" fork="true">
-			<classpath>
+		<java dir="${rundir}" classname="ar.com.datos.Main" fork="true">
+      	<arg line="${args}"/>
+		<classpath>
+		    <pathelement location="lib/commons-collections-3.2.1/commons-collections-3.2.1.jar" />
 				<pathelement location="target/theTalker.jar" />
-			</classpath>
+				<pathelement path="target/" />
+        <pathelement path="${java.class.path}" />
+      </classpath>
 		</java>
 	</target>
 	<target name="test1" depends="clean">
