@@ -37,13 +37,14 @@ public class WordService implements Closeable {
     private SearchEngine searchEngine;
     private StopWordsDiscriminator stopWords;
     private Boolean closed = false;
+    private boolean boostMic = false;
     private static final String soundsFileName 		= "sonidos";
     private static final String wordsFileName 		= "palabras";
     private static final String documentsFileName 	= "documentos";
-    private static final String indexFileName			= "indice";
+    private static final String indexFileName		= "indice";
     private static final String stopWordsFileName 	= "resources/stopWords/stopWordsFile.txt";
-    private static final String stopPhrasesFileName 	= "resources/stopWords/stopWordsPhrases.txt";
-    private static final int MAX_SEARCH_RESULTS = 5;
+    private static final String stopPhrasesFileName = "resources/stopWords/stopWordsPhrases.txt";
+    private static final int MAX_SEARCH_RESULTS 	= 5;
 
     /**
      * Crea la instancia del backend
@@ -62,6 +63,10 @@ public class WordService implements Closeable {
         searchEngine 	= new SearchEngineImpl(indexer, documentLibrary, stopWords);
 
     }
+    
+    public void setBoostMic(boolean value) {
+    	boostMic = value;	
+    }
 
 
     /**
@@ -74,7 +79,7 @@ public class WordService implements Closeable {
      *
      */
     public void addDocument(Document document , IWordsRecorderConector view){
-        WordsRecorder recorder = new WordsRecorder(view, soundPersistenceService);
+        WordsRecorder recorder = new WordsRecorder(view, soundPersistenceService, boostMic);
         
         try {
         	recorder.recordWords(crawler.addDocument(document));

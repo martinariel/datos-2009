@@ -17,14 +17,19 @@ public class WordsRecorder implements AudioStopper{
     private IWordsRecorderConector interfazUsuario;
     private SoundByteArrayOutputStream audio;
     private String palabraActual;
+    private boolean boostMic;
 
-    public WordsRecorder(IWordsRecorderConector interfazUsuario, SoundPersistenceService servicioArchivos) {
-        servicioAudio = AudioServiceHandler.getInstance();
-        this.servicioArchivos = servicioArchivos;
-        this.interfazUsuario = interfazUsuario;
-
+    public WordsRecorder(IWordsRecorderConector view, SoundPersistenceService audioService, boolean boostMic ){
+   	 servicioAudio = AudioServiceHandler.getInstance();
+        this.servicioArchivos = audioService;
+        this.interfazUsuario = view;
         //Le envio el stopper a la interfaz de usuario
         this.interfazUsuario.sendStopper(this);
+        this.boostMic = boostMic;
+   }
+    
+    public WordsRecorder(IWordsRecorderConector interfazUsuario, SoundPersistenceService servicioArchivos) {
+    	this(interfazUsuario, servicioArchivos, false);
     }
 
     /**
@@ -52,8 +57,8 @@ public class WordsRecorder implements AudioStopper{
      */
     public void stopRecording(){
         if (servicioAudio.isRecording()){
-        	audio.setAcceptData(false);
-        	interfazUsuario.sendMessage("Grabación detenida. Esperando a que el device devuelva el control... ");
+        	audio.setAcceptData(!boostMic);
+        	interfazUsuario.sendMessageLn("Grabación detenida. Esperando a que el device devuelva el control... ");
         	servicioAudio.stopRecording();
         	interfazUsuario.sendMessageLn("Listo!");
         	
