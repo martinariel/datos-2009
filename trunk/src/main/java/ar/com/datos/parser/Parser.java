@@ -25,14 +25,10 @@ public class Parser implements Iterable<List<String>> {
     static {
 
         //TODO: Completar con los separators que falten
-        separators = new String[4];
-        separators[0] = "?";
-        separators[1] = ";";
-        separators[2] = ".";
-        separators[3] = "!";
+        separators = new String[] {"?", ";", ".", "!", ":", "(", ")" };
 
         //Reemplazar todos los caracteres excepto:
-        stringRegex = "[^a-z";
+        stringRegex = "[^a-z\\ñ";
 
         //Completo el regex con los separadores, es decir, no seran removidos
         for (int i = 0; i < separators.length; i++){
@@ -123,7 +119,7 @@ public class Parser implements Iterable<List<String>> {
         int indice = -1;
 
         int[] posiciones = new int[separators.length];
-
+        
         for (int i = 0; i < posiciones.length; i++){
             posiciones[i] = linea.indexOf(separators[i]);
             //WTF??

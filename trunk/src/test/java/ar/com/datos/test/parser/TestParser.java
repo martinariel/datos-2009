@@ -14,10 +14,10 @@ public class TestParser extends TestCase {
 
         for (int i = 0; i < 10; i++){
             documento.addLine("                                 				");
-            documento.addLine("## Prueba **+++,linea; Otra Linea ()() %%$$$  	");
+            documento.addLine("## Pruñba **+++,linea; Otra Linea  %%$$$  		");
             documento.addLine(" sigue la ¨´ $$ &&& linea.						");
             documento.addLine("                                 				");
-            documento.addLine("			Fin Linea? 		Resto?					");
+            documento.addLine("			Fin Linea? 		Resto:					");
             documento.addLine("            55555559999887788    				");
         }
 
@@ -32,6 +32,7 @@ public class TestParser extends TestCase {
             for (Collection<String> oracion : parser){
                 for (String palabra : oracion){
                     cantidadPalabras++;
+                    System.out.println(palabra);
                 }
                 cantidadFrases++;
             }
@@ -47,7 +48,7 @@ public class TestParser extends TestCase {
         MemoryDocument document = new MemoryDocument();
 
         for (int i = 0; i < 1000; i++){
-            document.addLine("test <> )() '''' document single phrase");
+            document.addLine("test <> '''' document single phrase");
         }
 
         Parser parser = new Parser(document);
@@ -70,7 +71,7 @@ public class TestParser extends TestCase {
         StringBuilder string = new StringBuilder();
 
         for (int i = 0; i < 1000; i++){
-            string.append(" test ((/(/(/(/(&/&/&(/#&///#&/&#/# document ++++ gigant line ");
+            string.append(" test # document ++++ gigant line ");
         }
 
         document.addLine(string.toString());
