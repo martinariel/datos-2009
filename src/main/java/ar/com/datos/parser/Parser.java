@@ -18,7 +18,6 @@ public class Parser implements Iterable<List<String>> {
     private Document document;
     private boolean started;
     private String bufferedLine = "";
-
     private static String[] separators = null;
     private static String stringRegex;
 
@@ -118,17 +117,17 @@ public class Parser implements Iterable<List<String>> {
     private static int findSeparator(String linea){
         int indice = -1;
 
-        int[] posiciones = new int[separators.length];
+        if (linea.length() > 0){
+        	int[] posiciones = new int[separators.length];
         
-        for (int i = 0; i < posiciones.length; i++){
-            posiciones[i] = linea.indexOf(separators[i]);
-            //WTF??
-            if ((posiciones[i] > -1 && posiciones[i] < indice) || indice == -1)
-                indice = posiciones[i];
+        	for (int i = 0; i < posiciones.length; i++){
+        		posiciones[i] = linea.indexOf(separators[i]);
+        		//WTF??
+        		if ((posiciones[i] > -1 && posiciones[i] < indice) || indice == -1)
+        			indice = posiciones[i];
+        	}
         }
-
         return indice;
-
     }
 
 
@@ -137,27 +136,31 @@ public class Parser implements Iterable<List<String>> {
 
         if (isStarted()){
 
-            String linea 			= bufferedLine; //Inicializo en el pedazo anterior
+            String linea 			= bufferedLine.trim(); //Inicializo en el pedazo anterior
             String lineaArchivo		= null;
             String lineaResultado 	= null;
 
             int posicionSeparator = -1;
 
             do {
-                //Busco el primer separador
+                
+            	if (posicionSeparator == 0) linea = linea.substring(1);
+            	
+            	//Busco el primer separador
                 posicionSeparator = findSeparator(linea);
 
                 if (posicionSeparator < 0){
                     lineaArchivo = document.readLine();
                     if (lineaArchivo != null)
-                        linea += " " + cleanLine(lineaArchivo);
+                        linea += (linea.length() > 0)? " " + cleanLine(lineaArchivo): cleanLine(lineaArchivo);
                 }
 
-            }while (posicionSeparator < 0 && lineaArchivo != null);
+            }
+            while ( (posicionSeparator < 0 && lineaArchivo != null) || posicionSeparator == 0 );
 
             if (posicionSeparator > 0){
                 lineaResultado = linea.substring(0, posicionSeparator);
-                bufferedLine  = linea.substring(posicionSeparator+1);
+                bufferedLine   = linea.substring(posicionSeparator+1);
             }
             else {
                 lineaResultado = linea;
@@ -165,13 +168,14 @@ public class Parser implements Iterable<List<String>> {
             }
 
             if (lineaResultado.trim().length() > 0){
-                String[] vector = lineaResultado.trim().split(" ");
-                words = new LinkedList<String>();
-                for (int i = 0; i < vector.length ; i++){
-                    if (vector[i].trim().length() > 0)
-                        words.add(vector[i].trim());
-                }
+            	String[] vector = lineaResultado.trim().split(" ");
+            	words = new LinkedList<String>();
+            	for (int i = 0; i < vector.length ; i++){
+            		if (vector[i].trim().length() > 0)
+            			words.add(vector[i].trim());
+            	}
             }
+            
         }
 
         return words;

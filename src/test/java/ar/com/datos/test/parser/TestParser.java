@@ -14,10 +14,10 @@ public class TestParser extends TestCase {
 
         for (int i = 0; i < 10; i++){
             documento.addLine("                                 				");
-            documento.addLine("## Pruñba **+++,linea; Otra Linea  %%$$$  		");
-            documento.addLine(" sigue la ¨´ $$ &&& linea.						");
+            documento.addLine("## Pruñba **+++linea; Otra Linea  %%$$$  		");
+            documento.addLine(" sigue la  $$ &&& linea.							");
             documento.addLine("                                 				");
-            documento.addLine("			Fin Linea? 		Resto:					");
+            documento.addLine("			Fin Linea? 		Resto,					");
             documento.addLine("            55555559999887788    				");
         }
 
@@ -32,7 +32,6 @@ public class TestParser extends TestCase {
             for (Collection<String> oracion : parser){
                 for (String palabra : oracion){
                     cantidadPalabras++;
-                    System.out.println(palabra);
                 }
                 cantidadFrases++;
             }
@@ -48,7 +47,7 @@ public class TestParser extends TestCase {
         MemoryDocument document = new MemoryDocument();
 
         for (int i = 0; i < 1000; i++){
-            document.addLine("test <> '''' document single phrase");
+            document.addLine("test <> '''' document double phrase.............()()():::::'''''");
         }
 
         Parser parser = new Parser(document);
@@ -63,7 +62,7 @@ public class TestParser extends TestCase {
         }
 
         assertTrue (words == 4000);
-        assertTrue (phrases == 1);
+        assertTrue (phrases == 2000);
     }
 
     public void testParserGigantLine(){
@@ -90,6 +89,25 @@ public class TestParser extends TestCase {
         assertTrue (words == 4000);
         assertTrue (phrases == 1);
 
+    }
+    
+    public void testSeparators() {
+    	
+    	MemoryDocument document = new MemoryDocument();
+    	document.addLine("....hola,\"como te va\"\"hola\".");
+    	document.addLine(".probandp.probando.!!!?prueba?..seguro que si,\"como te va\"\"hola\".");
+    	document.addLine(".probandp.probando.!!!?prueba?..seguro que si,\"como te va\"\"hola\".");
+    	
+    	Parser parser = new Parser(document);
+    	
+    	int words = 0;
+    	
+    	for (Collection<String> oracion : parser){
+    		words += oracion.size();
+    	}
+    	
+    	assertTrue(25 == words);
+    	
     }
 
 }
