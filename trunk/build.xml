@@ -1,7 +1,8 @@
 <?xml version="1.0" ?>
 <project default="full" name="theTalker" basedir=".">
 	<property name="rundir" value="resources/temp">
-	</property>
+    </property>
+    <property name="args" value=""/>
 	<path id="path.compile">
 		<pathelement path="lib" />
 		<pathelement path="lib/jmock-2.5.1" />
@@ -39,7 +40,7 @@
 			</fileset>
 		</delete>
 	</target>
-	<target name="run" depends="compress">
+	<target name="run" depends="compress, stopwords">
 		<java dir="${rundir}" classname="ar.com.datos.Main" fork="true">
       	<arg line="${args}"/>
 		<classpath>
@@ -49,8 +50,18 @@
         <pathelement path="${java.class.path}" />
       </classpath>
 		</java>
-	</target>
-	<target name="test2" depends="clean">
+    </target>
+    <target name="stopwords">
+        <echo>Processing stop words and stop phrases files</echo>
+        <mkdir dir="${rundir}/resources"/>
+        <mkdir dir="${rundir}/resources/stopWords"/>
+        <copy todir="${rundir}/resources/stopWords">
+            <fileset dir="resources/stopWords">
+                <include name="*"/>
+            </fileset>
+        </copy>
+    </target>
+	<target name="test2" depends="clean, stopwords">
 		<echo>Copyng tests files to running enviroment...</echo>
 		<copy todir="${rundir}">
 			<fileset dir="resources/test2">
@@ -58,7 +69,7 @@
 			</fileset>
 		</copy>
 		<echo>Listado de archivos de prueba</echo>
-        <property name="file" value="resources/test1/saludo.txt" />
+        <property name="file" value="*.txt" />
         <property name="catdir" value="resources/test2"/>
 		<antcall target="catFile">
 		</antcall>
@@ -70,7 +81,7 @@
 		<echo>Archivo ${file}</echo>
 		<echo>cat ${file}</echo>
 		<exec executable="cat">
-			<arg value="${file}" />
+            <arg value="${catdir}/${file}" />
 		</exec>
 		<echo>... fin ...</echo>
 	</target>
