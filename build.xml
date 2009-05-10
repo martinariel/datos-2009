@@ -65,6 +65,36 @@
             </fileset>
         </copy>
     </target>
+	<target name="test0" depends="clean, stopwords">
+			<echo>Copyng tests files to running enviroment...</echo>
+			<copy todir="${rundir}">
+				<fileset dir="resources/test0">
+					<include name="*" />
+				</fileset>
+			</copy>
+			<echo>Listado de archivos de prueba</echo>
+	        <property name="file" value="*.txt" />
+	        <property name="catdir" value="resources/test0"/>
+			<antcall target="catFile">
+			</antcall>
+			<antcall target="run">
+			</antcall>
+	</target>
+	<target name="test1" depends="clean, stopwords">
+			<echo>Copyng tests files to running enviroment...</echo>
+			<copy todir="${rundir}">
+				<fileset dir="resources/test1">
+					<include name="*" />
+				</fileset>
+			</copy>
+			<echo>Listado de archivos de prueba</echo>
+	        <property name="file" value="*.txt" />
+	        <property name="catdir" value="resources/test1"/>
+			<antcall target="catFile">
+			</antcall>
+			<antcall target="run">
+			</antcall>
+	</target>
 	<target name="test2" depends="clean, stopwords">
 		<echo>Copyng tests files to running enviroment...</echo>
 		<copy todir="${rundir}">
