@@ -16,11 +16,13 @@ public class LibraryDocumentDataSerializer implements Serializer<LibraryData> {
 		StringBuilder fileContent = new StringBuilder();
 		document.close();
 		document.open();
+		boolean isEmpty = true;
 		for (String linea = document.readLine(); linea != null; linea = document.readLine()) {
             fileContent.append(linea).append('\n');
+            isEmpty = false;
         }
 		document.close();
-		serializer.dehydrate(output, fileContent.substring(0, fileContent.length()-1));
+		serializer.dehydrate(output, (isEmpty)? "" : fileContent.substring(0, fileContent.length()-1));
 	}
 
 	@Override
