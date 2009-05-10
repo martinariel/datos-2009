@@ -7,7 +7,7 @@ No se explicarán aquí todos los detalles específicos de la estructura del Trie, 
 los detalles conceptualmente más importantes de la implementación para este trabajo. \footnote{Puede encontrarse más
 información en http://es.wikipedia.org/wiki/Trie}
 
-\subsection{Limitaciones del Trie: Implementación en Disco}
+\subsection{Implementación en Disco}
 A pesar de la estructura relativamente simple del Trie, este ocupa un tamaño considerable cuando se trata de almacenarlo
 en disco por completo. La estructura en sí no impone ninguna limitación sobre la cantidad de niveles que deba tener el
 Trie, y este es un factor importante a tener en cuenta cuando la implementación se hace en disco.
@@ -31,7 +31,7 @@ Debido a que muchas claves pueden tener en comun los primero caracteres, algunos
 elevada de registros con terminaciones de claves, lo cual limita la posibilidad de levantar el nodo completo en memoria.
 Para este problema se diseño una solución que explicaremos más adelante.
 
-\subsection{Diseño de un Trie Genérico}
+\subsection{Diseño del Trie genérico}
 Se intentó realizar una implementación genérica del Trie. Para logra este objetivo, fue necesario definir interfaces 
 extras que permitan trabajar con distintos tipos de datos.
 
