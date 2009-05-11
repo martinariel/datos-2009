@@ -105,7 +105,7 @@ public class Parser implements Iterable<List<String>> {
     }
 
     private static String cleanLine(String line){
-        return cleanRegex(limpiarTildes(line.toLowerCase()));
+        return cleanRegex(limpiarTildes(line.toLowerCase())).trim();
 
     }
 
@@ -144,15 +144,17 @@ public class Parser implements Iterable<List<String>> {
 
             do {
                 
-            	if (posicionSeparator == 0) linea = linea.substring(1);
+            	if (posicionSeparator == 0) linea = linea.substring(1).trim();
             	
             	//Busco el primer separador
                 posicionSeparator = findSeparator(linea);
 
                 if (posicionSeparator < 0){
                     lineaArchivo = document.readLine();
-                    if (lineaArchivo != null)
-                        linea += (linea.length() > 0)? " " + cleanLine(lineaArchivo): cleanLine(lineaArchivo);
+                    if (lineaArchivo != null){
+                        linea += (linea.length() > 0)? " " + cleanLine(lineaArchivo) : cleanLine(lineaArchivo);
+                        linea = linea.trim();
+                    }
                 }
 
             }

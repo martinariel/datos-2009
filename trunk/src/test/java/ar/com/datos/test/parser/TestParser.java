@@ -101,12 +101,15 @@ public class TestParser extends TestCase {
     	Parser parser = new Parser(document);
     	
     	int words = 0;
+    	int frases = 0;
     	
     	for (Collection<String> oracion : parser){
     		words += oracion.size();
+    		frases++;
     	}
     	
     	assertTrue(25 == words);
+    	assertTrue(frases == 15);
     	
     }
     
@@ -117,29 +120,34 @@ public class TestParser extends TestCase {
 	    	document.addLine(".");
 	    	document.addLine(".......");
 	    	document.addLine("?????;;;;;;;....!'''.!");
-	    	document.addLine("?????;;;;;;;....!'''.!");
+	    	document.addLine("?????;;;;;*****&*&*&*;;....!'''.!");
 	    	document.addLine("?????;;;;;;;....!'''.!");
 	    	document.addLine("()()!!^^###%%%....@@@");
 	    	document.addLine("");
     	}
     	
+    	document.addLine("^&^&^&hola()()()(^&Otra frase mas^&^&");
+    	
     	
     	Parser parser = new Parser(document);
     	
     	int words = 0;
+    	int frases = 0;
     	
     	for (Collection<String> oracion : parser){
     		words += oracion.size();
+    		frases++;
     	}
     	
-    	assertTrue(words == 0);
+    	assertTrue(frases == 2);
+    	assertTrue(words == 4);
     }
     
     public void testNoLines() {
     	MemoryDocument document = new MemoryDocument();    	
     	
     	Parser parser = new Parser(document);
-    	
+   
     	int words = 0;
     	
     	for (Collection<String> oracion : parser){
