@@ -1,6 +1,6 @@
 \section{Arquitectura}
 
-El Main será simplemente una vista de WordService que es el backend de la aplicación y quien brinda todos los servicios a la vista. Estos servicios son 3:
+El Main será simplemente una vista de WordService que es el backend de la aplicación y quien brinda todos los servicios a la vista. Estos servicios son:
 \begin{enumerate}
 \item Agregar un Documento.
 \item Realizar una búsqueda.
@@ -16,10 +16,9 @@ Posee tres implementaciones, una que contiene un documento totalmente en memoria
 
 Ahora si, veamos la arquitectura de cada una de las partes antes mencionadas.
 
-\subsection{-1- Agregar un Documento}
+\subsection{Agregar un Documento}
 
-Se divide en divide en 2 grandes partes:
-\renewcommand{\labelenumi}{\alph{enumi}.}
+Se divide en divide en dos grandes partes:
 \begin{enumerate}
 \item Agregarlo al indice.
 \item Agregarlo al diccionario de sonidos.
@@ -27,7 +26,7 @@ Se divide en divide en 2 grandes partes:
 
 Existe una característica en común entre estas dos partes: el parseo. Es por eso que la arquitectura se definió de tal forma que el parseo se haga en una sola oportunidad como se mostrará luego (esto tiene una pequeña consecuencia que se mencionará al explicar la adición al diccionario de sonidos).
 
-\subsubsection{-a- Agregar un Documento al indice}
+\subsubsection{Agregar un Documento al indice}
 
 
 Quien se encarga de realizar esto es el \textit{Crawler}, quien recibirá un \textit{Documento}. En primer lugar le pasa el documento al \textit{Parser} que lo utilizará como fuente para datos.
@@ -46,7 +45,7 @@ Las sessiones mencionadas (entre el \textit{Crawler} y \textit{Indexer}, y entre
 
 Al mismo tiempo que el \textit{Crawler} va procesando las frases, va a agregando todas las palabras encontradas en un Set (conjunto sin repeticiones), de esta manera obtiene el vocabulario completo. Ese Set será devuelto al \textit{WordService} como respuesta al pedido de indexar un documento.
 
-\subsubsection{-b- Agregar un Documento al diccionario de sonidos =-}
+\subsubsection{Agregar un Documento al diccionario de sonidos}
 
 
 Como puede adivinarse, el vocabulario completo obtenido al agregar un docuemento al índice es la entrada usada para realizar el agregado al diccionario de sonidos. Esto tiene como consecuencia que el agregado de sonidos será en distinto orden al original del documento. Pero tiene como ventaja el no tener que procesar dos veces el documento por el \textit{Parser} (y a no tener que leerlo de nuevo desde disco si es que no se lo quiere tener completo en memoria como planteamos antes).
@@ -57,14 +56,14 @@ Si bien se modificó levemente la interacción entre los módulos, la arquitectura 
 
 La única gran modificación consiste en el reemplazo del "índice secuencial de sonidos" por un \textit{Trie}, que utiliza para su implementación un \textit{VariableLengthFileManager}.
 
-\subsection{-2- Realizar una Búsqueda}
+\subsection{Realizar una Búsqueda}
 
 Esta acción es responsabilidad del \textit{Search Engine}. Para hacerlo primero debe limpiar la cadena de búsqueda, para lo cual interactura con el \textit{Parser} y con el \textit{StopWords Discriminator}.
 Una vez que tiene la consulta limpia, realiza la búsqueda utilizando el \textit{Indexer}, que a su vez utilizará el \textit{BTree\#}.
 
 El \textit{SearchEngine} realiza las operaciones de ordenado necesarias y devuelve un listado ordenado de \textit{documentos}.
 
-\subsection{-3- Reproducir un Documento}
+\subsection{Reproducir un Documento}
 
 La reproducción la realizará el \textit{DocumentPlayer}, que recibirá un \textit{Documento} que deberá parsear utilizando el \textit{Parser}. A medida que va obteniendo las palabras correspondientes las irá reproduciendo delegando toda la complejidad en el \textit{WordsPlayer}.
 
@@ -77,15 +76,13 @@ Se definió una abstracción de manejo de registros de longitud variable llamada \
 El \textit{VariableLengthFileManager} que ya existía en la entrega anterior, ahora permite actualizaciones de los registros.
 
 \begin{figure}[!htp]
-	\begin{center}
-		\includegraphics[scale=0.5,natwidth=20pt,natheight=10pt]{img/Arch2daEntrega.png}
-	\end{center}
-	\caption{Arquitectura VariableLengthFileManager} 
+\centering
+\makebox[\textwidth]{\includegraphics[scale=0.4,natwidth=20pt,natheight=10pt]{img/Arch2daEntrega.png}}
+\caption{Arquitectura VariableLengthFileManager} 
 \end{figure}
 
 \begin{figure}[!htp]
-	\begin{center}
-		\includegraphics[scale=0.5,natwidth=20pt,natheight=10pt]{img/VariableLengthFileManager.png}
-	\end{center}
-	\caption{Arquitectura VariableLengthFileManager} 
+\centering
+\makebox[\textwidth]{\includegraphics[scale=0.5,natwidth=20pt,natheight=10pt]{img/VariableLengthFileManager.png}}
+\caption{Arquitectura VariableLengthFileManager} 
 \end{figure}

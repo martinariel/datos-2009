@@ -1,3 +1,235 @@
 \section{BSharp Tree}
 
-\subsection{bla}
+Durante toda esta sección se llamará nodos internos a los nodos del denominado index-set y nodos hojas a los del sequential-set.
+
+Por requerimientos era necesario tener la información de indexación almacenada en un árbol b\#. Se aclara que es por requerimientos puesto que bien podría haber sido un árbol b* puesto que, al menos por esta entrega, no se hacen recorridos secuenciales en las hojas (aunque de todos modos la utilización de un árbol b\# puede haber disminuido la cantidad de lecturas necesarias para acceder a un dato al menos \textit{en promedio}).
+
+Se pensó entonces en tener un árbol b\# genérico que fuera luego configurado de acuerdo a nuestras necesidades particulares de indexación. Se observó, en primer lugar, que el algoritmo general de un árbol de este tipo no cambia (al menos no sustancialmente) si se tiene un árbol b\# funcionando en memoria, sin ningún tipo de persistencia, que si se tiene uno que funcione con su persistencia en disco.
+
+Por ese motivo se decidió programar un árbol b\# abstracto con una implementación en memoria y otra en disco.
+
+NOTA: La implementación en memoria no fue usada en el TP, pero el realizarla facilitó la programación y testeo del algoritmo general del árbol b\#. Se la incluye solo a tono informativo.
+
+La complejidad de la creación de una instancia de un árbol queda oculta por la utilización de la clase \textit{BTreeSharpFactory} (que utiliza los patrones Facade y Factory).
+
+Se describe en primer lugar la interfaz: 
+
+\begin{figure}[!htp]
+\centering
+\makebox[\textwidth]{\includegraphics[scale=0.5,natwidth=20pt,natheight=10pt,width=1.15\textwidth]{img/BTree.png}}
+\caption{Interfaz de un árbol B}
+\end{figure}
+
+Los nodos internos poseerán claves, representadas por la clase \textit{Key} cuya única particularidad a destacar es que deben ser comparables.
+
+Los nodos hojas poseerán \textit{Elementos} que tendrán, obligadamente, una Key.
+
+El árbol posee métodos para agregar un Elemento, para buscar una Key (obteniendo como resultado un Elemento) y para iterar las hojas (a partir de una cierta Key).
+
+Si se agrega un Elemento cuya Key ya existe previamente en el árbol entrará en juego un método definido por Elemento. Elemento define el método \textit{updateElement()} que recibe un Elemento (que por contrato debe poseer su misma Key); el Elemento a ``updatear`` debe tomar el Elemento recibido y extraer de él los datos necesarios para actualizarse. El resultado de esta operación debe devolver un booleano indicando si la representación del elemento para el árbol fue modificada o no (De esta manera el árbol puede saber si debe reescribir el nódo hoja correspondiente al elemento actualizado o no).
+
+\subsection{BSharp Tree Abstracto}
+
+El árbol b\# abstracto implementa la interfaz de árbol simplemente teniendo un nodo raiz dentro de él, y delegando a este todas las operaciones.
+
+Se posee una clase abstracta \textit{Node} que define métodos similares a los de un árbol b\# pero que, además, pueden manejar el pasaje de Keys y de \textit{NodeReferences} entre nodos para resolver los casos en que exista overflow.
+
+Una \textit{NodeReference} es una interface con un método para obtener un nodo. Los nodos internos en lugar de tener dentro de si nodos, poseen NodeReferences que permiten obtener el nodo correspondiente. De acuerdo a la implementación usada (disco o memoria) NodeReference buscará el nodo correspondiente.
+
+Existen cuatro implementaciones, también abstractas, de Node, que se corresponden con los diferentes tipos de nodos, a saber: raiz inicial, raiz definitiva, nodo interno, nodo hoja.
+
+Debido a la necesidad de mantener los nodos con una capacidad mínima ocupada de 2/3 de su tamaño, las raices deben ocupar el doble de lo que ocupa un nodo normal, para que así, al producirse overflow en la raiz, los nodos producidos en el split resultante tengan 2/3 de su capacidad ocupada.
+
+El nodo raiz inicial, representado por la clase abstracta \textit{AbstractEspecialRootNode}, posee dentro suyo los Elementos sin referencias a otros nodos (en este sentido se comporta parecido a un nodo hoja). Cuando se produce un overflow se divide en 3 nodos hojas, generando un nodo raiz definitiva.
+
+El nodo raiz definitivo, representado por la clase abstracta \textit{AbstractRootNode}, posee dentro suyo las claves de indexación necesarias y los NodeReferences correspondientes a esas claves de indexación. Estos NodeReferences pueden apuntar a o bien nodos hojas o bien nodos internos. El nodo raiz recibe los resultados de splits o de ``pases`` entre hermanos producidos justo por debajo de él. Esto puede producir un split de un nodo raiz (debido a un overflow) generando por resultado 3 nuevos nodos internos, y una reconfiguración de la raiz. El comportamiento de la raiz definitiva es similar al de un nodo interno.
+
+Como se dijo ambas raices, inicial y definitiva, tienen el doble de capacidad de un nodo normal; Además, por motivos obvios, tienen relajada la condición de tener al menos 2/3 de su capacidad ocupada.
+
+Los nodos internos, representados por la clase abstracta \textit{AbstractInternalNode}, poseen dentro suyo las claves de indexación necesarias y los NodeReferences correspondientes a esas claves de indexación. Estos NodeReferences pueden apuntar a o bien nodos hojas o bien nodos internos. El nodo interno recibe los resultados de splits o de ``pases`` entre hermanos producidos justo por debajo de él. Esto puede producir o bien un split de un nodo interno, generando por resultado 3 nuevos nodos internos, o un pase de keys y referencias con un hermano. En ambos casos debe informarse al nodo superior (ya sea una raiz u otro nodo interno) del nuevo nodo generado (si hubo un split) y de la(s) nueva(s) clave(s) de indexación. Un split se produce como la división en 3 partes de la unión de este nodo con un hermano.
+
+Los nodos hojas, representado por la clase abstracta \textit{AbstractLeafNode}, poseen dentro suyo los elementos. El agregado de un elemento, ya sea por update de un elemento o por agregado real, puede producir el llenado del nodo, generando esto el ``pase`` de un Elemento a un hermano, o en caso de estar lleno también el hermano, un split de la unión de este y su hermano. En ambos casos debe informarse al nodo superior la misma información descripta en el nodo interno.
+
+El mecanismo de pases y de split descripto en los nodos hojas es igual para los nodos internos.
+
+\begin{figure}[!htp]
+\centering
+\makebox[\textwidth]{\includegraphics[scale=1.2,natwidth=20pt,natheight=10pt,width=1.15\textwidth]{img/BTreeSharpAbstracto.png}}
+\caption{Árbol Abstracto}
+\end{figure}
+
+Todos los nodos descriptos dejan como abstractos ciertos métodos que deben ser implementados luego (disco o memoria), pero que son invocados por la clase abstracta (patrón template). Estos son:
+\begin{enumerate}
+\item \textit{postAddElement()}: Permite que la implementación en disco se de por enterada de un cambio en un nodo permitiendo su grabación.
+\item \textit{calculateNodeSize()}: Calcula el tamaño de un nodo (para saber si se excedió o no de su capacidad).
+\item \textit{getParts()}: Permite dividir la unión de dos nodos (o uno solo en caso de raiz) en 3 partes. Posee particularidades según se trate de nodos hoja/raizInicial o de nodos interno/raizDefinitiva.
+\end{enumerate}
+
+Además se posee una interface factory, llamada \textit{BTreeSharpNodeFactory} de creación de nodos para poder crear los nodos de la implementación adecuada en el momento de producirse un split o cuando un NodeReference debe obtener el nodo. Esta interface debe ser implementada (disco o memoria) (patrón AbstractFactory).
+
+Por último todos los nodos (por estar esto en la clase Node) tienen acceso a las configuraciones (por ejemplo tamaño de los nodos) y a una referencia a si mismos (\textit{myNodeReference}).
+
+\newpage
+
+\subsubsection{Diseño de datos}
+
+Si bien ya fue adelantado en las secciones anteriores, este es el diseño de datos (atributos de las clases correspondientes) por tipo de nodo:
+
+\begin{verbatim}
+NodeReference: referencia a nodo
+KeyNodeReference: Key, NodeReference (union de ambos)
+Nodo Raiz Inicial: NodeReference a si mismo, lista de elementos
+Nodo Raiz Definitiva: NodeReference a si mismo,
+           primera NodeReference, lista de KeyNodeReference
+Nodo Interno: NodeReference a si mismo, primera NodeReference,
+           lista de KeyNodeReference
+Nodo Hoja: NodeReference a si mismo, NodeReference a nodo
+           anterior, lista de elementos, NodeReference a 
+           nodo siguiente
+\end{verbatim}
+
+\subsubsection{Configuración de tamaño de los nodos}
+
+Inicialmente se había pensado en poder definir nodos de un tamaño en particular para los nodos internos y de otro tamaño para los nodos hojas. Pero se encontraron problemas que se detallan a continuación.
+
+Al tener overflow en la raiz original se generarán 3 nodos hojas:
+
+Si tienen igual tamaño:
+
+$$size(Raiz) = 2*size(Interno) = 2*size(Hoja) ==> 1/3*size(Raiz) = 2/3*size(Hoja)$$
+
+(Es decir, se cumple el invariante de que los nodos tienen al menos 2/3 de su capacidad llena)
+
+Si el nodo interno es menor que el nodo hoja:
+
+$$size(Raiz) = 2*size(Interno) < 2*size(Hoja) ==> 1/3*size(Raiz) < 2/3*size(Hoja)$$
+
+(Es decir, NO se cumple el invariante de que los nodos tienen al menos 2/3 de su capacidad llena!! Al menos no se cumple ni bien se divide la raiz original. Luego si se cumplirá)
+
+Si el nodo interno es mayor que el nodo hoja:
+
+$$size(Raiz) = 2*size(Interno) > 2*size(Hoja) ==> 1/3*size(Raiz) > 2/3*size(Hoja)$$
+
+(Si bien se cumple el invariante anterior, puede pasar que los nodos hojas creados queden inmediatamente en overflow! Esto se podría resolver con una nueva división inmediata de las hojas).
+
+Si bien se puede relajar el invariante en la primera división (para el caso size(Interno)<size(Hoja)) e implementar una nueva división inmediata (para el caso size(Interno)>size(Hoja)), parece no valer la pena, por lo que se estableció que ambos nodos, hoja e internos, tengan un mismo tamaño.
+
+\subsection{Implementación de BSharp Tree en Memoria}
+
+NOTA: Esta implementación no fue usada en el TP, pero el realizarla facilitó la programación y testeo del algoritmo general del árbol b\#. Se la incluye solo a tono informativo.
+
+La implementación en memoria implementa las referencias a nodos (NodeReference) conteniendo el nodo dentro de si mismo.
+
+El método \textit{calculateNodeSize()} calcula el tamaño del nodo contabilizando la cantidad de keys/elements del nodo (según el tipo de nodo que se trate).
+
+El método \textit{getParts()} divide la unión de los dos hermanos (o la raiz si lo era) en tres partes que contengan la misma cantidad (o mejor aproximación) de keys/elements.
+
+El método \textit{postAddElement()} no hace absolutamente nada.
+
+\begin{figure}[!htp]
+\centering
+\makebox[\textwidth]{\includegraphics[scale=1.2,natwidth=20pt,natheight=10pt,width=1.15\textwidth]{img/BTreeSharpMemoria.png}}
+\caption{Implementación de Árbol en Memoria}
+\end{figure}
+
+\subsection{Implementación de BSharp Tree en Disco}
+
+Esta implementación es bastante más extensa y complicada que la de memoria.
+
+Por ser en disco era necesario decidir una estructura de archivos para poder albergar a los nodos. En primer lugar se decidió que exista un archivo separado para los nodos hoja y otro para los nodos internos/raices. Además se tomó la decisión de trabajar con archivos en bloques. Estos bloques deben coincidir con la capacidad máxima de un nodo; estableciéndose de esta manera una equivalencia bloque-nodo. De esta manera un nodo puede ser actualizado sin que se produzca un movimiento de lugar dentro del archivo (si esto sucediera habría que actualizar las referencias hacia ese bloque [nodo] lo cual, además de ser engorroso, implicaría lecturas y escrituras extras de disco lo cual haría mucho más lento el árbol).
+
+La abstracción utilizada para manejar estos archivos ablocados y actualizables es \textit{VariableLengthFileManager}. Para mantener la correspondencia entre bloque y nodo, los serializadores correspondientes (de hojas, internos, etc. que parametrizan al VLFM) al momento de deshidratar un nodo rellenan los buffers con ``basura`` (relleno de 0s) hasta alcanzar la capacidad máxima del nodo.
+
+La interface NodeReference fue implementada de manera tal que posea el VLFM adecuado y la dirección a acceder (número de bloque) dentro del archivo. El método \textit{getNode()} obtiene el nodo en el momento de ser pedido (de manera lazy). Además posee un método \textit{saveNode()} que recibe como parámetro el nodo a grabar (algunos detalles adicionales luego).
+
+El método \textit{calculateNodeSize()} calcula el tamaño del nodo utilizando el método \textit{getDehydrateSize()} del serializador correspondiente al nodo en cuestión (ver luego diseño de datos/serializadores).
+
+El método \textit{getParts()} divide la unión de los dos hermanos (o la raiz si lo era) en tres partes usando un algoritmo más complicado que el usado en la implementación en memoria. Se volverá a él en la parte de Serializadores (a los que utiliza para realizar la división).
+
+El método \textit{postAddElement()} utiliza la referencia a si mismo (\textit{myNodeReference}), accediendo al método \textit{saveNode()} y pasándose a si mismo (al nodo en si mismo) para que sea grabado. La implementación de saveNode() si posee la dirección del nodo lo graba en ella; si no la posee agrega el nodo al VLFM y se guarda la dirección devuelta por este.
+
+\begin{figure}[!htp]
+\centering
+\makebox[\textwidth]{\includegraphics[scale=1.2,natwidth=20pt,natheight=10pt,width=1.15\textwidth]{img/BTreeSharpDisk.png}}
+\caption{Implementación de Árbol en Disco}
+\end{figure}
+
+\newpage
+
+\subsubsection{Diseño de datos y Serializadores}
+
+El diseño conceptual de datos de acuerdo al tipo de nodo es el siguiente:
+
+\begin{verbatim}
+NodeReferenceDisk((direccion)1)
+EspecialRootNodeDisk((elemento)*)
+RootNodeDisk((tipo de referencias)1,(key)+,(referencia)+)
+InternalNodeDisk((tipo de referencias)1,(key)+,(referencia)+)
+LeafNode((referencia nodo anterior)?,(elemento)+,
+        (referencia nodo siguiente))
+
+\end{verbatim}
+
+El diseño conceptual de acuerdo al tipo de archivo es el siguiente:
+
+\begin{verbatim}
+Archivo de nodos internos:
+  Bloques nodo raiz: NodoRaiz((tipo de nodo)1,
+                     (((elemento)*)1 | 
+                     ((tipo de referencias)1,(key)+,
+                     (referencia)+)1)1)
+  Resto de los Bloques: NodoInterno((tipo de referencias)1,
+            (key)+, (referencia)+)
+
+Archivo de nodos hojas:
+NodoHoja((referencia nodo anterior)?,(elemento)+,
+         (referencia nodo siguiente)?)
+\end{verbatim}
+
+Como puede verse en lo anterior, el archivo de nodos internos contiene 3 tipos diferentes de nodos: el nodos raiz, subdivido en dos tipos, el inicial y el definitivo, que tiene una ubicación fija dentro del archivo, y el nodo interno.
+
+El encargado de llevar a cabo el pasaje desde el objeto hacia su forma persistida y viceversa es el Serializador, existiendo uno para cada tipo de nodo. 
+
+El árbol en disco se parametriza, además de con un tipo de Key y de Element, con un serializador de lista de Keys y un serializador de lista de Elements. Cada serializador de nodos delega la serialización de sus Elements/Keys en estos serializadores de listas que parametrizan al árbol.
+
+Una alternativa al uso de serializadores de listas de Keys/Elements podría haber sido el uso de serializadores de Key / Element (de un solo objeto). Pero esto no hubiese permitido la aplicación de frontcoding (porque la interfaz de Serializer no sabe lo que es un objeto anterior [y así debe ser!]). Si bien en el uso final que se dió al árbol en el TP no se hizo uso de frontcoding en los nodos internos (porque se pedía que no fuera así) el árbol genérico que estamos explicando en esta sección lo soporta (si se pasa un serializador de lista de Keys adecuado).
+
+\newpage
+
+El diseño lógico de datos para los registros por tipo de nodo es:
+
+\begin{verbatim}
+EspecialRootNodeDisk((lista de elementos: tipo desconocido)1)
+RootNodeDisk((tipo de referencias:Byte)1,
+            (lista keys: tipo desconocido)1,(referencia:Long)+)
+InternalNodeDisk((tipo de referencias:Byte)1,
+            (tipo de referencias:Byte)1,(referencia:Long)+)
+LeafNode((referencia nodo anterior:Long)1,
+         (lista elements: tipo desconocido)1,
+         (referencia nodo siguiente:Long)1)
+
+\end{verbatim}
+
+El diseño lógico de datos para los registros de acuerdo al tipo de archivo es el siguiente:
+
+\begin{verbatim}
+Archivo de nodos internos:
+  Bloques nodo raiz: 
+    NodoRaiz((tipo de nodo:Byte)1, (((lista de
+      elementos: tipo desconocido)1)1 | ((tipo de 
+      referencias:Byte)1, (lista keys: tipo desconocido)1,
+      (referencia:Long)+)1)
+  Resto de los Bloques: 
+    NodoInterno((tipo de referencias:Byte)1,
+                (tipo de referencias:Byte)1,
+                (referencia:Long)+)
+
+Archivo de nodos hojas:
+  NodoHoja((referencia nodo anterior:Long)1,
+           (lista elements: tipo desconocido)1,
+           (referencia nodo siguiente:Long)1)
+\end{verbatim}
+
+En lo anterior cuando se dice ``tipo desconocido`` se lo hace porque el diseño de los datos está a cargo de los serializadores de Element/Key que parametrizan al árbol. Además, se hace notar que en el caso de RootNodeDisk e InternalNodeDisk no es necesario incluir la cantidad de referencias puesto que serán una más que la lista de keys (que, estratégicamente fue puesta antes que la lista de referencias).
+
+Conocida la forma de serializar los nodos puede volverse al problema de la división en tercios dejado inconcluso anteriormente. El algoritmo divide en tercios la lista de keys/elements utilizando auxiliarmente el método \textit{getDehydrateSize()} de los serializadores correspondientes. En primer lugar se hace la división en tres partes usando como criterio la cantidad de objetos contenida por la lista. Luego se miden los tamaños de las partes usando el método \textit{getDehydrateSize()} y se pasan elementos entre las partes hasta obtener la mejor aproximación (por ser elementos de longitud variable es altamente probable que no se consigan tercios exactos) al tercio buscado, remidiendo en cada pasaje el tamaño de los tercios (esto es necesario en cada paso porque no se sabe de que manera serializa el serializador que parametriza al árbol [puede, por ejemplo, estar aplicando frontcoding]). Una vez obtenido los diferentes tercios de la lista de keys/elements, se arman los tres nodos resultantes.
