@@ -15,10 +15,9 @@ La complejidad de la creación de una instancia de un árbol queda oculta por la u
 Se describe en primer lugar la interfaz: 
 
 \begin{figure}[!htp]
-	\begin{center}
-		\includegraphics[scale=0.5,natwidth=20pt,natheight=10pt]{img/BTree.png}
-	\end{center}
-	\caption{Interfaz de un árbol B} 
+\centering
+\makebox[\textwidth]{\includegraphics[scale=0.5,natwidth=20pt,natheight=10pt,width=1.15\textwidth]{img/BTree.png}}
+\caption{Interfaz de un árbol B}
 \end{figure}
 
 Los nodos internos poseerán claves, representadas por la clase \textit{Key} cuya única particularidad a destacar es que deben ser comparables.
@@ -54,12 +53,10 @@ Los nodos hojas, representado por la clase abstracta \textit{AbstractLeafNode}, 
 El mecanismo de pases y de split descripto en los nodos hojas es igual para los nodos internos.
 
 \begin{figure}[!htp]
-	\begin{center}
-		\includegraphics[scale=0.5,natwidth=20pt,natheight=10pt]{img/BTreeSharpAbstracto.png}
-	\end{center}
-	\caption{Árbol Abstracto} 
+\centering
+\makebox[\textwidth]{\includegraphics[scale=1.2,natwidth=20pt,natheight=10pt,width=1.15\textwidth]{img/BTreeSharpAbstracto.png}}
+\caption{Árbol Abstracto}
 \end{figure}
-
 
 Todos los nodos descriptos dejan como abstractos ciertos métodos que deben ser implementados luego (disco o memoria), pero que son invocados por la clase abstracta (patrón template). Estos son:
 \begin{enumerate}
@@ -72,6 +69,7 @@ Además se posee una interface factory, llamada \textit{BTreeSharpNodeFactory} de
 
 Por último todos los nodos (por estar esto en la clase Node) tienen acceso a las configuraciones (por ejemplo tamaño de los nodos) y a una referencia a si mismos (\textit{myNodeReference}).
 
+\newpage
 
 \subsubsection{Diseño de datos}
 
@@ -82,11 +80,12 @@ NodeReference: referencia a nodo
 KeyNodeReference: Key, NodeReference (union de ambos)
 Nodo Raiz Inicial: NodeReference a si mismo, lista de elementos
 Nodo Raiz Definitiva: NodeReference a si mismo,
-                      primera NodeReference, lista de KeyNodeReference
+           primera NodeReference, lista de KeyNodeReference
 Nodo Interno: NodeReference a si mismo, primera NodeReference,
-              lista de KeyNodeReference
-Nodo Hoja: NodeReference a si mismo, NodeReference a nodo anterior,
-           lista de elementos, NodeReference a nodo siguiente
+           lista de KeyNodeReference
+Nodo Hoja: NodeReference a si mismo, NodeReference a nodo
+           anterior, lista de elementos, NodeReference a 
+           nodo siguiente
 \end{verbatim}
 
 \subsubsection{Configuración de tamaño de los nodos}
@@ -97,19 +96,19 @@ Al tener overflow en la raiz original se generarán 3 nodos hojas:
 
 Si tienen igual tamaño:
 
-size(Raiz) = 2*size(Interno) = 2*size(Hoja) ==> 1/3*size(Raiz) = 2/3*size(Hoja)
+$$size(Raiz) = 2*size(Interno) = 2*size(Hoja) ==> 1/3*size(Raiz) = 2/3*size(Hoja)$$
 
 (Es decir, se cumple el invariante de que los nodos tienen al menos 2/3 de su capacidad llena)
 
 Si el nodo interno es menor que el nodo hoja:
 
-size(Raiz) = 2*size(Interno) < 2*size(Hoja) ==> 1/3*size(Raiz) < 2/3*size(Hoja)
+$$size(Raiz) = 2*size(Interno) < 2*size(Hoja) ==> 1/3*size(Raiz) < 2/3*size(Hoja)$$
 
 (Es decir, NO se cumple el invariante de que los nodos tienen al menos 2/3 de su capacidad llena!! Al menos no se cumple ni bien se divide la raiz original. Luego si se cumplirá)
 
 Si el nodo interno es mayor que el nodo hoja:
 
-size(Raiz) = 2*size(Interno) > 2*size(Hoja) ==> 1/3*size(Raiz) > 2/3*size(Hoja)
+$$size(Raiz) = 2*size(Interno) > 2*size(Hoja) ==> 1/3*size(Raiz) > 2/3*size(Hoja)$$
 
 (Si bien se cumple el invariante anterior, puede pasar que los nodos hojas creados queden inmediatamente en overflow! Esto se podría resolver con una nueva división inmediata de las hojas).
 
@@ -128,10 +127,9 @@ El método \textit{getParts()} divide la unión de los dos hermanos (o la raiz si 
 El método \textit{postAddElement()} no hace absolutamente nada.
 
 \begin{figure}[!htp]
-	\begin{center}
-		\includegraphics[scale=0.5,natwidth=20pt,natheight=10pt]{img/BTreeSharpMemoria.png}
-	\end{center}
-	\caption{Implementación de Árbol en Memoria} 
+\centering
+\makebox[\textwidth]{\includegraphics[scale=1.2,natwidth=20pt,natheight=10pt,width=1.15\textwidth]{img/BTreeSharpMemoria.png}}
+\caption{Implementación de Árbol en Memoria}
 \end{figure}
 
 \subsection{Implementación de BSharp Tree en Disco}
@@ -151,11 +149,12 @@ El método \textit{getParts()} divide la unión de los dos hermanos (o la raiz si 
 El método \textit{postAddElement()} utiliza la referencia a si mismo (\textit{myNodeReference}), accediendo al método \textit{saveNode()} y pasándose a si mismo (al nodo en si mismo) para que sea grabado. La implementación de saveNode() si posee la dirección del nodo lo graba en ella; si no la posee agrega el nodo al VLFM y se guarda la dirección devuelta por este.
 
 \begin{figure}[!htp]
-	\begin{center}
-		\includegraphics[scale=0.5,natwidth=20pt,natheight=10pt]{img/BTreeSharpDisk.png}
-	\end{center}
-	\caption{Implementación de Árbol en Disco} 
+\centering
+\makebox[\textwidth]{\includegraphics[scale=1.2,natwidth=20pt,natheight=10pt,width=1.15\textwidth]{img/BTreeSharpDisk.png}}
+\caption{Implementación de Árbol en Disco}
 \end{figure}
+
+\newpage
 
 \subsubsection{Diseño de datos y Serializadores}
 
@@ -166,7 +165,8 @@ NodeReferenceDisk((direccion)1)
 EspecialRootNodeDisk((elemento)*)
 RootNodeDisk((tipo de referencias)1,(key)+,(referencia)+)
 InternalNodeDisk((tipo de referencias)1,(key)+,(referencia)+)
-LeafNode((referencia nodo anterior)?,(elemento)+,(referencia nodo siguiente))
+LeafNode((referencia nodo anterior)?,(elemento)+,
+        (referencia nodo siguiente))
 
 \end{verbatim}
 
@@ -176,14 +176,14 @@ El diseño conceptual de acuerdo al tipo de archivo es el siguiente:
 Archivo de nodos internos:
   Bloques nodo raiz: NodoRaiz((tipo de nodo)1,
                      (((elemento)*)1 | 
-                      ((tipo de referencias)1,(key)+,(referencia)+)1)1)
-  Resto de los Bloques: NodoInterno((tipo de referencias)1,(key)+,
-                                    (referencia)+)
+                     ((tipo de referencias)1,(key)+,
+                     (referencia)+)1)1)
+  Resto de los Bloques: NodoInterno((tipo de referencias)1,
+            (key)+, (referencia)+)
 
 Archivo de nodos hojas:
 NodoHoja((referencia nodo anterior)?,(elemento)+,
          (referencia nodo siguiente)?)
-
 \end{verbatim}
 
 Como puede verse en lo anterior, el archivo de nodos internos contiene 3 tipos diferentes de nodos: el nodos raiz, subdivido en dos tipos, el inicial y el definitivo, que tiene una ubicación fija dentro del archivo, y el nodo interno.
@@ -194,15 +194,18 @@ El árbol en disco se parametriza, además de con un tipo de Key y de Element, con
 
 Una alternativa al uso de serializadores de listas de Keys/Elements podría haber sido el uso de serializadores de Key / Element (de un solo objeto). Pero esto no hubiese permitido la aplicación de frontcoding (porque la interfaz de Serializer no sabe lo que es un objeto anterior [y así debe ser!]). Si bien en el uso final que se dió al árbol en el TP no se hizo uso de frontcoding en los nodos internos (porque se pedía que no fuera así) el árbol genérico que estamos explicando en esta sección lo soporta (si se pasa un serializador de lista de Keys adecuado).
 
+\newpage
+
 El diseño lógico de datos para los registros por tipo de nodo es:
 
 \begin{verbatim}
 EspecialRootNodeDisk((lista de elementos: tipo desconocido)1)
-RootNodeDisk((tipo de referencias:Byte)1,(lista keys: tipo desconocido)1,
-             (referencia:Long)+)
-InternalNodeDisk((tipo de referencias:Byte)1,(tipo de referencias:Byte)1,
-                 (referencia:Long)+)
-LeafNode((referencia nodo anterior:Long)1,(lista elements: tipo desconocido)1,
+RootNodeDisk((tipo de referencias:Byte)1,
+            (lista keys: tipo desconocido)1,(referencia:Long)+)
+InternalNodeDisk((tipo de referencias:Byte)1,
+            (tipo de referencias:Byte)1,(referencia:Long)+)
+LeafNode((referencia nodo anterior:Long)1,
+         (lista elements: tipo desconocido)1,
          (referencia nodo siguiente:Long)1)
 
 \end{verbatim}
@@ -211,18 +214,20 @@ El diseño lógico de datos para los registros de acuerdo al tipo de archivo es el
 
 \begin{verbatim}
 Archivo de nodos internos:
-    Bloques nodo raiz: NodoRaiz((tipo de nodo:Byte)1,
-                       (((lista de elementos: tipo desconocido)1)1 | 
-                        ((tipo de referencias:Byte)1,
-                         (lista keys: tipo desconocido)1,(referencia:Long)+)1)
-  Resto de los Bloques: NodoInterno((tipo de referencias:Byte)1,
-                                    (tipo de referencias:Byte)1,
-                                    (referencia:Long)+)
+  Bloques nodo raiz: 
+    NodoRaiz((tipo de nodo:Byte)1, (((lista de
+      elementos: tipo desconocido)1)1 | ((tipo de 
+      referencias:Byte)1, (lista keys: tipo desconocido)1,
+      (referencia:Long)+)1)
+  Resto de los Bloques: 
+    NodoInterno((tipo de referencias:Byte)1,
+                (tipo de referencias:Byte)1,
+                (referencia:Long)+)
 
 Archivo de nodos hojas:
-NodoHoja((referencia nodo anterior:Long)1,(lista elements: tipo desconocido)1,
-         (referencia nodo siguiente:Long)1)
-
+  NodoHoja((referencia nodo anterior:Long)1,
+           (lista elements: tipo desconocido)1,
+           (referencia nodo siguiente:Long)1)
 \end{verbatim}
 
 En lo anterior cuando se dice ``tipo desconocido`` se lo hace porque el diseño de los datos está a cargo de los serializadores de Element/Key que parametrizan al árbol. Además, se hace notar que en el caso de RootNodeDisk e InternalNodeDisk no es necesario incluir la cantidad de referencias puesto que serán una más que la lista de keys (que, estratégicamente fue puesta antes que la lista de referencias).
