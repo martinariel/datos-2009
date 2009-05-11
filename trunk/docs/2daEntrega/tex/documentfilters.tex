@@ -46,21 +46,12 @@ tabla hash de un nivel inferior (con la continuación de la frase).
 
 De esta manera, cuando se está procesando una frase de un documento se realizan los siguientes pasos:
 
-\begin{itemize}
+\begin{enumerate}
   \item Se obtiene la primer palabra (sin extraerla)
   \item Se fija en el hash si contiene como key la palabra y se recorre la estructura con las siguientes palabras
   para ver si es una stop phrase (en cuyo caso se descarta)
   \item Si no es una stop phrase, entonces se remueve la palabra de la frase original, y se fija si es stop word (en 
   cuyo caso se extrae)
   \item Se vuelve a repetir el proceso, ahora con la siguiente palabra (que será la primera, ya que se van extrayendo)
-\end{itemize}
-
-
-
-
-
-
-
-
-
+\end{enumerate}
 

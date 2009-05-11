@@ -82,8 +82,8 @@ interno y nodo hoja. Sin embargo, en nuestro caso, los nodos hojas \textbf{nunca
 
 \newpage
 
-De la figura se puede prever que un nodo hoja podría eventualmente tener muchas terminaciones de claves (Mariana, Marcos
-arcelo, Martes, Marciano, Mariano, Mario, etc). Si suponemos un numero considerable como 50 o 100 elementos en un nodo 
+De la figura se puede prever que un nodo hoja podría eventualmente tener muchas terminaciones de claves (Mariana, Marcos,
+Marcelo, Martes, Marciano, Mariano, Mario, etc). Si suponemos un numero considerable como 50 o 100 elementos en un nodo 
 hoja, ya no podemos considerar que el nodo este por completo en memoria. 
 
 Para solucionar este problema, se decidió tratar a los nodos hojas con \textbf{particiones}. En vez de tener una entidad que 
@@ -100,6 +100,12 @@ adentro una cantidad fija de registros. \footnote{Actualmente utilizamos una can
 	\caption{Relaciones entre Nodos Internos y Nodos Hojas} 
 \end{figure}
 
+\paragraph{Clave y Elemento}
+Se implementaron clases particulares para la clave y el elemento. Para la clave se utilizo un StringKey, y en nuestro 
+caso el elemento es el offset en el archivo de audio. Las KeyAtom, en nuestro caso son caracteres individuales.
+Con lo cual donde corresponda \textbf{KeyAtom} se usará un \textbf{char} y en donde corresponda \textbf{Element} se 
+usará un \textbf{long}.
+
 \subsection{Diseño de Datos}
 Teniendo en claro las entidades involucradas en la estructura del Trie, se realizó un diseño de los datos que serían
 necesarios almacenar.
@@ -112,9 +118,9 @@ Particion de Nodo Hoja: resto de la clave, elemento (o dato)
 
 Se implementaron dos archivos, ambos con \textbf{registros de longitud variable en bloques}, uno para los nodos registros
 de los nodos internos y otro para los de nodos hojas.
-\newpage
+
 \paragraph{Diseño Conceptual de Datos}
-El diseño conceptual de datos para los registros, queda:
+Se realizó un diseño conceptual de datos para los registros:
 \begin{verbatim}
 Arhivo de nodos internos:
 NodoInterno((nivel)1, (dato)?, referencia a nodo(porcion clave,
@@ -125,22 +131,14 @@ ParticionNodoHoja( (resto clave((porcion clave)*))1, (dato)1 )
 \end{verbatim}
 
 \paragraph{Diseño Lógico de Datos}
-El diseño lógico de datos para los registros, queda:
+Se realizó un diseño lógico de datos para los registros:
 \begin{verbatim}
 Arhivo de nodos internos:
 NodoInterno(nivel:Short, dato:Elemento, (porcion clave:KeyAtom, 
 direccion(nro bloque:Long, nro objeto:Short)))
 
 Archivo de nodos hojas:
-ParticionNodoHoja(Cant de KeyAtom en resto de clave:Short, (porcion clave:KeyAtom), dato:Long)
-\end{verbatim}
-
-\paragraph{Clave y Elemento}
-Se implementaron clases particulares para la clave y el elemento. Para la clave se utilizo un StringKey, y en nuestro 
-caso el elemento es el offset en el archivo de audio. Las KeyAtom, en nuestro caso son caracteres individuales.
-Con lo cual, donde corresponda:
-\begin{verbatim}
-KeyAtom: Char
-Element: Long
+ParticionNodoHoja(Cant de KeyAtom en resto de clave:Short, 
+(porcion clave:KeyAtom), dato:Long)
 \end{verbatim}
 
