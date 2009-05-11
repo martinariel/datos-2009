@@ -1,7 +1,14 @@
 \section{Filtros y Normalización de Documentos}
 
+Los documentos y las consultas son pasados por los mismos filtros de manera de tener una normalización uniforme.
+Los dos filtros principales responsables de la normalización son:
+\begin{itemize}
+  \item El Parser
+  \item El filtro de stop words (StopWordsDiscriminator)
+\end{itemize}
+
 \subsection{Parser}
-El Parser se encarga a partir de un Document de separarlo en frases u oraciones, siendo iterable por este criterio, es decir, por cada frase (identificada por un distintos separadores: "." , "!", "?", etc.) se tendra disponible una List<String> con cada palabra de la misma. Es importance mencionar que este modulo es lo sufientemente inteligente como para bufferizar las lineas del documento hasta encontrar una frase. 
+El Parser se encarga de separar un Documento en frases u oraciones, siendo iterable por este criterio. Por cada frase (identificada por distintos separadores: "." , "!", "?", etc.) se tendra disponible una List<String> con cada palabra de la misma. Es importante mencionar que este modulo es lo sufientemente inteligente como para bufferizar las lineas del documento hasta encontrar una frase. 
 
 \paragraph{Ejemplo}
 
@@ -17,10 +24,43 @@ El parser devolvera estas 5 frases, siendo transparente para el que lo utilize e
 
 Ademas de separar las frases como explicamos anteriormente, se encarga de hacer CaseFolding y reemplazar o eliminar todos los caracteres diacriticos.
 
-
 \subsection{StopWordsDiscriminator}
 
-bla
-\paragraph{stop}
+El discriminador de stop words, es el encargado de filtrar de una frase, las palabras o sub-frases irrelevantes.
 
-bla
+Las stopwords son palabras que aparecen muchas veces en un documento y que suelen no ser relevantes para el mismo. 
+Estas palabras no deben indexarse con lo cual es necesario discriminarlas.
+ 
+También hay palabras que comúnmente aparecen en locuciones, como en el caso de algunos conectores de coordinación (p.e. "en consecuencia", "de cualquier manera", "en caso de que"), que en ese contexto no tienen significado relevante aunque
+individualmente fuera de ese contexto sí, por lo que debe considerarse la detección no sólo de palabras individuales 
+(stop words) sino de secuencias de palabras (que llamaremos stop phrases).
+
+\paragraph{Implementación y Algoritmo}
+
+La forma de resolver la detección de stopwords es trivial: palabra por palabra, se debe chequear contra algun archivo
+previamente cargado, si la palabra es o no una stop words. Por el contrario, la forma de detectar stop phrases es un poco mas complicada. 
+
+La solución que se implementó fue la de transformar las stop phrases precargadas \footnote{las stop phrases son listas 
+ordenadas de palabras} en estructuras de tablas hash encadenadas, cuya clave fuera una palabra, y cuyo valor fuera otra 
+tabla hash de un nivel inferior (con la continuación de la frase).
+
+De esta manera, cuando se está procesando una frase de un documento se realizan los siguientes pasos:
+
+\begin{itemize}
+  \item Se obtiene la primer palabra (sin extraerla)
+  \item Se fija en el hash si contiene como key la palabra y se recorre la estructura con las siguientes palabras
+  para ver si es una stop phrase (en cuyo caso se descarta)
+  \item Si no es una stop phrase, entonces se remueve la palabra de la frase original, y se fija si es stop word (en 
+  cuyo caso se extrae)
+  \item Se vuelve a repetir el proceso, ahora con la siguiente palabra (que será la primera, ya que se van extrayendo)
+\end{itemize}
+
+
+
+
+
+
+
+
+
+
