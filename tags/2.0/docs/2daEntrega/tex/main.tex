@@ -1,0 +1,80 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Definición del tipo de documento.                                           %
+% Posibles tipos de papel: a4paper, letterpaper, legalpapper                  %
+% Posibles tamaños de letra: 10pt, 11pt, 12pt                                 %
+% Posibles clases de documentos: article, report, book, slides                %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[10pt, spanish, a4paper]{article}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Los paquetes permiten ampliar las capacidades de LaTeX.                     %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage[spanish]{babel}     % Paquete para definir el idioma usado.
+\usepackage[latin1]{inputenc}   % Define la codificación de caracteres 
+                                % (latin1 es ISO 8859-1)
+%\usepackage[T1]{fontenc}        % Agrega caracteres extendidos al font
+\usepackage{t1enc}
+\usepackage{palatino}           % Cambia el font por omision a Palatino
+\usepackage{graphicx}           % Paquete para inclusión de gráficos.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Tí­tulo principal del documento.
+\title{\textbf{The Speaker (2da Entrega)}}
+
+% Información sobre los autores.
+\author{    
+            Juan Manuel Barrenche, \textit{Padrón Nro. 86.152}                 \\
+            \texttt{ snipperme@gmail.com }                                     \\
+            Martí­n Fernández, \textit{Padrón Nro. 88.171}                      \\
+            \texttt{ tinchof@gmail.com }                                       \\
+            Marcos J. Medrano, \textit{Padrón Nro. 86.729}                     \\
+            \texttt{ marcosmedrano0@gmail.com }                                \\
+            Federico Valido, \textit{Padrón Nro. 82.490}                       \\
+            \texttt{ fvalido@gmail.com }                                       \\ 
+                                                                               \\
+            \normalsize{Grupo Nro. 11 (YES)}                                   \\
+            \normalsize{Ayudante: Renzo Navas}                         	       \\
+            \normalsize{1er. Cuatrimestre de 2009}                             \\
+            \normalsize{75.06 Organización de Datos - Titular: Arturo Servetto}\\
+            \normalsize{Facultad de Ingeniería, Universidad de Buenos Aires}   \\
+       }
+\date{Domingo 10 de Mayo de 2009}
+
+
+% Comienzo del documento
+\begin{document}
+
+\maketitle                % Inserta el título.
+\thispagestyle{empty}     % Quita el número en la primer página.
+
+% Resumen que aparece en la primera página (antes de la tabla de contenidos)
+\begin{abstract}
+El presente trabajo representa una aplicación de los conceptos vistos durante
+el módulo de \textit{Organización de Archivos} del curso de \textit{75.06 Organización de Datos} 
+de la cátedra Servetto.\\
+\\
+Consiste en implementar un sistema que permita la lectura de textos, la 
+reproducción de los mismos en audio, y la indexación de ellos. El usuario carga 
+los audios correspondientes a cada termino encontrado en un archivo de texto, al
+mismo tiempo que se indexan los términos encontrados en el texto. El sistema debe ser capaz de 
+persistirlos, recuperarlos y de reproducir de un texto, cada termino individual 
+en base a las grabaciones cargadas previamente. \\
+Este documento ha sido desarrollado en \LaTeX.
+\end{abstract}
+
+\newpage
+\tableofcontents        % Comentar si no se desea la Table Of Content.
+\newpage
+
+% Inclusión de archivos externos
+\include{arch}
+\include{documentlibrary} % Document, DocumentLibrary
+\include{wordservice}     % Backend
+\include{documentfilters} % Crawler, Parser, Discriminator
+%\include{indexer}        % Indexer, LexicalManager ===> DESCOMENTAR CUANDO ESTE LA DOC DE JUAN !
+\include{bsharptree}      % B# Tree
+\include{searchengine}    % SearchEngine, Queries, FTRS, etc.
+\include{trie}            % Diccionario, Trie
+\include{audio}           % DocumentPlayer, DocumentRecorder, etc.
+
+\end{document}

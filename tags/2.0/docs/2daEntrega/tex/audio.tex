@@ -1,0 +1,14 @@
+\section{Servicios de Audio}
+\subsection{AudioServiceHandler}
+El manejo de interaccion con las librerias SimpleAudioRecorder y SimpleAudioPlayer provistas por la catedra esta encapsulado en la clase Singleton AudioServiceHandler, exponiendo solamente dos 4 metodos: record, stopRecording, play y stopPlaying.
+
+\subsection{WordsRecorder y DocumentPlayer}
+Por arriba de la capa de abstraccion AudioServiceHandler tenemos distintas utilidades que se vinculan con el servicio de persistencia y el audio: DocumentPlayer y WordsRecorder.
+
+\paragraph{DocumentPlayer}
+Recibe un Document, lo parsea en frases con el Parser y por cada una de las palabras en cada frase, busca el audio en el SoundPersistenceService y en el caso de encontrarlo lo reproduce.
+
+\paragraph{WordsRecorder}
+WordsRecorder recibe una frase ya parseada y por cada una de las palabras busca el audio en el SoundPersistenceService y en el caso de no encontrarlo notifica a la vista y solicita su grabacion, luego que la grabacion haya sido finalizada el audio obtenido es agregado al sistema.
+
+

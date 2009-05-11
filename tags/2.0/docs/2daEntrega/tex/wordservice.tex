@@ -1,0 +1,19 @@
+\section{Servicios de Documento (Backend)}
+Dentro de este paquete se encuentra la clase principal de interaccion con el sistema, basicamente es lo unico que una View conoceria.
+
+\subsection{WordService}
+
+\paragraph{Interacciones}
+Se encarga de instanciar el Indexer, Crawler, SoundPersistenceService utilizando un Trie, DocumentLibrary, SearchEngine, StopWordsDiscriminator y orquestar las relaciones entre ellos.
+
+\paragraph{Metodos}
+Expone los metodos principales para agregar, buscar y reproducir documentos. Que son delegados a los demas objetos.
+
+\paragraph{Conexion con una View}
+La conexion con la View se hace explicitamente en los metodos par agregar y reproducir a traves de una interfase (IWordsRecordConnector), de esta manera el servicio no conoce especificamente que view lo utiliza.
+
+\subsection{Crawler}
+El crawler es una entidad bastante simple que se encarga de agregar documentos al sistema.
+
+\subsection{bla}
+

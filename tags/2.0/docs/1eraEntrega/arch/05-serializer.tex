@@ -1,0 +1,47 @@
+\section{Serializadores}
+\label{sec:Serializadores}
+
+El intercambio de datos con los archivos se realiza en forma de bytes (es decir, de una manera unificada) a traves de InputBuffer y OutputBuffer. Debe existir, entonces, una forma de "serializar" los datos hacia bytes y de poder recuperarlos luego a partir de ellos. Para lograrlo, esta serialización debe incluir, además de las conversiones a byte, los datos de control necesarios, también en forma de byte, para poder luego rearmar los objetos (datos) originales.
+Para todo esto se definió la interface Serializador con tres métodos:
+\begin{itemize}
+\item dehydrate: Recibe un objeto a deshidratar y un OutputBuffer de destino. La implementación debe convertir a una tira de byte el objeto recibido, incluyendo los datos y la información de control. Luego esa tira es informada al OutputBuffer.
+\item hydrate: Recibe un InputBuffer del cual obtendrá una tira de bytes que usará para armar un objeto. La tira de bytes que obtendrá desde el InputBuffer contiene los datos y la información de control necesaria para la hidratación del objeto.
+\item getDehydrateSize: Obtiene de manera rápida (es decir, no realiza ninguna transformación, solo el cálculo) la cantidad de bytes que ocupará el objeto deshidratado.
+\end{itemize}
+
+\begin{figure}[!htp]
+	\begin{center}
+		\includegraphics[scale=0.35,natwidth=1177pt, natheight=838pt]{img/Serializer.png}
+	\end{center}
+	\caption{Diagrama de clases del \textbf{Serializer}} 
+\end{figure}
+
+\subsection{Implementaciones}
+
+Se definieron implementaciones de los tipos más comunes de datos a serializar:
+\begin{itemize}
+\item En principio la de tipos simples primitivos: usando el contrato definido por el equipo de Java en las interfaces DataInput y DataOutput, y su implementación en RandomAccessFile como modelo, se definieron las operaciones de conversión entre tipos primitivos y tiras de bytes. Se definió una clase con métodos estáticos para estas conversiones llamada PrimitiveTypeSerializer, y Serializadores para cada uno de los tipos primitivos que delegan su comportamiento en la clase mencionada.
+\item Un serializador de colecciones para objetos de una clase que puedan ser serializados individualmente. La colección será serializada como CantObjetosObjeto1...ObjetoN . Para la serialización de cada objeto (1..N) se usa un serializador que parametriza de esa manera el serializador de colecciones. Por defecto la cantidad de objetos se serializa mediante el ShortSerializer, pero esto puede ser cambiado mediante el uso de un cardinalitySerializer diferente (y con esto variar la cantidad de bytes requerida para la serialización de CantObjetos). Las cantidades se manejan como unsigned siempre. 
+\item Serializadores de String. Se hicieron dos implementaciones:
+\begin{itemize}
+  \item La primera pone la cantidad de caracteres al principio y luego la serialización de cada caracter. Para la implementación se delegó todo hacia un CollectionSerializer parametrizado con un CharacterSerializer y un ByteSerializer para la cantidad de caracteres (por tanto valen las mismas consideraciones de CollectionSerializer). El serializador de cantidad de caracteres puede ser intercambiado por otro.
+  \item La segunda serializa cada caracter, apoyándose en CharacterSerializer, y pone una secuencia de bytes predeterminada (que puede ser intercambiada) al final de la tira de bytes.
+\end{itemize}
+\end{itemize}
+\subsubsection{Uso con registros: Alternativas y solución}
+
+Un concepto con el que se trabajó (y luego fue descartado) fue el de armar serializadores de manera dinámica:
+Para ello pensamos en una clase llamada DynamicSerializer permitía serializar colas de objetos de distintas clases. Se construye pasando un serializador base que será usado para serializar el primer elemento de la cola. Además se recibe un serializador para el siguiente elemento que será englobado ("wrappeado") como un DynamicSerializer y devuelto (lo que permite usarlo estableciéndole otro serializador como "siguiente", wrappeado y devuelto; así con cada tipo de elemento de la cola). De esta manera cada DynamicSerializer realiza la serialización de un elemento de la cola y delega la serialización del resto al siguiente, repitiéndose el proceso hasta el final.
+De esta manera un objeto complejo, compuesto por varios elementos simples para los que existe un serializador, pueden ser serializados sin necesidad de crear una nueva clase/implementación de serializer. Para ello primero deben tomarse los elementos simples que conforman el elemento compuesto y agregarlos a una cola en un orden preestablecido. Al hidratar debe tomarse la cola hidratada y tomando adecuadamente cada elemento de esta recomponer el objeto original. Es este armado/desarmado del elemento en la cola lo que nos llevó a abandonar está opción pues, a pesar de quitar la necesidad de crear una clase por cada nuevo serializador, ensuciaba en muchos lados el código por la necesidad de trabajar con la cola.
+
+\begin{figure}[!htp]
+	\begin{center}
+		\includegraphics[scale=0.60,natwidth=512pt, natheight=163pt]{img/DynamicSerializerEjemplo.png}
+	\end{center}
+	\caption{Ejemplo de \textbf{DynamicSerializer}} 
+\end{figure}
+
+Fue entonces cuando se decidió definir otra interfaz llamada Serializable que define un método (getSerializer()) que permite conocer el serializador para un objeto en particular (el concepto sería "un serializable sabe como serializarse"). La implementación del serializador puede hacerse en forma de una clase anónima incluida en la clase a serializar dejando, entonces, el código mucho más limpio.
+
+Una alternativa para lograr la serialización en forma dinámica era, usando como base la interface Serializer y sus implementaciones comunes, el uso de metadata a través de annotations. La idea sería marcar, mediante una annotation creada especialmente, los atributos a serializar y el serializador (esto último [especificar el serializador] puede, incluso, ser opcional pués puede poseerse un Serializer por defecto para cada clase) a usar para dicho atributo. Dicho serializador puede ser uno de los de tipos primitivos mencionados más arriba (u otra implementación de Serializer). También debe marcarse -mediante la misma annotation- el orden de serialización, es decir el orden que ocupará cada atributo deshidratado en la tira de bytes (y entonces, el orden en que debe procesarse la tira para hidratarla). Por último habrá un Serializador especial, que recibe una clase parametrizada, capaz de interpretar la annotation mencionada para realizar la deshidratación/rehidratación de cualquier objeto que use use adecuadamente dicha annotation.
+El problema con esta opción es que hace un uso intensivo de reflection, lo cual hace mucho más lento el proceso, por lo cual fue descartada.
