@@ -1,5 +1,40 @@
 \section{Indexer}
+\paragraph{Definición de Entidades}
 
-\subsection{Indexer}
+Esta entidad es la encargada de manejar la generación del indice invertido de documentos y términos. Para ello se vale de tres herramientas principales: 
+\begin{verbatim}
+Términos indexados (Almacenados en el árbol B#):
+  Corresponde a cada término que se agrega al indexer. 
+  Tiene asociada una lista de documentos que almacena 
+  por fuera del árbol B#. Dicha lista de documentos se
+  almacena en un archivo por bloques con registros de 
+  longitud variable.
+
+Proceso de inversión por sort:
+  Se sincroniza una nueva sesión por cada sesión que 
+  se inicie en el indexer. Para que, cuando se le in-
+  dique al Indexer que se finalizó el agregado de in-
+  formación este pueda recuperar toda la información 
+  ya ordenada y contada
+
+Lexical Manager (Archivo de léxico)
+  Este es un simple archivo que contiene el léxico 
+  indexado.
+\end{verbatim}
+\subsection{Terminos indexados}
+Los términos indexados se encuentran representados por la clase \textbf{IndexerTreeElement} que implementa \textbf{Element} para poder almacenarse
+como elemento del árbol. Esta clase es parametrizable de manera que uno determina que es lo que quiere asociar a cada término (así uno no tiene que restringirse a asociar, como en nuestro caso \textit{direcciones de la DocumentLibrary} y puede indicar de otra manera a que documento pertenece o bien indexar datos que no representen un documento.
+Cada término indexado posee una lista de datos (cuyo tipo depende de como se parametrizó el Indexer) junto con la cantidad de veces que ocurrió el término para dicho dato. Esta lista se encuentra almacenada en un archivo externo al elemento, y es un archivo común para todos los elementos de un mismo indexer. La lista se almacena siempre ordenado decreciente respecto a la cantidad de ocurrencias.
+El agregado de información a la lista se hace una única vez por \textit{"sesión del indexado"}, en el momento que se finaliza dicha sesión. Ahí se agregan los nuevos datos a la lista ya existente y se actualiza la lista en el archivo de listas \footnote{si bien, en la implementación actual, nunca se agrega mas de un dato a la vez, ya que la interfaz agrega un único documento por vez, el circuito soporta que, durante una sesión, se indexen varios documentos}
+
+\subsection{Inversión por sort}
+El proceso de inversión por sort comienza cuando se inicia la sesión con el indexer. Este prepara un archivo de trabajo en el cual, mientras la sesión dure, se irán agregando elementos (en nuestro caso los elementos son la relación \textit{id\_termino - id\_documento}). 
+Cuando se da por finalizada la sesión, este proceso toma el archivo de trabajo de a partes (parametrizable por cantidad de registros) y realiza un sort externo. Es decir, cada parte es ordenada por separado en memoria y luego almacenada en otro archivo de trabajo. Luego a estos nuevos archivos se les realiza un merge (aprovechando el orden parcial que poseen) y para los casos que un mismo elemento se repite se aumenta la cantidad de ocurrencias del mismo y se almacena únicamente una (con el total de ocurrencias) en un archivo resultado.
+Este proceso, otorga al usuario, un iterador, para recorrer los elementos contados. Cuando el indexer itera sobre este resultado realiza un corte de control por \textit{id\_termino} para realizar una única actualización de la listas de dicho término.
 
 \subsection{Lexical Manager}
+El lexical mánager es un archivo con registros de longitud variable que nos permite hacer la conversión entre un \textit{id\_termino} y término. Cada término almacenado en el árbol B\# sharp posee además su correspondiente \textit{id\_termino} que no varía nunca. De manera que durante la sesión de indexado, por cada término a indexar se consulta el índice y se recupera este \textit{id\_termino} que es enviado, junto con el \textit{id\_documento}, al proceso de inversión por sort. Si no existiera el término en el índice, este es primero agregado al \textbf{Lexical Manager}, luego agregado al índice y finalmente enviado al proceso de inversión por sort.
+
+\subsection{Búsquedas}
+Las consultas en el Indexer son siempre por término. Lo que resulta en una consulta que resuelve el índice, es decir, el árbol B\#. El elemento recuperado es devuelto como un \textbf{IndexedTerm<T>} que le permite al que realizó toda la consulta recuperar, de manera \textit{lazy}, los datos asociados al mismo y la cantidad de veces que ocurrió el término para cada dato. 
+
