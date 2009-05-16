@@ -47,7 +47,6 @@ Al mismo tiempo que el \textit{Crawler} va procesando las frases, va a agregando
 
 \subsubsection{Agregar un Documento al diccionario de sonidos}
 
-
 Como puede adivinarse, el vocabulario completo obtenido al agregar un docuemento al índice es la entrada usada para realizar el agregado al diccionario de sonidos. Esto tiene como consecuencia que el agregado de sonidos será en distinto orden al original del documento. Pero tiene como ventaja el no tener que procesar dos veces el documento por el \textit{Parser} (y a no tener que leerlo de nuevo desde disco si es que no se lo quiere tener completo en memoria como planteamos antes).
 
 El módulo usado para esta acción es el llamado \textit{WordsRecorder}.
@@ -69,11 +68,57 @@ La reproducción la realizará el \textit{DocumentPlayer}, que recibirá un \textit
 
 El \textit{WordsPlayer} es la contrapartida del \textit{WordsRecorder} explicado antes, y su arquitectura es coincidente con la de este.
 
+\subsection{VariableLengtFileManager - Archivo de registros de longitud variable en bloques}
+El \textit{VariableLengthFileManager} que ya existía en la entrega anterior, ahora permite actualizaciones de los registros.
+Recordemos que el \textit{Address} en este archivo consta de dos partes. La primera el bloque donde se encuentra el registro y la segunda el número de objeto que representa el registro. Ahora bien, si una actualización de un registro aumentara el tamaño del mismo y esto hiciera que la suma de los tamaños de los registros que se encuentran en dicho bloque excediera el tamaño del bloque hay que hacer una reestructuración de los datos. Existen varias alternativas para ello:
+\begin{enumerate}
+\item Tomar como política de reestructuración la decisión de sólo mover los objetos del final que excedan a la capacidad del bloque. Este es, para nuestro caso, impracticable ya que implicaría actualizar todos los datos que tuvieran referencias a dichos objetos. 
+\item Quitar únicamente al objeto que se está actualizando en dicho momento. Esto pareciera traer el mismo inconveniente, ya que al hacer esto, las direcciones de los subsiguientes registros también se verían modificadas porque en el bloque existe un objeto menos y el conteo quedaría diferido en uno (es decir, que si quité el registro cuyo número de objeto 2 el siguiente, con número de objeto 3, pasaría a ser el objeto numero 2). 
+\end{enumerate}
+Entonces, para aplicar la segunda opción se debe evitar que los objetos siguientes al modificado mantengan su lugar en la lista. Así fue que se introdujo el concepto de \textbf{nullObject}.
+
+\subsubsection{NullObject}
+El \textbf{nullObject} es el encargado de ocupar el lugar que originalmente ocupaba un objeto que se encontraba compartiendo un bloque con otros registros y que, luego de su actualización, provocó un desborde del bloque.
+Ahora bien, recordemos que los objetos se encuentran serializados, y que la manera de rehidratandos es para todos la misma. Por lo cual necesitamos que los serializadores puedan hidratar \textbf{nullObject} sin intervención de un proceso de verificación, ni tener que estar agregando metadata listando los objetos que fueron retirados del bloque. Para ello se extendió la interfaz \textit{Serializer} a una nueva llamada \textit{NullableSerializer} la cual indica que dicho serializador puede serializar e hidratar \textbf{nullObjects}. 
+Todas nuestras implementaciones del NullObject se corresponden al valor \textbf{null} de Java, pero no tiene por qué ser así. El requisito es que el método \textit{NullableSerializer\#dehydriateNull} modifique el Buffer de salida con, a lo sumo, el mínimo tamaño de serialización de los objetos no nulos y que además, claro está, el \textit{NullableSerializer\#hydrate} pueda interpretar esa información como un objeto mas (o la referencia \textbf{null}). Este requisito de máximo tamaño para la serialización del \textbf{nullObject} se debe a que este objeto debe terminar ocupando menos que el objeto que lo que ocupaba el objeto a reemplazar antes de intentar ser modificado por el nuevo objeto. De esta manera, sabemos que, al quitarlo, los registros restantes y el \textbf{nullObject} van a caber en el bloque.
+
+\subsubsection{Resultado final}
+Finalmente las actualizaciones quedan de la siguiente manera y se distinguen tres casos de \textbf{desborde}:
+\begin{enumerate}
+\item Actualización de un registro que se encuentra solo en un bloque
+\item Actualización de un registro que se encuentra como último registro del bloque
+\item Actualización de un registro que no se encuentra como último registro del bloque
+\end{enumerate}
+
+\paragraph{Actualización de un registro que se encuentra solo en un bloque}
+
+Este caso es el mas sencillo, ya que el registro está solo y puede extenderse a múltiples bloques. Esto está solucionado en los \textit{writers}, que agregarán la metadata necesaria para asociar los bloques como si fueran uno solo. De manera que los \textit{readers} puedan leer toda la información en conjunto. \footnote{En este caso la dirección del objeto NUNCA cambia}
+
+\paragraph{Actualización de un registro que se encuentra como último registro del bloque}
+
+Este caso es el que le sigue en simplicidad. No requiere tampoco la intervención de los \textbf{nullObjects}, solamente se retira el objeto del bloque y se lo hace ingresar nuevamente al archivo como una inserción. Esto nos devuelve una dirección que es la que se retorna como resultado de la actualización del registro para que el que solicitó la actualización modifique las referencias que poseía hacia el registro.
+
+\paragraph{Actualización de un registro que no se encuentra como último registro del bloque}
+
+Al igual que en el caso anterior, se retira el objeto que se está actualizando, pero esta vez se lo reemplaza por un \textbf{nullObject}. Nuevamente se procede al agregado del objeto al archivo por medio de una inserción que nos devolverá la nueva dirección del objeto que será enviada al que solicitó la actualización para que pueda actualizar todas las referencias que posee al objeto. Vemos que gracias a este concepto (\textbf{nullObject}) los casos quedaron todos similares y sin gran complejidad.
+
+\paragraph{Análisis de ventajas y desventajas}
+
+Esta solución permite que, a lo sumo, un único registro modifique su dirección y que dicho registro sea el que se solicitó actualizar, lo que nos garantiza que es un dato con el que se está trabajando y que su \textit{Address} puede ser modificado donde sea pertinente. 
+
+La desventaja que parece tener es que los bloques se empiezan a llenar con datos que no nos interesa almacenar (los \textbf{nullObjects}). Para evitar esto se pueden implementar políticas de reorganización de bloques. ¿Cómo sería esto? Bueno, a simple vista se puede observar que si tengo que retirar el registro que se encuentra en la última posicisión del bloque todos los nullObjects anteriores (hasta encontrar un objeto que no lo sea) pueden ser también retirados del bloque, ganando, de esta manera, mas espacio para los otros registros que se encuentran en el bloque y que será utilizado cuando dichos registros necesiten expandirse. Finalmente, cuando se actualice el último de los registros reales restantes en el bloque (es decir, el registro que se encuentra en un bloque donde, excluyéndolo a él mismo, en el bloque solo hay \textbf{nullObjects}) este puede retirar todas esas referencias a nullObjects quedando como único propietario del bloque. \footnote{Si bien estas políticas no se encuentran implementadas, debido a falta de tiempo, son facilmente implementables y otorgan un mayor aprovechamiento del espacio reduciendo la fragmentación interna}
+
+\subsection{StraightVariableLengthFile - Archivo de registros de longitud variable sin bloques}
+
+Se agregó una forma mas de persistencia en archivos \textit{StraightVariableLengthFile}. Esta implementación de archivo basa su funcionamiento en los mismos lineamientos que el \textit{VariableLengthFileManager} en la primera parte, exceptuando que no trabaja por bloques. Por lo cual cada registro es serializado a continuación del último. Para recuperar un registro ya almacenado se recibe el \textit{Address} (que en este caso corresponde únicamente a un Offset y que fue entregado por el \textit{StraightVariableLengthFile} al momento de agregarse dicho registro) y se utiliza el Serializador con que fue configurado para hidratar el registro que luego es devuelto al usuario. Las ventajas de esta implementación, respecto a la de por bloques, es que los archivos quedan mas densos y no requiere meta data dentro del archivo (mas allá de la que requiera la serialización, la cual es independiente de la implementación del archivo).
+
+Quedó pendiente, como idea, permitirle al usuario de ambos tipos de archivos (con y sin bloques) que posea una sección con datos reservados (al estilo meta-data) que puedan serializarse de manera diferente que el común de los registros. Observamos que esto sería útil en numerosos casos. Como simples ejemplos, si quisiera almacenar la cantidad de registros en el léxico, si quisiera guardar en árbol el nombre para el archivo de hojas, etc. Si bien, nuestros casos los resolvimos implementando serializadores con estado a los que se le indicaba que tipo de dato esperaban recibir, entendemos que esta configuración complica algo que en concepto es mas sencillo.
+
 \subsection{Otros datos relevantes de la arquitectura}
 
-Se definió una abstracción de manejo de registros de longitud variable llamada \textit{StraightVariableLengthFile}. La misma solo permite agregado, sin actualizaciones. Se incorporó esta abstracción al archivo de sonidos (que antes era un \textit{VariableLengthFileManager}) por lo que ahora el archivo correspondiente es 100\% denso. Además fue usado en otras partes que lo requerían como puede verse en el diagrama.
+Se incorporó la abstracción \textit{StraightVariableLengthFile} para el archivo de sonidos (que antes era un \textit{VariableLengthFileManager}) por lo que ahora el archivo correspondiente es 100\% denso. 
 
-El \textit{VariableLengthFileManager} que ya existía en la entrega anterior, ahora permite actualizaciones de los registros.
+El \textit{VariableLengthFileManager} posee dos implementaciones, una que maneja caché de bloques y la otra que no. La primera se usa en casos como el trie ya que todos los registros poseen un mismo serializador (recordemos que el trie está implementado en dos archivos) y la segunda es utilizada en el árbol, ya que la forma de los registros almacenados en los archivos varía durante la vida del árbol y esto fuerza al uso de un serializador mas dependiente del árbol y esto complica el manejo del caché.
 
 \begin{figure}[!htp]
 \centering
@@ -84,5 +129,5 @@ El \textit{VariableLengthFileManager} que ya existía en la entrega anterior, aho
 \begin{figure}[!htp]
 \centering
 \makebox[\textwidth]{\includegraphics[scale=0.5,natwidth=20pt,natheight=10pt]{img/VariableLengthFileManager.png}}
-\caption{Arquitectura VariableLengthFileManager} 
+\caption{Arquitectura VariableLengthFileManager}
 \end{figure}
