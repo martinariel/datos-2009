@@ -1,6 +1,4 @@
 \section{Indexer}
-\paragraph{Definición de Entidades}
-
 Esta entidad es la encargada de manejar la generación del indice invertido de documentos y términos. Para ello se vale de tres herramientas principales: 
 \begin{verbatim}
 Términos indexados (Almacenados en el árbol B#):
@@ -22,9 +20,10 @@ Lexical Manager (Archivo de léxico)
   indexado.
 \end{verbatim}
 \subsection{Terminos indexados}
-Los términos indexados se encuentran representados por la clase \textbf{IndexerTreeElement} que implementa \textbf{Element} para poder almacenarse
-como elemento del árbol. Esta clase es parametrizable de manera que uno determina que es lo que quiere asociar a cada término (así uno no tiene que restringirse a asociar, como en nuestro caso \textit{direcciones de la DocumentLibrary} y puede indicar de otra manera a que documento pertenece o bien indexar datos que no representen un documento.
+Los términos indexados se encuentran representados por la clase \textbf{IndexerTreeElement} que implementa \textbf{Element} para poder almacenarse como elemento del árbol. Esta clase es parametrizable de manera que uno determina que es lo que quiere asociar a cada término (de esta manera, el usuario no está restringido a asociar, como en nuestro caso \textit{direcciones de la DocumentLibrary} y puede indicar de otra manera a que documento pertenece o bien indexar datos que no representen un documento).
+
 Cada término indexado posee una lista de datos (cuyo tipo depende de como se parametrizó el Indexer) junto con la cantidad de veces que ocurrió el término para dicho dato. Esta lista se encuentra almacenada en un archivo externo al elemento, y es un archivo común para todos los elementos de un mismo indexer. La lista se almacena siempre ordenado decreciente respecto a la cantidad de ocurrencias.
+
 El agregado de información a la lista se hace una única vez por \textit{"sesión del indexado"}, en el momento que se finaliza dicha sesión. Ahí se agregan los nuevos datos a la lista ya existente y se actualiza la lista en el archivo de listas \footnote{si bien, en la implementación actual, nunca se agrega mas de un dato a la vez, ya que la interfaz agrega un único documento por vez, el circuito soporta que, durante una sesión, se indexen varios documentos}
 
 \subsection{Inversión por sort}
@@ -36,5 +35,54 @@ Este proceso, otorga al usuario, un iterador, para recorrer los elementos contad
 El lexical mánager es un archivo con registros de longitud variable que nos permite hacer la conversión entre un \textit{id\_termino} y término. Cada término almacenado en el árbol B\# sharp posee además su correspondiente \textit{id\_termino} que no varía nunca. De manera que durante la sesión de indexado, por cada término a indexar se consulta el índice y se recupera este \textit{id\_termino} que es enviado, junto con el \textit{id\_documento}, al proceso de inversión por sort. Si no existiera el término en el índice, este es primero agregado al \textbf{Lexical Manager}, luego agregado al índice y finalmente enviado al proceso de inversión por sort.
 
 \subsection{Búsquedas}
-Las consultas en el Indexer son siempre por término. Lo que resulta en una consulta que resuelve el índice, es decir, el árbol B\#. El elemento recuperado es devuelto como un \textbf{IndexedTerm<T>} que le permite al que realizó toda la consulta recuperar, de manera \textit{lazy}, los datos asociados al mismo y la cantidad de veces que ocurrió el término para cada dato. 
+Las consultas en el Indexer son siempre por término. Lo que resulta en una consulta que resuelve el índice, es decir, el árbol B\#. El elemento recuperado es devuelto como un \textbf{IndexedTerm<T>} que le permite al que realizó toda la consulta recuperar, de manera \textit{lazy}, los datos asociados al mismo y la cantidad de veces que ocurrió el término para cada dato.
 
+\subsection{Diseño de Datos}
+Para el indexer hubo que hacer la definición de dos estructuras, la primera referida al elemento que se guarda en el árbol, y la segunda referida a la lista que posee cada elemento del árbol.
+
+\subsubsection{Elemento en el árbol}
+Uno de los requerimientos, para el almacenado de los datos en el árbol, es que la lista de términos sea almacenada con front-coding, por lo cual, todos los elementos del nodo hoja se serializan conjuntamente. Permitiendo así, aplicar a todas las claves del elemento front-coding y poder luego aplicar cualquier tipo de serialización al resto de cada elemento.
+\paragraph{Diseño Conceptual de Datos}
+Se realizó el siguiente diseño conceptual de datos para la lista de elementos:
+\begin{verbatim}
+ListaElementos(
+   (término)1,(longitud repetida, resto de término)*,
+    ((address de la lista)1, 
+     (máxima cantidad de ocurrencia del término)1
+    )
+  *)
+\end{verbatim}
+
+Tener en cuenta que la primera parte corresponde al front-coding aplicado a los términos. El resto es el elemento en sí, con el número máximo de ocurrencias del término en la lista para que el Search-Engine lo pueda obtener, si lo requiere, sin tener que consultar la lista completa. Es interesante observar, que, si bien ambos '*' representan cantidades diferentes (ambas cantidades difieren en uno debido a que el primer término del front-coding se almacena sin la \textit{longitud repetida} resto), siempre, en base a la obtención de la lista de claves, voy a poder saber cuantos cuerpos de elementos tengo que recuperar.
+
+\paragraph{Diseño Lógico de Datos}
+Se realizó el siguiente diseño lógico de datos para la lista de elementos:
+\begin{verbatim}
+ListaElementos(
+   (término:string),(longitud repetida:byte, resto de término:string),
+    ((address de la lista:block address), 
+     (máxima cantidad de ocurrencia del término:short)
+    )
+  )
+\end{verbatim}
+La cantidad de elementos en la lista se almacena única vez por lista. Este dato sirve para hidratar la lista de \textbf{Keys} almacenadas con fron-coding. Luego, en base a la cantidad de elementos en la lista recientemente hidratada, se procede a hidratar los cuerpos de los eleméntos.
+
+\subsubsection{Lista de elementos asociados a un término}
+Esta lista contiene todos los datos que fueron asociados al término junto con la cantidad de asociaciones que se realizaron al mismo. Además, debido a requerimiento, posee, como cabecera, el término dueño de la lista. Vamos a hacer referencia a la misma como ListaDocumentos, a pesar que puede referirse a una lista de otro tipo de dato según como se encuentre parametrizado el Indexer.
+
+\paragraph{Diseño Conceptual de Datos}
+Se realizó el siguiente diseño conceptual de datos para la lista:
+
+\begin{verbatim}
+ListaDocumentos((término)1,(documento, cantidad ocurrencias)*)
+\end{verbatim}
+
+\paragraph{Diseño Lógico de Datos}
+Se realizó el siguiente diseño lógico de datos para la lista:
+
+\begin{verbatim}
+ListaDocumentos((término:string),(documento:documento, 
+cantidad ocurrencias:short))
+\end{verbatim}
+
+El tipo de dato \textbf{documento} corresponde al tipo de dato con que se parametrizó el indexer (en nuestro caso real, es una dirección otorgada por el \textit{documentLibrary}) y no es necesario conocer específicamente el funcionamiento del tipo de dato ya que, como en otros casos, el usuario de \textbf{Indexer} nos entrega la manera de serializar a dicho objeto mediante un \textbf{Serializer}.
