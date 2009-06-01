@@ -7,7 +7,7 @@ import java.util.Iterator;
  * 
  * @author fvalido
  */
-public interface BitEmisor extends Iterator<Byte> {
+public interface BitEmisor {
 	/**
 	 * El método next() devolverá un bit representado por un byte cuyo valor,
 	 * por supuesto, será 1 o 0.   

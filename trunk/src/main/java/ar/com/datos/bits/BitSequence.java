@@ -32,9 +32,9 @@ public interface BitSequence extends BitReceiver, BitEmisor {
 	 * El primer bit a devolver será el ubicado en startBitPosition, siendo 0
 	 * la primer posición.
 	 * 
-	 * PRE: startBitPosition < getBitsCount()
+	 * PRE: position < getBitsCount()
 	 */
-	public Iterator<Byte> iterator(long startBitPosition);
+	public Iterator<Byte> iterator(long position);
 	
 	/**
 	 * Agrega al final de la secuencia los bits guardados en la secuencia pasada.
@@ -342,4 +342,9 @@ public interface BitSequence extends BitReceiver, BitEmisor {
 	 * PRE: count <= 8
 	 */
 	public byte toDecimalByte(long position, byte count);
+	
+	/**
+	 * Vacia esta secuencia dejándola sin ningún bit dentro.
+	 */
+	public void clear();
 }
