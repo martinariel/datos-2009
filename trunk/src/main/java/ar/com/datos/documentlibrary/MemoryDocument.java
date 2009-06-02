@@ -7,7 +7,7 @@ import java.util.ArrayList;
  * @author mfernandez
  *
  */
-public class MemoryDocument implements Document {
+public class MemoryDocument extends Document {
 
     private ArrayList<String> lineas;
     private int pos = -1;
