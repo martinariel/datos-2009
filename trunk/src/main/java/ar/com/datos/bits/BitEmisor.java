@@ -10,7 +10,7 @@ import java.util.Iterator;
 public interface BitEmisor {
 	/**
 	 * El método next() devolverá un bit representado por un byte cuyo valor,
-	 * por supuesto, será 1 o 0.   
+	 * por supuesto, será 1 o 0.
 	 */
 	public Iterator<Byte> iterator();
 }

@@ -9,8 +9,11 @@ public interface BitReceiver {
 	/**
 	 * Agrega un bit a continuación en la secuencia.
 	 * Por supuesto el bit pasado debe ser un 1 o un 0.
+	 * 
+	 * @throws BitsException
+	 * Si bit no es 0 o 1.
 	 */
-	public void addBit(byte bit);
+	public void addBit(byte bit) throws BitsException;
 
 	/**
 	 * Agrega un 0 a continuación en la secuencia.

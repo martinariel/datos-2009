@@ -3,7 +3,6 @@ package ar.com.datos.bits.impl;
 import java.util.Iterator;
 
 import ar.com.datos.bits.BitEmisor;
-import ar.com.datos.bits.BitSequence;
 import ar.com.datos.buffer.InputBuffer;
 import ar.com.datos.buffer.exception.BufferException;
 
@@ -13,9 +12,7 @@ import ar.com.datos.buffer.exception.BufferException;
  * @author fvalido
  */
 public class InputBufferBitEmisor implements BitEmisor {
-	/**
-	 * InputBuffer usado como origen de cada byte (con sus 8 bits).
-	 */
+	/** InputBuffer usado como origen de cada byte (con sus 8 bits). */
 	private InputBuffer inputBuffer;
 	
 	/**
@@ -34,7 +31,8 @@ public class InputBufferBitEmisor implements BitEmisor {
 	 */
 	@Override
 	public Iterator<Byte> iterator() {
-		// Notar que luego del primer uso el input buffer queda vacio.
+		// Notar que luego del primer uso el input buffer queda vacio (si se lo
+		// usa hasta al final; pero por lo menos quedará con un byte de menos).
 		// Si es necesario se puede modificar para que los bits emitidos sean
 		// guardados en algún lugar para su uso posterior, pero aparentemente
 		// esto no es necesario por ahora (por eso no lo hago).
@@ -48,29 +46,38 @@ public class InputBufferBitEmisor implements BitEmisor {
 	 * @author fvalido
 	 */
 	private class InputBufferBitIterator implements Iterator<Byte> {
-		/**
-		 * BitSequence usado para completar cada byte.
-		 */
-		private BitSequence bitSequenceBuffer;
-
-		/**
-		 * Posición actual dentro del bitSequenceBuffer.
-		 */
+		/** Estructura usada para iterar los bits de cada byte del buffer. */
+		private byte[] bitSequenceBuffer;
+		/** Estructura usada para saber la posición actual dentro de bitSequenceBuffer */
 		private byte bitSequencePosition;
-		
-		/**
-		 * InputBuffer usado como origen de cada byte (con sus 8 bits).
-		 */
+		/** InputBuffer usado como origen de cada byte (con sus 8 bits). */
 		private InputBuffer inputBuffer;
 
+		/**
+		 * Obtiene desde inputBuffer
+		 */
+		private void getMoreBitsFromInputBuffer() {
+			try {
+				byte sourceBits = this.inputBuffer.read();
+				int andOperator = 128;
+				for (int i = 0; i < 8 ; i++) {
+					this.bitSequenceBuffer[i] = (byte)((sourceBits & andOperator) > 0 ? 1 : 0);
+					andOperator /= 2;
+				}
+				this.bitSequencePosition = 0;
+			} catch (BufferException e) {
+				// No hago nada. bitSequencePosition va a quedar en 8 y por tanto hasNext() va a dar false.
+			}
+		}
+		
 		/**
 		 * Constructor.
 		 */
 		public InputBufferBitIterator(InputBuffer inputBuffer) {
 			this.inputBuffer = inputBuffer;
-			this.bitSequenceBuffer = new BitSequenceImpl();
-			this.bitSequenceBuffer.addBits(this.inputBuffer.read());
-			this.bitSequencePosition = 0;
+			this.bitSequencePosition = 8;
+			this.bitSequenceBuffer = new byte[8];
+			getMoreBitsFromInputBuffer();
 		}
 		
 		/*
@@ -86,16 +93,10 @@ public class InputBufferBitEmisor implements BitEmisor {
 		 * @see java.util.Iterator#next()
 		 */
 		public Byte next() {
-			Byte returnValue = this.bitSequenceBuffer.getBit(bitSequencePosition);
+			Byte returnValue = this.bitSequenceBuffer[bitSequencePosition];
 			this.bitSequencePosition++;
 			if (this.bitSequencePosition == 8) {
-				try {
-					this.bitSequenceBuffer.clear();
-					this.bitSequenceBuffer.addBits(this.inputBuffer.read());
-					this.bitSequencePosition = 0;
-				} catch (BufferException e) {
-					// No se hace nada, queda bitSequencePosition en 8 y entonces hasNext() dará false.
-				}
+				getMoreBitsFromInputBuffer();
 			}
 			
 			return returnValue;
