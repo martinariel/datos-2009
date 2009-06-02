@@ -162,7 +162,6 @@ public class SimpleSessionIndexer<T> implements SessionIndexer<T> {
 				new NullableTupleSerializer<OffsetAddress, List<KeyCount<T>>>(new OffsetAddressSerializer(), new ListSerializer<KeyCount<T>>(new KeyCountSerializer<T>(this.indexedSerializer))));
 	}
 
-	@SuppressWarnings("unchecked")
 	protected BTree<IndexerTreeElement<T>, IndexerTreeKey> constructIndexedElements(String fileName) {
 		Class<? extends ElementAndKeyListSerializerFactory<IndexerTreeElement<?>, IndexerTreeKey>> clazz = (Class<? extends ElementAndKeyListSerializerFactory<IndexerTreeElement<?>, IndexerTreeKey>>) IndexerSerializerFactory.class;
 		return new BTreeSharpFactory<IndexerTreeElement<T>, IndexerTreeKey>().createBTreeSharpDisk(fileName + INDEX_NODE_SUFFIX, fileName + INDEX_LEAFS_SUFFIX, 
