@@ -84,7 +84,7 @@ public class ArithmeticEmissorTest extends MockObjectTestCase {
 		assertEquals(caracterAEmitir, emitido);
 	}
 	/**
-	 * Voy a pedirle que emita con una tabla que tiene 3 caracteres
+	 * Voy a pedirle que emita con una tabla que tiene 5 caracteres
 	 * las probabilidades son 2 |P('b') = |P('q') = |P('a') = |P ('c') = 2 |P ('d')  
 	 * Al emitir a debería generar un underflow de una posición que se emitirá en el próximo overflow (el rango queda completo 0x00000000 -> 0xFFFFFFFF
 	 * Para generar el overflow emito, con la misma tabla, 'b' que debería generar 2 bits de overflow (00)

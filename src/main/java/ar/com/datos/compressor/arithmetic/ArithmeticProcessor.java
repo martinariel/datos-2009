@@ -20,12 +20,13 @@ public abstract class ArithmeticProcessor implements Closeable {
 	protected static final long INITIAL_FLOOR = 0L;
 	protected static final long INITIAL_CEILING = (1L << 32) - 1L;
 	protected static final long ONE_IN_OVERFLOW_POSITION = (1L << 31);
+	protected static final long ONE_IN_UNDERFLOW_POSITION = (1L << 30);
 
 	protected static final int precission = 32;
 	
-	protected long floor = INITIAL_FLOOR;
-	protected long ceiling = INITIAL_CEILING;
-	protected int underflowCounter = 0;
+	private long floor = INITIAL_FLOOR;
+	private long ceiling = INITIAL_CEILING;
+	private int underflowCounter = 0;
 
 	public ArithmeticProcessor() {
 		super();
@@ -38,6 +39,10 @@ public abstract class ArithmeticProcessor implements Closeable {
 	protected long addTheOneInOverflowPosition(long value) {
 		return value + ONE_IN_OVERFLOW_POSITION;
 	}
+	protected long removeTheOneInUnderflowPosition(long value) {
+		return value - ONE_IN_UNDERFLOW_POSITION;
+	}
+
 
 	protected SuperChar processTable(ProbabilityTable table, ArithmeticMatcher matcher) {
 		
@@ -67,10 +72,14 @@ public abstract class ArithmeticProcessor implements Closeable {
 			zoomCeiling();
 			this.ceiling = addTheOneInOverflowPosition(this.ceiling);
 			// hago el shift completo y saco el uno que estaba en la posición de underflow
+			this.floor   = removeTheOneInUnderflowPosition(this.floor);
 			zoomFloor();
-			this.floor   = removeTheOneInOverflowPosition(this.floor);
 			this.underflowCounter ++;
+			notifyUnderflow();
 		}
+	}
+
+	protected void notifyUnderflow() {
 	}
 
 	protected void clearOverflow() {
@@ -149,4 +158,10 @@ public abstract class ArithmeticProcessor implements Closeable {
 		return this.floor >=  OVERFLOW_SEPARATOR;
 	}
 
+	protected int getUnderflowCount() {
+		return this.underflowCounter;
+	}
+	protected boolean isInRange(long value) {
+		return value <= this.ceiling && value >= this.floor;
+	}
 }

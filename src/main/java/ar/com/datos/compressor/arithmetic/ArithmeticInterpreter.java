@@ -13,6 +13,7 @@ public class ArithmeticInterpreter extends ArithmeticProcessor {
 	private long currentValue;
 	private Iterator<Byte> bitStream;
 	private ArithmeticMatcher matcher;
+	private byte underflowBit = -1;
 	
 	public ArithmeticInterpreter(InputBuffer inputBuffer) {
 		this.bitStream = constructBitEmissor(inputBuffer).iterator();
@@ -37,15 +38,41 @@ public class ArithmeticInterpreter extends ArithmeticProcessor {
 	}
 	@Override
 	protected void flushOverflow(byte overflowBit) {
-		// TODO cotejar contra dato actual
 		currentValue = currentValue - overflowBit * ONE_IN_OVERFLOW_POSITION;
-		currentValue = shiftOneLeft(currentValue) + this.bitStream.next();
+		zoomValue();
+		checkRange();
 	}
 
 	@Override
 	protected void flushUnderflow(byte underflowBit) {
-		// TODO Auto-generated method stub
+		if (this.underflowBit != underflowBit) throw new ArithmeticInvalidDataException("Los Underflow liberados de la información leida no corresponden a los rangos reales");
+		
+	}
+	@Override
+	protected void notifyUnderflow() {
+		super.notifyUnderflow();
+		if (this.currentValue > OVERFLOW_SEPARATOR) {
+			this.underflowBit = 0;
+			this.currentValue = removeTheOneInOverflowPosition(currentValue);
+			zoomValue();
+			this.currentValue = addTheOneInOverflowPosition(currentValue);
+		} else {
+			this.underflowBit = 1;
+			this.currentValue = removeTheOneInUnderflowPosition(currentValue);
+			zoomValue();
+		}
+		checkRange();
+	}
+	protected void checkRange() {
+		if (!this.isInRange()) throw new ArithmeticInvalidDataException();
+	}
 
+	protected void zoomValue() {
+		currentValue = shiftOneLeft(currentValue) + this.bitStream.next();
+	}
+
+	protected boolean isInRange() {
+		return this.isInRange(this.currentValue);
 	}
 
 	protected BitEmisor constructBitEmissor(InputBuffer inputBuffer) {

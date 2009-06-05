@@ -18,6 +18,15 @@ public class SimpleProbabilityTable implements ProbabilityTable {
 	public Iterator<Tuple<SuperChar, Double>> iterator() {
 		return new TableIterator(totalNumberOfOcurrencies, frequencies);
 	}
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder("[ ");
+		for (Tuple<SuperChar, Integer> tup: frequencies) {
+			sb.append(tup);
+		}
+		sb.append(" ]");
+		return sb.toString(); 
+	}
 	private class TableIterator implements Iterator<Tuple<SuperChar, Double>> {
 
 		private Long totalNumberOfOcurrencies;
