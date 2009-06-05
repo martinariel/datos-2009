@@ -40,7 +40,7 @@ public class ArithmeticEmissorTest extends MockObjectTestCase {
 		ProbabilityTable table = constructTable(new SuperChar[] {caracterAEmitir, new SimpleSuperChar('b')},
 										  		new Integer[] 	{5,					 		5});
 		this.checking(new Expectations(){{
-			one(bitReceiverMock).add0();
+			one(bitReceiverMock).addBit((byte)0);
 		}});
 		SuperChar emitido = emisor.compress(caracterAEmitir, table);
 		assertEquals(caracterAEmitir, emitido);
@@ -57,7 +57,7 @@ public class ArithmeticEmissorTest extends MockObjectTestCase {
 		ProbabilityTable table = constructTable(new SuperChar[] {new SimpleSuperChar('b'), caracterAEmitir},
 										  		new Integer[] 	{5,					 		5});
 		this.checking(new Expectations(){{
-			one(bitReceiverMock).add1();
+			one(bitReceiverMock).addBit((byte)1);
 		}});
 		SuperChar emitido = emisor.compress(caracterAEmitir, table);
 		assertEquals(caracterAEmitir, emitido);
@@ -75,9 +75,9 @@ public class ArithmeticEmissorTest extends MockObjectTestCase {
 										  		new Integer[] 	{5,					 		5,				5,							5});
 		final Sequence sequence = this.sequence("multiple-emision");
 		this.checking(new Expectations(){{
-			one(bitReceiverMock).add0();
+			one(bitReceiverMock).addBit((byte)0);
 			inSequence(sequence);
-			one(bitReceiverMock).add1();
+			one(bitReceiverMock).addBit((byte)1);
 			inSequence(sequence);
 		}});
 		SuperChar emitido = emisor.compress(caracterAEmitir, table);
@@ -107,11 +107,11 @@ public class ArithmeticEmissorTest extends MockObjectTestCase {
 		// Ahora voy a hacer Overflow que si espero emisión
 		final Sequence sequence = this.sequence("multiple-emision");
 		this.checking(new Expectations(){{
-			one(bitReceiverMock).add0();
+			one(bitReceiverMock).addBit((byte)0);
 			inSequence(sequence);
 			exactly(2).of(bitReceiverMock).addBit((byte)1);
 			inSequence(sequence);
-			exactly(2).of(bitReceiverMock).add0();
+			exactly(2).of(bitReceiverMock).addBit((byte)0);
 			inSequence(sequence);
 		}});
 
@@ -140,11 +140,11 @@ public class ArithmeticEmissorTest extends MockObjectTestCase {
 		// Ahora voy a hacer Overflow que si espero emisión
 		final Sequence sequence = this.sequence("multiple-emision");
 		this.checking(new Expectations(){{
-			one(bitReceiverMock).add0();
+			one(bitReceiverMock).addBit((byte)0);
 			inSequence(sequence);
 			exactly(2).of(bitReceiverMock).addBit((byte)1);
 			inSequence(sequence);
-			exactly(31).of(bitReceiverMock).add0();
+			exactly(31).of(bitReceiverMock).addBit((byte)0);
 			inSequence(sequence);
 			one(bitReceiverMock).close();
 		}});
