@@ -6,27 +6,49 @@ import java.util.Iterator;
 
 import ar.com.datos.util.Tuple;
 
+/**
+ * Implementación básica de una tabla de probabilidades.
+ * Para cargarla se pasan los caracteres, en el orden deseado, junto con las frecuencias
+ * En base a la suma de todas las frecuencias es que calcula la probabilidad de cada caracter (P(i) = f(i) / suma(f(j)) para todo j 
+ * @author dev
+ *
+ */
 public class SimpleProbabilityTable implements ProbabilityTable {
 
 	private Collection<Tuple<SuperChar, Integer>> frequencies = new ArrayList<Tuple<SuperChar,Integer>>();
 	private Long totalNumberOfOcurrencies = 0L;
+
+	/**
+	 * Agrega un caracter <code>character</code> con frecuencia <code>frequency</code> a la 
+	 * tabla de probabilidades
+	 * @param character
+	 * @param frequency
+	 */
 	public void addChar(SuperChar character, Integer frequency) {
 		frequencies.add(new Tuple<SuperChar, Integer>(character, frequency));
 		totalNumberOfOcurrencies += frequency;
 	}
+	/**
+	 * devuelve el iterador sobre la tabla
+	 */
 	@Override
 	public Iterator<Tuple<SuperChar, Double>> iterator() {
 		return new TableIterator(totalNumberOfOcurrencies, frequencies);
 	}
 	@Override
-	public String toString() {
-		StringBuilder sb = new StringBuilder("[ ");
-		for (Tuple<SuperChar, Integer> tup: frequencies) {
-			sb.append(tup);
-		}
-		sb.append(" ]");
-		return sb.toString(); 
+	public int getNumberOfChars() {
+		return this.frequencies.size();
 	}
+	@Override
+	public int countCharsWithProbabilityUnder(double minimumProbability) {
+		int counter = 0;
+		for (Tuple<SuperChar, Double> tuple : this) {
+			if (tuple.getSecond() <= minimumProbability)
+				counter++;
+		}
+		return counter;
+	}
+
 	private class TableIterator implements Iterator<Tuple<SuperChar, Double>> {
 
 		private Long totalNumberOfOcurrencies;
@@ -49,23 +71,16 @@ public class SimpleProbabilityTable implements ProbabilityTable {
 
 		@Override
 		public void remove() {
-			// TODO Auto-generated method stub
-			
 		}
 		
 	}
 	@Override
-	public int getNumberOfChars() {
-		return this.frequencies.size();
-	}
-	@Override
-	public int countCharsWithProbabilityUnder(double minimumProbability) {
-		int counter = 0;
-		for (Tuple<SuperChar, Double> tuple : this) {
-			if (tuple.getSecond() <= minimumProbability)
-				counter++;
+	public String toString() {
+		StringBuilder sb = new StringBuilder("[ ");
+		for (Tuple<SuperChar, Integer> tup: frequencies) {
+			sb.append(tup);
 		}
-		return counter;
+		sb.append(" ]");
+		return sb.toString(); 
 	}
-
 }
