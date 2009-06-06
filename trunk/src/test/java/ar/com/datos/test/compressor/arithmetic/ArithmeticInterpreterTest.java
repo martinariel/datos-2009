@@ -124,7 +124,33 @@ public class ArithmeticInterpreterTest extends MockObjectTestCase {
 		ArithmeticInterpreter interprete = new ArithmeticInterpreter(new ArrayInputBuffer(arrayByte));
 		String probabilidades = table.toString() + " " + emision.toString();
 		for (SimpleSuperChar ssc: emision) {
+			assertEquals(probabilidades, ssc, interprete.decompress(table));
+		}
+		
+	}
+	/**
+	 * Voy a emitir una cadena aleatoria con probabilidades extremas. 
+	 * Luego verificar que se interprete la misma cadena
+	 * @throws Exception
+	 */
+	public void testExtremeProbabilities() throws Exception {
+		Random randomness = new Random();
+		SimpleSuperChar[] caracterAEmitir = new SimpleSuperChar[] { new SimpleSuperChar('a'), new SimpleSuperChar('b'),
+																	new SimpleSuperChar('c'), new SimpleSuperChar('d'),
+																	new SimpleSuperChar('e'), new SimpleSuperChar('f'),
+																	new SimpleSuperChar('g')};
+		ProbabilityTable table = constructTable(caracterAEmitir, new Integer[] 	{1, 1, Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE, 1, 1});
+		Collection<SimpleSuperChar> emision = new ArrayList<SimpleSuperChar>(128);
+		for (Integer i = 0 ; i < 128; i++) {
+			emision.add(caracterAEmitir[ Math.abs(randomness.nextInt()) % caracterAEmitir.length ]);
+		}
+		for (SimpleSuperChar ssc: emision) {
 			emisor.compress(ssc, table);
+		}
+		emisor.close();
+		ArithmeticInterpreter interprete = new ArithmeticInterpreter(new ArrayInputBuffer(arrayByte));
+		String probabilidades = table.toString() + " " + emision.toString();
+		for (SimpleSuperChar ssc: emision) {
 			assertEquals(probabilidades, ssc, interprete.decompress(table));
 		}
 		
