@@ -48,14 +48,15 @@ public abstract class ArithmeticProcessor implements Closeable {
 		
 		Iterator<Tuple<SuperChar, Double>> tableIterator = table.iterator();
 		boolean matched = false;
-		Tuple<SuperChar, Double> current = null;;
+		Tuple<SuperChar, Double> current = null;
+		double probabilityFloor = getProbabilityFloor(table);
 		long currentFloor = this.floor;
 		long currentCeiling = this.floor - 1;
-		long range = this.ceiling - this.floor + 1; 
+		long range = this.ceiling - this.floor + 1 - table.countCharsWithProbabilityUnder(probabilityFloor);
 		while (tableIterator.hasNext() && !matched) {
 			current = tableIterator.next();
 			currentFloor = currentCeiling + 1;
-			currentCeiling = currentFloor + new Double(Math.floor(range * current.getSecond())).longValue() - 1;
+			currentCeiling = calculateNewCeiling(current, probabilityFloor, currentFloor, range);
 			matched = matcher.matches(current.getFirst(), currentCeiling);
 		}
 		this.floor = currentFloor;
@@ -65,6 +66,30 @@ public abstract class ArithmeticProcessor implements Closeable {
 		return current.getFirst();
 		
 	}
+
+	private long calculateNewCeiling(Tuple<SuperChar, Double> current, double probabilityFloor, long currentFloor, long range) {
+		long currentCeiling;
+		if (current.getSecond() <= probabilityFloor) {
+			currentCeiling = currentFloor;
+		} else {
+			currentCeiling = currentFloor + new Double(Math.floor(range * current.getSecond())).longValue() - 1;
+		}
+		return currentCeiling;
+	}
+	protected double getProbabilityFloor(ProbabilityTable table) {
+		int numberOfChars = table.getNumberOfChars();
+		double range = this.ceiling - this.floor + 1;
+		double minimumProbability = numberOfChars / range;
+		int previousAmmountOfChars = 0;
+		int currentAmmountOfChars = table.countCharsWithProbabilityUnder(minimumProbability);
+		while (previousAmmountOfChars != currentAmmountOfChars) {
+			previousAmmountOfChars = currentAmmountOfChars;
+			minimumProbability = (numberOfChars - currentAmmountOfChars) / range;
+			currentAmmountOfChars = table.countCharsWithProbabilityUnder(minimumProbability);
+		}
+		return minimumProbability;
+	}
+
 	protected void clearUnderFloor() {
 		while (this.isInUnderflow()) {
 			// Saco el uno, hago shift y reagrego el uno (esto me da un shiftleft desde los bits 30 al 0

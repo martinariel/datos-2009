@@ -54,5 +54,18 @@ public class SimpleProbabilityTable implements ProbabilityTable {
 		}
 		
 	}
+	@Override
+	public int getNumberOfChars() {
+		return this.frequencies.size();
+	}
+	@Override
+	public int countCharsWithProbabilityUnder(double minimumProbability) {
+		int counter = 0;
+		for (Tuple<SuperChar, Double> tuple : this) {
+			if (tuple.getSecond() <= minimumProbability)
+				counter++;
+		}
+		return counter;
+	}
 
 }
