@@ -83,4 +83,14 @@ public class SimpleProbabilityTable implements ProbabilityTable {
 		sb.append(" ]");
 		return sb.toString(); 
 	}
+	@Override
+	public boolean contains(SuperChar ch) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	@Override
+	public SuperChar removeCharacter(SuperChar ch) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }
