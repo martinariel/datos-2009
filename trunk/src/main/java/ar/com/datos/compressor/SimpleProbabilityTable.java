@@ -11,7 +11,7 @@ import ar.com.datos.util.Tuple;
  * Para cargarla se pasan los caracteres, en el orden deseado, junto con las frecuencias
  * En base a la suma de todas las frecuencias es que calcula la probabilidad de cada caracter (P(i) = f(i) / suma(f(j)) para todo j 
  * @author dev
- *
+ * @deprecated
  */
 public class SimpleProbabilityTable implements ProbabilityTable {
 
