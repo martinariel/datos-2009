@@ -154,7 +154,7 @@ public class ProbabilityTableByFrequencies implements ProbabilityTable {
 		this.lowestSuperChar = lowestSuperChar;
 		this.highestSuperChar = highestSuperChar;
 		this.totalNumberOfOcurrencies = highestSuperChar.intValue() - lowestSuperChar.intValue() + 1;
-		if (this.totalNumberOfOcurrencies < 0) {
+		if (this.totalNumberOfOcurrencies < 1) {
 			totalNumberOfOcurrencies = 0;
 			this.initialFrequency = 0;
 		} else {
@@ -254,13 +254,7 @@ public class ProbabilityTableByFrequencies implements ProbabilityTable {
 	 */
 	@Override
 	public int getNumberOfChars() {
-		int returnValue = this.highestSuperChar.intValue() - this.lowestSuperChar.intValue() + 1;
-		if (returnValue <= 0) {
-			returnValue = this.frequenciesTable.size();
-		}
-		returnValue -= this.excluded.size();
-		
-		return returnValue;
+		return countCharsWithProbabilityUnder(1.1);
 	}
 
 	/*
@@ -316,7 +310,7 @@ public class ProbabilityTableByFrequencies implements ProbabilityTable {
 			if (this.frequenciesIt.hasNext()) {
 				this.nextSuperChar = this.frequenciesIt.next();
 				// Si el superChar está en los excluidos pido otro.
-				if (excluded.contains(this.nextSuperChar.getFirst())) {
+				if (excluded.contains(this.nextSuperChar.getFirst()) || this.nextSuperChar.getFirst().equals(SuperChar.ESC)) {
 					prepareNextSuperCharUsingFrequenciesTable();
 				}			
 			}
@@ -343,6 +337,11 @@ public class ProbabilityTableByFrequencies implements ProbabilityTable {
 				}
 			} else {
 				prepareNextSuperCharUsingRangeSuperChars(new SimpleSuperChar(this.nextSuperChar.getFirst().intValue() + 1));
+			}
+			if (this.nextSuperChar == null) {
+				if (!excluded.contains(SuperChar.ESC)) {
+					this.nextSuperChar = frequenciesTableIndex.get(SuperChar.ESC);
+				}
 			}
 		}
 		
