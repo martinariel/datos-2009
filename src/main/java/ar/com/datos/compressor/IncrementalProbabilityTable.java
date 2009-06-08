@@ -9,6 +9,7 @@ import ar.com.datos.util.Tuple;
  * Luego permite incrementar las frecuencias de cualquiera de dicho rango
  * @author dev
  *
+ * @deprecated
  */
 public class IncrementalProbabilityTable implements ProbabilityTable {
 
