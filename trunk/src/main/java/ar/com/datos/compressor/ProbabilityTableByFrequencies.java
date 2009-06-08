@@ -29,7 +29,8 @@ import ar.com.datos.util.UpsideDownComparator;
  *   
  * El manejo de una lista con todos los chars posibles o sin ellos se hace desde el constructor,
  * que recibe el menor y el mayor char posible. Si se quiere empezar sin ningún caracter e incorporarlos
- * luego se debe pasar en el constructor un char "mayor" posible que sea menor al "menor" posible.
+ * luego se debe pasar en el constructor un char "mayor" posible que sea menor al "menor" posible. O usar
+ * el constructor que no usa parámetros.
  * 
  * El manejo de listas de exclusión debe antes de que se pase el objeto {@link ProbabilityTableByFrequencies}
  * al aritmético; debiendo pasar una lista vacia en caso de no haber exclusiones.
@@ -165,7 +166,14 @@ public class ProbabilityTableByFrequencies implements ProbabilityTable {
 		this.excluded = new HashSet<SuperChar>();
 	}
 
-
+	/**
+	 * Constructor.
+	 * Ver notas de la clase para más detalles!!
+	 */
+	public ProbabilityTableByFrequencies() {
+		this(new SimpleSuperChar(0), new SimpleSuperChar(-2));
+	}
+	
 	/**
 	 * Obtiene la cantidad de caracteres contenidos en frequenciesTable y no contenidos en excluded
 	 * cuya frecuencia sea menor que la pasada.
