@@ -13,7 +13,7 @@ public class ContextFactory {
 	public Context createContextForOrder(int order){
 		ProbabilityTableByFrequencies table = new ProbabilityTableByFrequencies();
 		if (order < this.maxOrder){
-			table.addOcurrency(SuperChar.ESC);
+			table.addOccurrence(SuperChar.ESC);
 			return new SimpleContext(order, table, this);
 		} else {
 			return new BaseContext(order, table);

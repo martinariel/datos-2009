@@ -2,24 +2,22 @@ package ar.com.datos.compressor.lzp;
 
 import java.util.Iterator;
 
+import ar.com.datos.buffer.OutputBuffer;
+import ar.com.datos.compressor.ProbabilityTableByFrequencies;
+import ar.com.datos.compressor.SimpleSuperChar;
+import ar.com.datos.compressor.SuperChar;
 import ar.com.datos.compressor.arithmetic.ArithmeticEmissor;
 import ar.com.datos.compressor.lzp.table.LzpContext;
 import ar.com.datos.compressor.lzp.table.LzpContextWorkingTable;
 import ar.com.datos.compressor.lzp.text.TextEmisor;
 import ar.com.datos.util.Tuple;
 
+/**
+ * Compresor LZP.
+ * 
+ * @author fvalido
+ */
 public class LzpCompressor {
-	/** Compresor aritmético */
-	private ArithmeticEmissor arithmetic;
-	/** Tabla de trabajo para los contextos */
-	private LzpContextWorkingTable lzpContextWorkingTable;
-	
-	/**
-	 * Constructor.
-	 */
-	public LzpCompressor() {
-	}
-
 	/**
 	 * Compara el texto que se obtiene a partir de iteratorCurrent con el texto posterior a la última aparición
 	 * de lzpContext.
@@ -33,8 +31,10 @@ public class LzpCompressor {
 	 *    - último caracter que matcheó (si no matcheó [longitud 0] será el segundo del lzpContext pasado).
 	 *    - primer caracter que no matcheó.
 	 */
-	private Tuple<Integer, Tuple<Character, Character>> compareWithPrecedingText(TextEmisor textEmisor, Iterator<Character> currentIterator, LzpContext lzpContext, int lzpContextPosition) {
-		Long positionMatchStart = this.lzpContextWorkingTable.getPosition(lzpContext);
+	private Tuple<Integer, Tuple<Character, Character>> compareWithPrecedingText(TextEmisor textEmisor, Iterator<Character> currentIterator, 
+																				 LzpContext lzpContext, int lzpContextPosition,
+																				 LzpContextWorkingTable lzpContextWorkingTable) {
+		Long positionMatchStart = lzpContextWorkingTable.getPosition(lzpContext);
 		
 		int sizeMatch = 0;
 		Character lastMatch = lzpContext.getSecondChar();
@@ -66,19 +66,19 @@ public class LzpCompressor {
 		}
 
 		// Agrego o reemplazo el contexto en la tabla.
-		this.lzpContextWorkingTable.addOrReplace(lzpContext, lzpContextPosition);
+		lzpContextWorkingTable.addOrReplace(lzpContext, lzpContextPosition);
 		
 		return new Tuple<Integer, Tuple<Character,Character>>(sizeMatch, new Tuple<Character, Character>(lastMatch, firstUnMatch));
 	}
 	
 	/**
-	 * Comprime el texto recibido usando para ello el compresor aritmético recibido
-	 * mediante {@link #setArithmeticCompressor(ArithmeticEmissor)}.
-	 * 
-	 * PRE: Debe haberse llamado a {@link #setArithmeticCompressor(ArithmeticEmissor)}
+	 * Comprime el texto recibido dejando la salida en el {@link OutputBuffer}.
 	 */
-	public void compress(TextEmisor textEmisor) {
-		this.lzpContextWorkingTable = new LzpContextWorkingTable();
+	public void compress(TextEmisor textEmisor, OutputBuffer output) {
+		LzpContextWorkingTable lzpContextWorkingTable = new LzpContextWorkingTable();
+		ArithmeticEmissor arithmetic = new ArithmeticEmissor(output);
+		FirstOrderLzpModel firstOrderLzpModel = new FirstOrderLzpModel();
+		ProbabilityTableByFrequencies zeroOrderLzpModel = new ProbabilityTableByFrequencies(new SimpleSuperChar(0), SuperChar.PRE_EOF_SUPER_CHAR);
 		
 		Iterator<Character> textIterator = textEmisor.iterator(0);
 		Character currentChar = null; // último caracter que no matcheó (caracter a emitir).
@@ -90,14 +90,14 @@ public class LzpCompressor {
 		if (textIterator.hasNext()) {
 			previousChar = null;
 			currentChar = textIterator.next();
-			sendOutLength(0); // Esto se podría evitar porque ya se que la primera vez emito con long 0 (lo mantengo porque se explicó así).
-			sendOutCharacter(previousChar, currentChar);
+			sendOutLength(arithmetic, zeroOrderLzpModel, 0); // Esto se podría evitar porque ya se que la primera vez emito con long 0 (lo mantengo porque se explicó así).
+			sendOutCharacter(arithmetic, firstOrderLzpModel, previousChar, currentChar);
 		}
 		if (textIterator.hasNext()) {
 			previousChar = currentChar;
 			currentChar = textIterator.next();
-			sendOutLength(0); // Esto se podría evitar porque ya se que la segunda vez emito con long 0 (lo mantengo porque se explicó así).
-			sendOutCharacter(previousChar, currentChar);
+			sendOutLength(arithmetic, zeroOrderLzpModel, 0); // Esto se podría evitar porque ya se que la segunda vez emito con long 0 (lo mantengo porque se explicó así).
+			sendOutCharacter(arithmetic, firstOrderLzpModel, previousChar, currentChar);
 		}
 		
 		// Armo el contexto inicial y su posición inicial.
@@ -108,15 +108,15 @@ public class LzpCompressor {
 		Tuple<Integer, Tuple<Character, Character>> triple = null;
 		boolean lastEmissionIncomplete = false;
 		while (textIterator.hasNext()) { // Mientras hayan más caracteres.
-			triple = compareWithPrecedingText(textEmisor, textIterator, lzpContext, lzpContextPosition);
+			triple = compareWithPrecedingText(textEmisor, textIterator, lzpContext, lzpContextPosition, lzpContextWorkingTable);
 			
 			lastEmissionIncomplete = true;
 			
 			// Emito lo que debo emitir (Solo si quedan caracteres, sino debo luego emitir EOF)
 			if (textIterator.hasNext()) {
 				lastEmissionIncomplete = false;
-				sendOutLength(triple.getFirst());
-				sendOutCharacter(triple.getSecond().getFirst(), triple.getSecond().getSecond());
+				sendOutLength(arithmetic, zeroOrderLzpModel, triple.getFirst());
+				sendOutCharacter(arithmetic, firstOrderLzpModel, triple.getSecond().getFirst(), triple.getSecond().getSecond());
 			
 				// Actualizo el contexto
 				lzpContext = new LzpContext(triple.getSecond().getFirst(), triple.getSecond().getSecond());
@@ -126,42 +126,38 @@ public class LzpCompressor {
 		// Emito EOF.
 		if (lastEmissionIncomplete) {
 			// La "última" emisión tuvo una longitud mayor a 0 (hubo un match al final)
-			sendOutLength(triple.getFirst());
-			sendOutEOF(triple.getSecond().getFirst());
+			sendOutLength(arithmetic, zeroOrderLzpModel, triple.getFirst());
+			sendOutEOF(arithmetic, firstOrderLzpModel, triple.getSecond().getFirst());
 		} else {
 			// La última emisión tuvo una longitud igual a 0 (no hubo match al final).
-			sendOutLength(0);
-			sendOutEOF(triple.getSecond().getSecond());
+			sendOutLength(arithmetic, zeroOrderLzpModel, 0);
+			sendOutEOF(arithmetic, firstOrderLzpModel, triple.getSecond().getSecond());
 		}
 		
-		this.lzpContextWorkingTable.close();
+		lzpContextWorkingTable.close();
 	}
 	
 	/**
 	 * Emite la longitud de matcheo usando el aritmético.
+	 * Mantiene actualizada la tabla de probabilidades recibida.
 	 */
-	private void sendOutLength(int length) {
-		// TODO
+	private void sendOutLength(ArithmeticEmissor arithmetic, ProbabilityTableByFrequencies zeroOrderLzpModel, int length) {
+		arithmetic.compress(new SimpleSuperChar(length), zeroOrderLzpModel);
 	}
 
 	/**
 	 * Emite el caracter en el contexto adecuado usando el aritmético.
+	 * Mantiene actualizado el modelo recibido.
 	 */
-	private void sendOutCharacter(Character contextCharacter, Character character) {
-		// TODO
+	private void sendOutCharacter(ArithmeticEmissor arithmetic, FirstOrderLzpModel firstOrderLzpModel, Character contextCharacter, Character character) {
+		arithmetic.compress(new SimpleSuperChar(character), firstOrderLzpModel.getProbabilityTableFor(contextCharacter));
+		firstOrderLzpModel.addOccurrence(contextCharacter, character);
 	}
 	
 	/**
 	 * Emite EOF
 	 */
-	private void sendOutEOF(Character contextCharacter) {
-		// TODO
-	}
-	
-	/**
-	 * Establece el compresor aritmético hacia el cual emitir.
-	 */
-	public void setArithmeticCompressor(ArithmeticEmissor arithmetic){
-		this.arithmetic = arithmetic;
+	private void sendOutEOF(ArithmeticEmissor arithmetic, FirstOrderLzpModel firstOrderLzpModel, Character contextCharacter) {
+		arithmetic.compress(SuperChar.EOF, firstOrderLzpModel.getProbabilityTableFor(contextCharacter));
 	}
 }

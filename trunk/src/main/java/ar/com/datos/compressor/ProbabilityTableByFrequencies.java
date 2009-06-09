@@ -66,7 +66,7 @@ public class ProbabilityTableByFrequencies implements ProbabilityTable {
 	/**
 	 * Permite indicar que ha aumentado la frecuencia de un término.
 	 */
-	public void addOcurrency(SuperChar superChar) {
+	public void addOccurrence(SuperChar superChar) {
 		// Lo busco en la estructura índice.
 		Tuple<SuperChar, Long> charFrequency = this.frequenciesTableIndex.get(superChar);
 		// Si estaba...
