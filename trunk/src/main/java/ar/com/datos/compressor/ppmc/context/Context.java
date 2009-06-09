@@ -1,6 +1,6 @@
-package ar.com.datos.compressor.ppmc;
+package ar.com.datos.compressor.ppmc.context;
 
-import ar.com.datos.compressor.ProbabilityTable;
+import ar.com.datos.compressor.ProbabilityTableByFrequencies;
 import ar.com.datos.compressor.SuperChar;
 
 /**
@@ -9,13 +9,25 @@ import ar.com.datos.compressor.SuperChar;
  */
 public interface Context {
 
+	/** 
+	 * Devuelve el orden de este contexto. 
+	 */
+	public int getOrder();
+	
 	/**
 	 * Devuelve el {@link Context} de nivel superior ("hijo") correspondiente al 
 	 * caracter recibido por parametro. Devuelve null si el contexto no existe.
 	 * @param c el caracter para el cual se busca el contexto
 	 * @return el contexto buscado si existe o null si no lo existe.
 	 */
-	Context getNextContextFor(SuperChar c);
+	public Context getNextContextFor(SuperChar ch);
+	
+	/** 
+	 * Agrega una ocurrencia de un caracter al contexto actual.
+	 * Las implementaciones pueden crear y linkear nuevos contextos en el caso
+	 * de que sea necesario (orden 0 a n-1). 
+	 */
+	public void addOcurrency(SuperChar ch);
 	
 	/**
 	 * Devuelve la tabla de probabilidad correspondiente a este contexto.
@@ -24,5 +36,5 @@ public interface Context {
 	 * probabilidad 1. 
 	 * @return la {@link ProbabilityTable} de este contexto. Nunca null.
 	 */
-	ProbabilityTable getProbabilityTable();
+	public ProbabilityTableByFrequencies getProbabilityTable();
 }
