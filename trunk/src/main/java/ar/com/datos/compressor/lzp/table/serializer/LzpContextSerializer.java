@@ -30,9 +30,8 @@ public class LzpContextSerializer implements Serializer<LzpContext> {
 	 */
 	@Override
 	public void dehydrate(OutputBuffer output, LzpContext object) throws SerializerException {
-		String context = object.toString();
-		this.characterSerializer.dehydrate(output, context.charAt(0));
-		this.characterSerializer.dehydrate(output, context.charAt(1));
+		this.characterSerializer.dehydrate(output, object.getFirstChar());
+		this.characterSerializer.dehydrate(output, object.getSecondChar());
 	}
 
 	/*
