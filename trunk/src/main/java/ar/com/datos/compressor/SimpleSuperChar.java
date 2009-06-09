@@ -16,7 +16,14 @@ public class SimpleSuperChar implements SuperChar {
 	 */
 	@Override
 	public Boolean matches(SuperChar other) {
-		return this.charCode == other.intValue();
+		boolean returnValue = (this.charCode == other.intValue());
+		
+		if (!returnValue) {
+			// Si soy ESC matcheo con todos.
+			returnValue = this.equals(ESC);
+		}
+		
+		return returnValue;		
 	}
 	
 	/*
