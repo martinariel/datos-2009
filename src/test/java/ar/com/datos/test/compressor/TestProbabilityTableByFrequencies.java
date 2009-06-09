@@ -29,7 +29,7 @@ public class TestProbabilityTableByFrequencies extends TestCase {
 			i++;
 		}
 		
-		probabilityTable.addOcurrency(new SimpleSuperChar(5));
+		probabilityTable.addOccurrence(new SimpleSuperChar(5));
 		assertEquals(11, probabilityTable.getNumberOfChars());
 		assertEquals(11, probabilityTable.countCharsWithProbabilityUnder((double)1/5));
 		assertEquals(0, probabilityTable.countCharsWithProbabilityUnder((double)1/12));
@@ -49,7 +49,7 @@ public class TestProbabilityTableByFrequencies extends TestCase {
 			}
 		}
 		
-		probabilityTable.addOcurrency(new SimpleSuperChar(20));
+		probabilityTable.addOccurrence(new SimpleSuperChar(20));
 		assertEquals(12, probabilityTable.getNumberOfChars());
 		assertEquals(12, probabilityTable.countCharsWithProbabilityUnder((double)1/5));
 		assertEquals(0, probabilityTable.countCharsWithProbabilityUnder((double)1/13));
@@ -113,8 +113,8 @@ public class TestProbabilityTableByFrequencies extends TestCase {
 			}
 		}
 		
-		probabilityTable.addOcurrency(new SimpleSuperChar(5));
-		probabilityTable.addOcurrency(new SimpleSuperChar(6));
+		probabilityTable.addOccurrence(new SimpleSuperChar(5));
+		probabilityTable.addOccurrence(new SimpleSuperChar(6));
 		assertEquals(10, probabilityTable.getNumberOfChars());
 		assertEquals(10, probabilityTable.countCharsWithProbabilityUnder((double)1/5));
 		assertEquals(0, probabilityTable.countCharsWithProbabilityUnder((double)1/11));
@@ -140,13 +140,13 @@ public class TestProbabilityTableByFrequencies extends TestCase {
 		SuperChar highestSuperChar = new SimpleSuperChar(10);
 		ProbabilityTableByFrequencies probabilityTable = new ProbabilityTableByFrequencies(lowestSuperChar, highestSuperChar);
 		
-		probabilityTable.addOcurrency(SuperChar.ESC);
-		probabilityTable.addOcurrency(SuperChar.ESC);
-		probabilityTable.addOcurrency(SuperChar.ESC);
-		probabilityTable.addOcurrency(SuperChar.EOF);
-		probabilityTable.addOcurrency(new SimpleSuperChar(5));
-		probabilityTable.addOcurrency(new SimpleSuperChar(5));
-		probabilityTable.addOcurrency(new SimpleSuperChar(5));
+		probabilityTable.addOccurrence(SuperChar.ESC);
+		probabilityTable.addOccurrence(SuperChar.ESC);
+		probabilityTable.addOccurrence(SuperChar.ESC);
+		probabilityTable.addOccurrence(SuperChar.EOF);
+		probabilityTable.addOccurrence(new SimpleSuperChar(5));
+		probabilityTable.addOccurrence(new SimpleSuperChar(5));
+		probabilityTable.addOccurrence(new SimpleSuperChar(5));
 		assertEquals(13, probabilityTable.getNumberOfChars());
 		assertEquals(13, probabilityTable.countCharsWithProbabilityUnder((double)1/2));		
 		assertEquals(0, probabilityTable.countCharsWithProbabilityUnder((double)1/18));

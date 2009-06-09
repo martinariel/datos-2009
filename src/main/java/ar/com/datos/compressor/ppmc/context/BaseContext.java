@@ -29,7 +29,7 @@ public class BaseContext implements Context {
 	 */
 	@Override
 	public void addOcurrency(SuperChar ch){
-		this.table.addOcurrency(ch);
+		this.table.addOccurrence(ch);
 	}
 
 	/* (non-Javadoc)
