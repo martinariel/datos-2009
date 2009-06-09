@@ -69,4 +69,18 @@ public class LzpContext implements Key {
 	public String toString() {
 		return new String(new char[] {this.firstChar, this.secondChar});
 	}
+
+	/**
+	 * Permite obtener el primer caracter del contexto.
+	 */
+	public char getFirstChar() {
+		return firstChar;
+	}
+
+	/**
+	 * Permite obtener el segundo caracter del contexto.
+	 */
+	public char getSecondChar() {
+		return secondChar;
+	}
 }

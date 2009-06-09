@@ -77,4 +77,13 @@ public class SimpleSuperChar implements SuperChar {
 	public int hashCode() {
 		return new Integer(this.intValue()).hashCode();
 	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see ar.com.datos.compressor.SuperChar#charValue()
+	 */
+	@Override
+	public char charValue() {
+		return (char)this.intValue();
+	}
 }

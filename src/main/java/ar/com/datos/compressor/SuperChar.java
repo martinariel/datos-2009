@@ -13,4 +13,11 @@ public interface SuperChar extends Comparable<SuperChar> {
 	 * Permite saber el código correspondiente al caracter pasado.
 	 */
 	public int intValue();
+	
+	/**
+	 * Devuelve el SuperChar correspondiente como si fuera un char.
+	 * Si para el intValue() correspondiente no había un char se devolverá un char
+	 * resultado del casteo y, seguramente, no deseado. Usar con criterio.
+	 */
+	public char charValue();
 }
