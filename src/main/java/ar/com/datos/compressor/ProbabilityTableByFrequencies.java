@@ -98,6 +98,14 @@ public class ProbabilityTableByFrequencies implements ProbabilityTable {
 		}
 	}
 
+	/**
+	 * Devuelve los caracteres que contiene esta tabla de probabilidades.
+	 * El set incluye el caracter ESC (SuperChar.ESC) 
+	 * @return un set con los SuperChar que contiene esta tabla
+	 */
+	public Set<SuperChar> getCharacters(){
+		return this.frequenciesTableIndex.keySet();
+	}
 	
 	/**
 	 * Busca la frecuencia de un superChar sin tomar en cuenta los excluidos.
