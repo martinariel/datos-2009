@@ -21,12 +21,6 @@ public class IncrementalProbabilityTable implements ProbabilityTable {
 	}
 
 	@Override
-	public boolean contains(SuperChar ch) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
 	public int countCharsWithProbabilityUnder(double minimumProbability) {
 		// TODO Auto-generated method stub
 		return 0;
@@ -36,12 +30,6 @@ public class IncrementalProbabilityTable implements ProbabilityTable {
 	public int getNumberOfChars() {
 		// TODO Auto-generated method stub
 		return 0;
-	}
-
-	@Override
-	public SuperChar removeCharacter(SuperChar ch) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	@Override

@@ -102,16 +102,15 @@ public abstract class ArithmeticProcessor implements Closeable {
 	 * @return
 	 */
 	protected double getMinimumProbability(ProbabilityTable table) {
-		int numberOfChars = table.getNumberOfChars();
 		// Importante que range sea double para que la división se realice
 		// en punto flotante
 		double range = this.ceiling - this.floor + 1;
-		double minimumProbability = numberOfChars / range;
+		double minimumProbability = 1 / range;
 		int previousAmmountOfChars = 0;
 		int currentAmmountOfChars = table.countCharsWithProbabilityUnder(minimumProbability);
 		while (previousAmmountOfChars != currentAmmountOfChars) {
 			previousAmmountOfChars = currentAmmountOfChars;
-			minimumProbability = (numberOfChars - currentAmmountOfChars) / (range - currentAmmountOfChars);
+			minimumProbability = 1 / (range - currentAmmountOfChars);
 			currentAmmountOfChars = table.countCharsWithProbabilityUnder(minimumProbability);
 		}
 		return minimumProbability;
