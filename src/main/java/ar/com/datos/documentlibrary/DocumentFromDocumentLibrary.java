@@ -64,4 +64,9 @@ public class DocumentFromDocumentLibrary extends Document {
         return this.realDocument.readLine();
     }
 
+    @Override
+    protected SizeKnowerDocumentReadable getMultipleReadableDocument() {
+        return this.realDocument.getMultipleReadableDocument();
+    }
+
 }

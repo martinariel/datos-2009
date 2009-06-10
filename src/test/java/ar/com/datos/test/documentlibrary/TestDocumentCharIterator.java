@@ -145,4 +145,30 @@ public class TestDocumentCharIterator extends TestCase {
 
     }
 
+    public void testMultipleIteration(){
+         MemoryDocument doc = new MemoryDocument();
+
+         doc.open();
+
+         doc.addLine("Test linea");
+
+         Iterator<Character> iterador1 = doc.getCharacterIterator(1);
+
+         if (iterador1.hasNext())
+             assertEquals(iterador1.next().charValue(), 'e');
+         else
+             fail();
+
+         Iterator<Character> iterador2 = doc.getCharacterIterator(1);
+
+         if (iterador2.hasNext())
+             assertEquals(iterador2.next().charValue(), 'e');
+         else
+             fail();
+
+
+
+         doc.close();
+    }
+
 }
