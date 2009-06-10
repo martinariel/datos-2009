@@ -45,7 +45,7 @@ public class FirstOrderLzpModel {
 	 * Permite obtener la tabla de probabilidades correspondiente al contexto pasado.
 	 */
 	public ProbabilityTable getProbabilityTableFor(Character contextCharacter) {
-		return getProbabilityTableFor(contextCharacter);
+		return getProbabilityTable(contextCharacter);
 	}
 	
 	/**
