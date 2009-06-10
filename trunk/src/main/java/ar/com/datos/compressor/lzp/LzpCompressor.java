@@ -83,7 +83,7 @@ public class LzpCompressor {
 		Iterator<Character> textIterator = textEmisor.iterator(0);
 		Character currentChar = null; // último caracter que no matcheó (caracter a emitir).
 		Character previousChar = null; // último caracter que matcheó (caracter de contexto).
-		LzpContext lzpContext; // contexto lzp actual.
+		LzpContext lzpContext = null; // contexto lzp actual.
 		int lzpContextPosition;
 		
 		// Primero proceso los 2 primeros caracters (hasta ahi no tengo contexto).
@@ -101,7 +101,9 @@ public class LzpCompressor {
 		}
 		
 		// Armo el contexto inicial y su posición inicial.
-		lzpContext = new LzpContext(previousChar, currentChar);
+		if (previousChar != null && currentChar != null) {
+			lzpContext = new LzpContext(previousChar, currentChar);
+		}
 		lzpContextPosition = 0;
 		
 		// Ahora puedo usar un algoritmo general pues no hay más casos especiales.
@@ -131,7 +133,11 @@ public class LzpCompressor {
 		} else {
 			// La última emisión tuvo una longitud igual a 0 (no hubo match al final).
 			sendOutLength(arithmetic, zeroOrderLzpModel, 0);
-			sendOutEOF(arithmetic, firstOrderLzpModel, triple.getSecond().getSecond());
+			if (triple != null) {
+				sendOutEOF(arithmetic, firstOrderLzpModel, triple.getSecond().getSecond());
+			} else {
+				sendOutEOF(arithmetic, firstOrderLzpModel, null);
+			}
 		}
 		
 		lzpContextWorkingTable.close();

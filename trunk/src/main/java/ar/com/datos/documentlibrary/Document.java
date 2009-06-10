@@ -52,6 +52,44 @@ public abstract class Document {
         return new DocumentCharIterator(this, initialPosition);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    @Override
+    public boolean equals(Object obj) {
+    	if (!Document.class.isAssignableFrom(obj.getClass())) {
+    		return false;
+    	}
+    	
+    	// Esta implementación está pensada para los tests... Es lenta! Aunque quizás no haya otra mejor...
+
+    	Document o = (Document) obj;
+    	Iterator<Character> itMe = getCharacterIterator();
+    	Iterator<Character> itOther = o.getCharacterIterator();
+    	
+    	Character me, other = null;
+    	boolean areEquals = true;
+    	while (itMe.hasNext() && areEquals) {
+    		me = itMe.next();
+    		if (itOther.hasNext()) {
+    			other = itOther.next();
+    		} else {
+    			areEquals = false;
+    		}
+    		
+    		if (areEquals) {
+    			areEquals = me.equals(other);
+    		}
+    	}
+    	
+    	if (areEquals) {
+    		areEquals = !itOther.hasNext();
+    	}
+    	
+    	return areEquals;
+    }
+    
     /**
      * Iterator de Characters del documento.
      * TODO porque no puedo usar Iterator<char>???
