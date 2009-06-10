@@ -7,7 +7,7 @@ import java.util.ArrayList;
  * @author mfernandez
  *
  */
-public class MemoryDocument extends Document {
+public class MemoryDocument extends Document implements SizeKnowerDocumentReadable {
 
     private ArrayList<String> lineas;
     private int pos = -1;
@@ -52,12 +52,33 @@ public class MemoryDocument extends Document {
      */
     @Override
     public boolean equals(Object obj) {
-    	if (MemoryDocument.class.isAssignableFrom(obj.getClass())) {
-    		return super.equals(obj);
-    	}
-    	
-    	MemoryDocument o = (MemoryDocument)obj;
-    	
-    	return this.lineas.equals(o.lineas);
+        if (MemoryDocument.class.isAssignableFrom(obj.getClass())) {
+            return super.equals(obj);
+        }
+
+        MemoryDocument o = (MemoryDocument)obj;
+
+        return this.lineas.equals(o.lineas);
     }
+
+    @Override
+    public String getLineAtPosition(int position) {
+
+        if ( position >= this.getLinesCount()){
+            throw new IllegalArgumentException();
+        }
+
+        return this.lineas.get(position);
+    }
+
+    @Override
+    public int getLinesCount() {
+        return this.lineas.size();
+    }
+
+    @Override
+    protected SizeKnowerDocumentReadable getMultipleReadableDocument() {
+        return this;
+    }
+
 }

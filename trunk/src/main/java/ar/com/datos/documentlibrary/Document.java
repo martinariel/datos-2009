@@ -52,44 +52,50 @@ public abstract class Document {
         return new DocumentCharIterator(this, initialPosition);
     }
 
+    /**
+     *
+     * @return
+     */
+    protected abstract SizeKnowerDocumentReadable getMultipleReadableDocument();
+
     /*
      * (non-Javadoc)
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override
     public boolean equals(Object obj) {
-    	if (!Document.class.isAssignableFrom(obj.getClass())) {
-    		return false;
-    	}
-    	
-    	// Esta implementación está pensada para los tests... Es lenta! Aunque quizás no haya otra mejor...
+        if (!Document.class.isAssignableFrom(obj.getClass())) {
+            return false;
+        }
 
-    	Document o = (Document) obj;
-    	Iterator<Character> itMe = getCharacterIterator();
-    	Iterator<Character> itOther = o.getCharacterIterator();
-    	
-    	Character me, other = null;
-    	boolean areEquals = true;
-    	while (itMe.hasNext() && areEquals) {
-    		me = itMe.next();
-    		if (itOther.hasNext()) {
-    			other = itOther.next();
-    		} else {
-    			areEquals = false;
-    		}
-    		
-    		if (areEquals) {
-    			areEquals = me.equals(other);
-    		}
-    	}
-    	
-    	if (areEquals) {
-    		areEquals = !itOther.hasNext();
-    	}
-    	
-    	return areEquals;
+        // Esta implementación está pensada para los tests... Es lenta! Aunque quizás no haya otra mejor...
+
+        Document o = (Document) obj;
+        Iterator<Character> itMe = getCharacterIterator();
+        Iterator<Character> itOther = o.getCharacterIterator();
+
+        Character me, other = null;
+        boolean areEquals = true;
+        while (itMe.hasNext() && areEquals) {
+            me = itMe.next();
+            if (itOther.hasNext()) {
+                other = itOther.next();
+            } else {
+                areEquals = false;
+            }
+
+            if (areEquals) {
+                areEquals = me.equals(other);
+            }
+        }
+
+        if (areEquals) {
+            areEquals = !itOther.hasNext();
+        }
+
+        return areEquals;
     }
-    
+
     /**
      * Iterator de Characters del documento.
      * TODO porque no puedo usar Iterator<char>???
@@ -97,12 +103,13 @@ public abstract class Document {
      */
     class DocumentCharIterator implements Iterator<Character>{
 
-        private Document document;
         private String currentLine = null;
         private Character currentChar;
         private int initialPosition;
         private int relativePosition;
         private int currentPosition;
+        private SizeKnowerDocumentReadable multipleReadble;
+        private int linePosition;
 
         /**
          * Constructor
@@ -112,13 +119,26 @@ public abstract class Document {
          * Posicion inicial de caracteres.
          */
         public DocumentCharIterator ( Document document , int initialPosition ){
-            this.document 			= document;
+
+            this.multipleReadble 	= document.getMultipleReadableDocument();
             this.initialPosition 	= initialPosition;
             this.relativePosition	= 0;
             this.currentPosition	= -1;
+            this.linePosition		= 0;
 
             moveFoward();
             moveToInitialPosition();
+
+        }
+
+        private String readLine(){
+            if (this.linePosition < this.multipleReadble.getLinesCount() && this.linePosition >= 0){
+                return this.multipleReadble.getLineAtPosition(this.linePosition++);
+
+            }
+            else {
+                return null;
+            }
 
         }
 
@@ -130,7 +150,7 @@ public abstract class Document {
         private void moveFoward(){
 
              if (this.currentLine == null || this.relativePosition + 1 > this.currentLine.length()){
-                 this.currentLine = this.document.readLine();
+                 this.currentLine = this.readLine();
                  this.relativePosition = 0;
              }
 
