@@ -10,8 +10,7 @@ import ar.com.datos.util.Tuple;
  * Implementación básica de una tabla de probabilidades.
  * Para cargarla se pasan los caracteres, en el orden deseado, junto con las frecuencias
  * En base a la suma de todas las frecuencias es que calcula la probabilidad de cada caracter (P(i) = f(i) / suma(f(j)) para todo j 
- * @author dev
- * @deprecated
+ * @author jbarreneche
  */
 public class SimpleProbabilityTable implements ProbabilityTable {
 
@@ -82,15 +81,5 @@ public class SimpleProbabilityTable implements ProbabilityTable {
 		}
 		sb.append(" ]");
 		return sb.toString(); 
-	}
-	@Override
-	public boolean contains(SuperChar ch) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-	@Override
-	public SuperChar removeCharacter(SuperChar ch) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 }
