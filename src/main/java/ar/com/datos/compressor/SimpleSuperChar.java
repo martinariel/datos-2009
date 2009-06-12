@@ -61,7 +61,7 @@ public class SimpleSuperChar implements SuperChar {
 	 */
 	@Override
 	public boolean equals(Object obj) {
-		if (!SuperChar.class.isAssignableFrom(obj.getClass())) {
+		if (obj == null || !SuperChar.class.isAssignableFrom(obj.getClass())) {
 			return false;
 		}
 		

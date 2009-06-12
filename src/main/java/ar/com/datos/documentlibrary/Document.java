@@ -64,7 +64,7 @@ public abstract class Document {
      */
     @Override
     public boolean equals(Object obj) {
-        if (!Document.class.isAssignableFrom(obj.getClass())) {
+        if (obj == null || !Document.class.isAssignableFrom(obj.getClass())) {
             return false;
         }
 

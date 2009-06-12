@@ -1,7 +1,6 @@
 package ar.com.datos.compressor.arithmetic;
 
 import java.io.Closeable;
-import java.io.IOException;
 import java.util.Iterator;
 
 import ar.com.datos.compressor.ProbabilityTable;
@@ -190,7 +189,7 @@ public abstract class ArithmeticProcessor implements Closeable {
 	 * Flushea los últimos bits como overflow
 	 */
 	@Override
-	public void close() throws IOException {
+	public void close() {
 		this.ceiling = this.floor;
 		clearOverflow();
 	}

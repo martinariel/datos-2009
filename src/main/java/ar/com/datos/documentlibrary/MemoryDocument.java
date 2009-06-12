@@ -52,7 +52,7 @@ public class MemoryDocument extends Document implements SizeKnowerDocumentReadab
      */
     @Override
     public boolean equals(Object obj) {
-        if (MemoryDocument.class.isAssignableFrom(obj.getClass())) {
+        if (obj == null || MemoryDocument.class.isAssignableFrom(obj.getClass())) {
             return super.equals(obj);
         }
 

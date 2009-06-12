@@ -55,11 +55,13 @@ public class LzpDeCompressor {
 		lzpContextWorkingTable.addOrReplace(lzpContext, lzpContextPosition);
 		
 		// Agrego el caracter que no matcheaba
+		LzpContext returnValue = null;
 		if (currentTuple.getSecond() != null) {
 			textReceiver.addChar(currentTuple.getSecond());
+			returnValue = new LzpContext(lastMatchCharacter, currentTuple.getSecond()); 
 		}
 		
-		return new LzpContext(lastMatchCharacter, currentTuple.getSecond());
+		return returnValue;
 	}
 	
 	/**
@@ -68,6 +70,7 @@ public class LzpDeCompressor {
 	public String decompress(InputBuffer input) {
 		LzpContextWorkingTable lzpContextWorkingTable = new LzpContextWorkingTable();
 		ArithmeticInterpreter arithmetic = new ArithmeticInterpreter(input);
+//		ArithmeticInterpreter arithmetic = new AMD(input);
 		FirstOrderLzpModel firstOrderLzpModel = new FirstOrderLzpModel();
 		ProbabilityTableByFrequencies zeroOrderLzpModel = new ProbabilityTableByFrequencies(new SimpleSuperChar(0), SuperChar.PRE_EOF_SUPER_CHAR);
 		
@@ -94,7 +97,7 @@ public class LzpDeCompressor {
 
 		// Armo el contexto inicial y su posición inicial.
 		lzpContext = new LzpContext(lzpContextFirstChar, lzpContextSecondChar);
-		lzpContextPosition = 0;
+		lzpContextPosition = 2;
 		// Ahora puedo usar un algoritmo general pues no hay más casos especiales.
 		while (!foundEOF) {
 			currentTuple = getNextTuple(arithmetic, firstOrderLzpModel, zeroOrderLzpModel, lzpContextSecondChar);
@@ -102,7 +105,8 @@ public class LzpDeCompressor {
 			lzpContext = recoverCharacters(currentTuple, memoryTextEmisorAndReceiver, memoryTextEmisorAndReceiver, 
 										   lzpContext, lzpContextPosition, lzpContextWorkingTable);
 			lzpContextPosition += currentTuple.getFirst() + 1;
-			foundEOF = currentTuple.getSecond() == null;
+			lzpContextSecondChar = currentTuple.getSecond();
+			foundEOF = lzpContextSecondChar == null;
 		}
 		lzpContextWorkingTable.close();
 		
@@ -127,10 +131,10 @@ public class LzpDeCompressor {
 	 * Mantiene actualizada la tabla de probabilidades recibida.
 	 */
 	private int getLength(ArithmeticInterpreter arithmetic, ProbabilityTableByFrequencies zeroOrderLzpModel) {
-		SuperChar superChar = arithmetic.decompress(zeroOrderLzpModel);
-		zeroOrderLzpModel.addOccurrence(superChar);
+		SuperChar lengthRepresentation = arithmetic.decompress(zeroOrderLzpModel);
+		zeroOrderLzpModel.addOccurrence(lengthRepresentation);
 		
-		return superChar.intValue();
+		return lengthRepresentation.intValue();
 	}
 	
 	
