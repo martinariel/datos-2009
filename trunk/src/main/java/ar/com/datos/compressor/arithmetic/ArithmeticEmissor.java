@@ -1,7 +1,5 @@
 package ar.com.datos.compressor.arithmetic;
 
-import java.io.IOException;
-
 import ar.com.datos.bits.BitReceiver;
 import ar.com.datos.bits.impl.OutputBufferBitReceiver;
 import ar.com.datos.buffer.OutputBuffer;
@@ -72,7 +70,7 @@ public class ArithmeticEmissor extends ArithmeticProcessor {
 	 * Cierra el bitReceiver
 	 */
 	@Override
-	public void close() throws IOException {
+	public void close() {
 		super.close();
 		this.bitReceiver.close();
 	}

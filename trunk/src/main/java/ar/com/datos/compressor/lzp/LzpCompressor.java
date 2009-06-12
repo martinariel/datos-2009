@@ -18,6 +18,7 @@ import ar.com.datos.util.Tuple;
  * @author fvalido
  */
 public class LzpCompressor {
+	private static int LONGEST_MATCH = ((1 << 16) - 1);
 	/**
 	 * Compara el texto que se obtiene a partir de iteratorCurrent con el texto posterior a la última aparición
 	 * de lzpContext.
@@ -27,7 +28,7 @@ public class LzpCompressor {
 	 * @return
 	 * Una tupla con:
 	 * - first: la máxima longitud posible de matcheo (máximo 2^16)
-	 * - second: tupla con:
+	 * - second: Una tupla de caracteres con:
 	 *    - último caracter que matcheó (si no matcheó [longitud 0] será el segundo del lzpContext pasado).
 	 *    - primer caracter que no matcheó.
 	 */
@@ -51,7 +52,7 @@ public class LzpCompressor {
 			 * matchea. */
 			boolean match = true;
 			Character old, current = lastMatch;
-			while (match && currentIterator.hasNext()) {
+			while (match && currentIterator.hasNext() && sizeMatch < LONGEST_MATCH) {
 				lastMatch = current;
 				
 				old = precedingIterator.next();
@@ -60,15 +61,33 @@ public class LzpCompressor {
 				sizeMatch++;
 			}
 			if (!match) {
+				// Si no hay matcheo significa que salí del bucle porque encontré dos diferentes.
+				// Entonces lastMatch quedo con el último que matcheó y current tiene el primero que no matchea.
 				sizeMatch--;
+				firstUnMatch = current; // Pongo en fistUnMatch a current.
+			} else {
+				// Si sigue habiendo matcheo significa que salí del bucle porque llegué a LONGEST_MATCH o
+				// poque no hay más caracteres.
+				// Entonces el último que matcheo quedó en current, pero todavía no había sido asignado
+				// a lastMatch. Lo hago.
+				lastMatch = current;
+				// Si salí porque no hay más caracteres entonces luego deben emitir EOF. Lo dejo marcado con
+				// null en firstUnMatch.
+				firstUnMatch = null;
+				// Si hay más caracteres entonces salí porque llegué a LONGEST_MATCH. Asigno entonces
+				// a firstUnMatch el primer caracter disponible (que podría ser un matcheo pero eso
+				// no me importa).
+				if (currentIterator.hasNext()) {
+					firstUnMatch = currentIterator.next();
+				}
 			}
-			firstUnMatch = current; // El primero que no matchea.
+
 		}
 
 		// Agrego o reemplazo el contexto en la tabla.
 		lzpContextWorkingTable.addOrReplace(lzpContext, lzpContextPosition);
 		
-		return new Tuple<Integer, Tuple<Character,Character>>(sizeMatch, new Tuple<Character, Character>(lastMatch, firstUnMatch));
+		return new Tuple<Integer, Tuple<Character, Character>>(sizeMatch, new Tuple<Character, Character>(lastMatch, firstUnMatch));
 	}
 	
 	/**
@@ -77,6 +96,7 @@ public class LzpCompressor {
 	public void compress(TextEmisor textEmisor, OutputBuffer output) {
 		LzpContextWorkingTable lzpContextWorkingTable = new LzpContextWorkingTable();
 		ArithmeticEmissor arithmetic = new ArithmeticEmissor(output);
+//		ArithmeticEmissor arithmetic = new AMC(output);
 		FirstOrderLzpModel firstOrderLzpModel = new FirstOrderLzpModel();
 		ProbabilityTableByFrequencies zeroOrderLzpModel = new ProbabilityTableByFrequencies(new SimpleSuperChar(0), SuperChar.PRE_EOF_SUPER_CHAR);
 		
@@ -104,7 +124,7 @@ public class LzpCompressor {
 		if (previousChar != null && currentChar != null) {
 			lzpContext = new LzpContext(previousChar, currentChar);
 		}
-		lzpContextPosition = 0;
+		lzpContextPosition = 2;
 		
 		// Ahora puedo usar un algoritmo general pues no hay más casos especiales.
 		Tuple<Integer, Tuple<Character, Character>> triple = null;
@@ -115,11 +135,11 @@ public class LzpCompressor {
 			lastEmissionIncomplete = true;
 			
 			// Emito lo que debo emitir (Solo si quedan caracteres, sino debo luego emitir EOF)
-			if (textIterator.hasNext()) {
+			if (triple.getSecond().getSecond() != null) {
 				lastEmissionIncomplete = false;
 				sendOutLength(arithmetic, zeroOrderLzpModel, triple.getFirst());
 				sendOutCharacter(arithmetic, firstOrderLzpModel, triple.getSecond().getFirst(), triple.getSecond().getSecond());
-			
+
 				// Actualizo el contexto
 				lzpContext = new LzpContext(triple.getSecond().getFirst(), triple.getSecond().getSecond());
 				lzpContextPosition += triple.getFirst() + 1;
@@ -141,6 +161,7 @@ public class LzpCompressor {
 		}
 		
 		lzpContextWorkingTable.close();
+		arithmetic.close();
 	}
 	
 	/**
@@ -148,7 +169,9 @@ public class LzpCompressor {
 	 * Mantiene actualizada la tabla de probabilidades recibida.
 	 */
 	private void sendOutLength(ArithmeticEmissor arithmetic, ProbabilityTableByFrequencies zeroOrderLzpModel, int length) {
-		arithmetic.compress(new SimpleSuperChar(length), zeroOrderLzpModel);
+		SuperChar lengthRepresentation = new SimpleSuperChar(length);
+		arithmetic.compress(lengthRepresentation, zeroOrderLzpModel);
+		zeroOrderLzpModel.addOccurrence(lengthRepresentation);
 	}
 
 	/**

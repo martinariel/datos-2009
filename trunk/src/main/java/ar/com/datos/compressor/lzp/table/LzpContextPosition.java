@@ -61,7 +61,7 @@ public class LzpContextPosition implements Element<LzpContext> {
 	 */
 	@Override
 	public boolean equals(Object obj) {
-		if (!LzpContextPosition.class.isAssignableFrom(obj.getClass())) {
+		if (obj == null || !LzpContextPosition.class.isAssignableFrom(obj.getClass())) {
 			return false;
 		}
 		

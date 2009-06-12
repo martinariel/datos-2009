@@ -74,7 +74,7 @@ public class UnsignedInt implements Comparable<UnsignedInt> {
 	 */
 	@Override
 	public boolean equals(Object obj) {
-		if (!UnsignedInt.class.isAssignableFrom(obj.getClass())) {
+		if (obj == null || !UnsignedInt.class.isAssignableFrom(obj.getClass())) {
 			return false;
 		}
 		

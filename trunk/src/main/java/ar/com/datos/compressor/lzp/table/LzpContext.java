@@ -44,7 +44,7 @@ public class LzpContext implements Key {
 	 */
 	@Override
 	public boolean equals(Object obj) {
-		if (!LzpContext.class.isAssignableFrom(obj.getClass())) {
+		if (obj == null || !LzpContext.class.isAssignableFrom(obj.getClass())) {
 			return false;
 		}
 		

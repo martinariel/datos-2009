@@ -76,7 +76,7 @@ public class LzpContextWorkingTable {
 		
 		LzpContextPosition lzpContextPositionAdd = new LzpContextPosition(lzpContext, new UnsignedInt(position));
 		
-		if (!this.workingTable[positionInArray].getKey().equals(lzpContext)) {
+		if (this.workingTable[positionInArray] != null && !this.workingTable[positionInArray].getKey().equals(lzpContext)) {
 			// Si la posición encontrada no es la del lzpContext buscado entonces es la del más antiguo
 			// de la porción ==> Lo envio a disco.
 			this.persistence.addElement(this.workingTable[positionInArray]);
@@ -98,7 +98,7 @@ public class LzpContextWorkingTable {
 		LzpContextPosition lzpContextPosition = this.workingTable[positionInArray];
 		// Si el lzpContextPosition de la posición encontrada no es el buscado, entonces
 		// no está en memoria... Lo busco en disco.
-		if (!lzpContextPosition.getKey().equals(lzpContext)) {
+		if (lzpContextPosition != null && !lzpContext.equals(lzpContextPosition.getKey())) {
 			lzpContextPosition = this.persistence.findElement(lzpContext);
 		}
 		
