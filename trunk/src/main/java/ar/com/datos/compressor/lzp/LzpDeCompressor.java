@@ -3,16 +3,17 @@ package ar.com.datos.compressor.lzp;
 import java.util.Iterator;
 
 import ar.com.datos.buffer.InputBuffer;
+import ar.com.datos.compressor.ProbabilityTable;
 import ar.com.datos.compressor.ProbabilityTableByFrequencies;
 import ar.com.datos.compressor.SimpleSuperChar;
 import ar.com.datos.compressor.SuperChar;
 import ar.com.datos.compressor.arithmetic.ArithmeticInterpreter;
 import ar.com.datos.compressor.lzp.table.LzpContext;
 import ar.com.datos.compressor.lzp.table.LzpContextWorkingTable;
+import ar.com.datos.compressor.lzp.table.LzpContextWorkingTable4K;
 import ar.com.datos.compressor.lzp.text.TextEmisor;
 import ar.com.datos.compressor.lzp.text.TextReceiver;
 import ar.com.datos.compressor.lzp.text.impl.MemoryTextEmisorAndReceiver;
-import ar.com.datos.util.Tuple;
 
 /**
  * Descompresor LZP.
@@ -20,20 +21,23 @@ import ar.com.datos.util.Tuple;
  * @author fvalido
  */
 public class LzpDeCompressor {
+//	private StringBuffer inputDesdeAritmetico; // DEBUG
+	
+	// DEBUG
+//	public String getInputDesdeAritmetico() {
+//		return this.inputDesdeAritmetico.toString();
+//	}
+	
 	/**
-	 * A partir de la longitud (en la tupla pasada) y el contexto recibido toma la cantidad indicada de
-	 * caracteres desde textEmisor y los pone en textReceiver. Para ello busca el contexto en la tabla
-	 * para saber la posición del contexto en textEmisor.
-	 * Luego agrega el caracter que no matcheaba (second de la tupla) en textReceiver.
-	 * Por último actualiza la tabla de trabajo con el contexto y la posición pasadas.
+	 * A partir de la longitud y el contexto recibido toma la cantidad indicada de caracteres
+	 * desde textEmisor y los pone en textReceiver. Para ello busca el contexto en la tabla para
+	 * saber la posición del contexto en textEmisor.
 	 * 
-	 * Devuelve el nuevo contexto a usar.
+	 * Devuelve el último caracter que se agrega a textReceiver.
 	 */
-	private LzpContext recoverCharacters(Tuple<Integer, Character> currentTuple, TextReceiver textReceiver, 
-										 TextEmisor textEmisor, LzpContext lzpContext, int lzpContextPosition, 
-										 LzpContextWorkingTable lzpContextWorkingTable) {
-		int sizeMatch = currentTuple.getFirst();
-		Character lastMatchCharacter = lzpContext.getSecondChar(); // ultimo caracter de matcheo. Usado para el LzpContext a devolver.
+	private Character recoverCharacters(Integer sizeMatch, TextReceiver textReceiver, TextEmisor textEmisor,
+										 LzpContext lzpContext, LzpContextWorkingTable lzpContextWorkingTable) {
+		Character lastMatchCharacter = lzpContext.getSecondChar(); // ultimo caracter de matcheo.
 		
 		if (sizeMatch > 0) {
 			// Si hay match... Busco el contexto en la tabla... (y como hubo match, el contexto seguro está
@@ -50,80 +54,79 @@ public class LzpDeCompressor {
 			}
 			lastMatchCharacter = addCharacter; // Me guardo el último caracter que matchea.
 		}
-
-		// Actualizo la tabla de contextos
-		lzpContextWorkingTable.addOrReplace(lzpContext, lzpContextPosition);
 		
-		// Agrego el caracter que no matcheaba
-		LzpContext returnValue = null;
-		if (currentTuple.getSecond() != null) {
-			textReceiver.addChar(currentTuple.getSecond());
-			returnValue = new LzpContext(lastMatchCharacter, currentTuple.getSecond()); 
+		return lastMatchCharacter;
+	}
+	
+	/**
+	 * A partir del último caracter que matcheó obtiene desde el aritmético el siguiente caracter y
+	 * lo agrega en textReceiver.
+	 * Devuelve a partir de esto el nuevo {@link LzpContext}.  
+	 */
+	private LzpContext addCharacter(ArithmeticInterpreter arithmetic, FirstOrderLzpModel firstOrderLzpModel,
+								    TextReceiver textReceiver, Character contextCharacter) {
+		Character addCharacter = getCharacter(arithmetic, firstOrderLzpModel, contextCharacter);
+		
+		LzpContext lzpContext = null;
+		if (addCharacter != null) {
+			textReceiver.addChar(addCharacter);
+			lzpContext = new LzpContext(contextCharacter, addCharacter);
 		}
 		
-		return returnValue;
+		return lzpContext;
 	}
 	
 	/**
 	 * Descomprime el texto recibido usando como fuente el {@link InputBuffer} recibido.
 	 */
 	public String decompress(InputBuffer input) {
-		LzpContextWorkingTable lzpContextWorkingTable = new LzpContextWorkingTable();
+//		this.inputDesdeAritmetico = new StringBuffer(); // DEBUG
+		LzpContextWorkingTable lzpContextWorkingTable = new LzpContextWorkingTable4K();
 		ArithmeticInterpreter arithmetic = new ArithmeticInterpreter(input);
-//		ArithmeticInterpreter arithmetic = new AMD(input);
 		FirstOrderLzpModel firstOrderLzpModel = new FirstOrderLzpModel();
 		ProbabilityTableByFrequencies zeroOrderLzpModel = new ProbabilityTableByFrequencies(new SimpleSuperChar(0), SuperChar.PRE_EOF_SUPER_CHAR);
 		
 		MemoryTextEmisorAndReceiver memoryTextEmisorAndReceiver = new MemoryTextEmisorAndReceiver();
-		Tuple<Integer, Character> currentTuple;
-		Character lzpContextFirstChar = null, lzpContextSecondChar = null;
-		LzpContext lzpContext; // contexto lzp actual.
-		int lzpContextPosition;
+		Integer sizeMatch;
+		Character addCharacter, lastAddedCharacter = null;
+		LzpContext lzpContext = null; // contexto lzp actual.
+		int lzpContextPosition = 0;
 		boolean foundEOF = false;
 		
 		// Primero proceso los 2 primeros caracters (hasta ahi no tengo contexto y la longitud es seguro 0).
-		currentTuple = getNextTuple(arithmetic, firstOrderLzpModel, zeroOrderLzpModel, null);
+		getLength(arithmetic, zeroOrderLzpModel); // No me interesa. Es 0.
 		foundEOF = true;
-		if (currentTuple.getSecond() != null) {
-			lzpContextFirstChar = currentTuple.getSecond();
-			memoryTextEmisorAndReceiver.addChar(currentTuple.getSecond());
-			currentTuple = getNextTuple(arithmetic, firstOrderLzpModel, zeroOrderLzpModel, lzpContextFirstChar);
-			if (currentTuple.getSecond() != null) {
-				lzpContextSecondChar = currentTuple.getSecond();
-				memoryTextEmisorAndReceiver.addChar(currentTuple.getSecond());
-				foundEOF = false;
-			}
+		addCharacter = getCharacter(arithmetic, firstOrderLzpModel, null);
+		if (addCharacter != null) {
+			memoryTextEmisorAndReceiver.addChar(addCharacter);
+
+			getLength(arithmetic, zeroOrderLzpModel); // No me interesa. Es 0.
+			lzpContext = addCharacter(arithmetic, firstOrderLzpModel, memoryTextEmisorAndReceiver, addCharacter);
+			lzpContextPosition = 2;
+			foundEOF = (lzpContext == null);
 		}
 
-		// Armo el contexto inicial y su posición inicial.
-		lzpContext = new LzpContext(lzpContextFirstChar, lzpContextSecondChar);
-		lzpContextPosition = 2;
+
 		// Ahora puedo usar un algoritmo general pues no hay más casos especiales.
 		while (!foundEOF) {
-			currentTuple = getNextTuple(arithmetic, firstOrderLzpModel, zeroOrderLzpModel, lzpContextSecondChar);
+			sizeMatch = getLength(arithmetic, zeroOrderLzpModel);
+			lastAddedCharacter = recoverCharacters(sizeMatch, memoryTextEmisorAndReceiver, memoryTextEmisorAndReceiver,
+												   lzpContext, lzpContextWorkingTable);
 			
-			lzpContext = recoverCharacters(currentTuple, memoryTextEmisorAndReceiver, memoryTextEmisorAndReceiver, 
-										   lzpContext, lzpContextPosition, lzpContextWorkingTable);
-			lzpContextPosition += currentTuple.getFirst() + 1;
-			lzpContextSecondChar = currentTuple.getSecond();
-			foundEOF = lzpContextSecondChar == null;
+			// Actualizo el contexto en la tabla de contextos
+			lzpContextWorkingTable.addOrReplace(lzpContext, lzpContextPosition);
+			
+			// Busco el siguiente caracter en el aritmético, lo agrego al texto, y obtengo el siguiente contexto.
+			lzpContext = addCharacter(arithmetic, firstOrderLzpModel, memoryTextEmisorAndReceiver, lastAddedCharacter);
+
+			// Calculo la posición para el nuevo contexto.
+			lzpContextPosition += sizeMatch + 1;
+			foundEOF = (lzpContext == null);
 		}
 		lzpContextWorkingTable.close();
+		arithmetic.close();
 		
 		return memoryTextEmisorAndReceiver.getText();
-	}
-	
-	/**
-	 * Obtiene la siguiente tupla de longitud-caracter desde el aritmético.
-	 * Si es la última tupla el caracter será null.
-	 * Mantiene actualizados el modelo y la tabla de probabilidades recibidos.
-	 */
-	private Tuple<Integer, Character> getNextTuple(ArithmeticInterpreter arithmetic, FirstOrderLzpModel firstOrderLzpModel, 
-												   ProbabilityTableByFrequencies zeroOrderLzpModel, Character contextCharacter) {
-		Integer length = getLength(arithmetic, zeroOrderLzpModel);
-		Character character = getCharacter(arithmetic, firstOrderLzpModel, contextCharacter);
-		
-		return new Tuple<Integer, Character>(length, character);
 	}
 	
 	/**
@@ -131,9 +134,14 @@ public class LzpDeCompressor {
 	 * Mantiene actualizada la tabla de probabilidades recibida.
 	 */
 	private int getLength(ArithmeticInterpreter arithmetic, ProbabilityTableByFrequencies zeroOrderLzpModel) {
+//		this.inputDesdeAritmetico.append("<Longitud>\n"); // DEBUG
+//		this.inputDesdeAritmetico.append("TablaFrecuencias:\n"); // DEBUG
+//		this.inputDesdeAritmetico.append(zeroOrderLzpModel); // DEBUG
 		SuperChar lengthRepresentation = arithmetic.decompress(zeroOrderLzpModel);
+//		this.inputDesdeAritmetico.append("\nLong: " + lengthRepresentation.intValue() + "\n"); // DEBUG
+//		this.inputDesdeAritmetico.append("</Longitud>\n"); // DEBUG
 		zeroOrderLzpModel.addOccurrence(lengthRepresentation);
-		
+
 		return lengthRepresentation.intValue();
 	}
 	
@@ -144,13 +152,19 @@ public class LzpDeCompressor {
 	 * Mantiene actualizado el modelo recibido. 
 	 */
 	private Character getCharacter(ArithmeticInterpreter arithmetic, FirstOrderLzpModel firstOrderLzpModel, Character contextCharacter) {
-		SuperChar superChar = arithmetic.decompress(firstOrderLzpModel.getProbabilityTableFor(contextCharacter));
-		
+//		this.inputDesdeAritmetico.append("<Caracter>\n"); // DEBUG
+//		this.inputDesdeAritmetico.append("Contexto: " + (contextCharacter == null ? "null" : contextCharacter) + "\n"); // DEBUG 
+		ProbabilityTable probabilityTable = firstOrderLzpModel.getProbabilityTableFor(contextCharacter);
+//		this.inputDesdeAritmetico.append("TablaFrecuencias:\n"); // DEBUG
+//		this.inputDesdeAritmetico.append(probabilityTable); //DEBUG
+		SuperChar superChar = arithmetic.decompress(probabilityTable);
 		Character returnValue = null;
 		if (!superChar.equals(SuperChar.EOF)) {
 			returnValue = superChar.charValue();
 			firstOrderLzpModel.addOccurrence(contextCharacter, returnValue);
 		}
+//		this.inputDesdeAritmetico.append("\nCaracter: " + (returnValue == null ? "EOF" : returnValue) + "\n"); // DEBUG
+//		this.inputDesdeAritmetico.append("</Caracter>\n\n"); // DEBUG
 		
 		return returnValue;
 	}

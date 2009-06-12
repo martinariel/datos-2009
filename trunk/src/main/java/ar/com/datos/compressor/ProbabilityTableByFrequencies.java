@@ -274,6 +274,23 @@ public class ProbabilityTableByFrequencies implements ProbabilityTable {
 		return new ProbabilityTableIterator();
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		StringBuffer returnValue = new StringBuffer("  Fuera de rango (<superChar.intValue, frecuencia>): " + this.frequenciesTable.toString() + "\n");
+		returnValue.append("  Excluidos (superChar.intValue): " + this.excluded + "\n");
+		returnValue.append("  Rango Inicial (cualquier cosa aquí que no esté en los fuera de rango ni los excluidos tiene frecuencia 1): ");
+		if (this.initialFrequency != 0) {
+			returnValue.append(lowestSuperChar.intValue() + "-" + highestSuperChar);
+		} else {
+			returnValue.append("-");
+		}
+		return returnValue.toString();
+	}
+	
 	/**
 	 * Iterador para {@link ProbabilityTableByFrequencies}
 	 * 

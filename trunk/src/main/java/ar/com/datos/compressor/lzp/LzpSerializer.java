@@ -35,6 +35,7 @@ public class LzpSerializer implements Serializer<Document> {
 	@Override
 	public void dehydrate(OutputBuffer output, Document object) throws SerializerException {
 		this.lzpCompressor.compress(new DocumentTextEmisor(object), output);
+//		System.out.println("Compresion:\n\n" + this.lzpCompressor.getOutputAAritmetico()); // DEBUG
 	}
 
 	/*
@@ -45,6 +46,7 @@ public class LzpSerializer implements Serializer<Document> {
 	public Document hydrate(InputBuffer input) throws SerializerException {
 		MemoryDocument memoryDocument = new MemoryDocument();
 		memoryDocument.addLine(this.lzpDeCompressor.decompress(input));
+//		System.out.println("\n\n---------------\nDescompresion:\n\n" + this.lzpDeCompressor.getInputDesdeAritmetico()); // DEBUG
 		
 		return memoryDocument;
 	}

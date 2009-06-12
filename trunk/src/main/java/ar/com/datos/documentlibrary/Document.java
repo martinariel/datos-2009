@@ -127,8 +127,7 @@ public abstract class Document {
             this.linePosition		= 0;
 
             moveFoward();
-            moveToInitialPosition();
-
+            moveToInitialPosition();            	
         }
 
         private String readLine(){
@@ -152,6 +151,10 @@ public abstract class Document {
              if (this.currentLine == null || this.relativePosition + 1 > this.currentLine.length()){
                  this.currentLine = this.readLine();
                  this.relativePosition = 0;
+                 while (this.currentLine != null && this.relativePosition + 1 > this.currentLine.length()) {
+                     this.currentLine = this.readLine();
+                     this.relativePosition = 0;
+                 }
              }
 
              this.currentPosition++;
