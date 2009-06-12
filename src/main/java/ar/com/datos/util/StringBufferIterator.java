@@ -4,7 +4,9 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 /**
- * Iterador de un {@link StringBuffer}
+ * Iterador de un {@link StringBuffer}.
+ * Se garantiza que si se agrega texto al final del {@link StringBuffer}, seguirá iterándose
+ * normalmente, y eventualmente se iterarán los caracteres agregados.
  * 
  * @author fvalido
  */

@@ -9,6 +9,9 @@ import ar.com.datos.util.StringBufferIterator;
 /**
  * Implementación de {@link TextEmisor} y de {@link TextReceiver} en memoria basada en un
  * {@link StringBuffer}.
+ * El {@link Iterator} devuelto por el método {@link #iterator(int)} continúa funcionando 
+ * normalmente cuando se agregan caracteres mediante {@link #addChar(char)}, y, eventualmente,
+ * esos caracteres serán iterados.
  * 
  * @author fvalido
  */
