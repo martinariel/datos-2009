@@ -77,7 +77,6 @@ public class InputBufferBitEmisor implements BitEmisor {
 			this.inputBuffer = inputBuffer;
 			this.bitSequencePosition = 8;
 			this.bitSequenceBuffer = new byte[8];
-			getMoreBitsFromInputBuffer();
 		}
 		
 		/*
@@ -85,7 +84,7 @@ public class InputBufferBitEmisor implements BitEmisor {
 		 * @see java.util.Iterator#hasNext()
 		 */
 		public boolean hasNext() {
-			return this.bitSequencePosition < 8;
+			return true; //this.bitSequencePosition < 8;
 		}
 
 		/*
@@ -93,11 +92,11 @@ public class InputBufferBitEmisor implements BitEmisor {
 		 * @see java.util.Iterator#next()
 		 */
 		public Byte next() {
-			Byte returnValue = this.bitSequenceBuffer[bitSequencePosition];
-			this.bitSequencePosition++;
 			if (this.bitSequencePosition == 8) {
 				getMoreBitsFromInputBuffer();
 			}
+			Byte returnValue = this.bitSequenceBuffer[bitSequencePosition];
+			this.bitSequencePosition++;
 			
 			return returnValue;
 		}
