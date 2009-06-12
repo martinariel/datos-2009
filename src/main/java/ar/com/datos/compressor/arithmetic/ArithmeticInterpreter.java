@@ -5,6 +5,8 @@ import java.util.Iterator;
 import ar.com.datos.bits.BitEmisor;
 import ar.com.datos.bits.impl.InputBufferBitEmisor;
 import ar.com.datos.buffer.InputBuffer;
+import ar.com.datos.buffer.variableLength.ArrayInputBuffer;
+import ar.com.datos.buffer.variableLength.SimpleArrayByte;
 import ar.com.datos.compressor.ProbabilityTable;
 import ar.com.datos.compressor.SuperChar;
 /**
@@ -103,7 +105,7 @@ public class ArithmeticInterpreter extends ArithmeticProcessor {
 	 * Hace zoom del currentValue agregándole un bit mas desde la entrada
 	 */
 	protected void zoomValue() {
-		currentValue = shiftOneLeft(currentValue) + this.bitStream.next();
+		currentValue = shiftOneLeft(currentValue) + ((this.bitStream.hasNext())? this.bitStream.next() : 0);
 	}
 
 	/**
@@ -122,5 +124,11 @@ public class ArithmeticInterpreter extends ArithmeticProcessor {
 	protected BitEmisor constructBitEmissor(InputBuffer inputBuffer) {
 		return new InputBufferBitEmisor(inputBuffer);
 	}
-
+	@Override
+	public void close() {
+		// Cambio el emisor de bits para que siempre tenga 8 bits ya que el close hace la emisión del piso (4 bytes)
+		this.bitStream = constructBitEmissor(new ArrayInputBuffer(new SimpleArrayByte(new byte[4]))).iterator();
+		super.close();
+		this.bitStream = null;
+	}
 }

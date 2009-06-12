@@ -68,7 +68,7 @@ public class ArithmeticInterpreterTest extends MockObjectTestCase {
 		for (SimpleSuperChar ssc: emision) {
 			assertEquals(ssc, interprete.decompress(table));
 		}
-		
+		interprete.close();
 	}
 	/**
 	 * Voy a pedirle que emita con una tabla que tiene 3 caracteres
@@ -97,6 +97,7 @@ public class ArithmeticInterpreterTest extends MockObjectTestCase {
 		ArithmeticInterpreter interprete = new ArithmeticInterpreter(new ArrayInputBuffer(arrayByte));
 		assertEquals(caracterUnderflow, interprete.decompress(table));
 		assertEquals(caracterOverflow, interprete.decompress(table));
+		interprete.close();
 	}
 	/**
 	 * Voy a emitir una cadena aleatoria con probabilidades aleatorias. 
@@ -126,7 +127,7 @@ public class ArithmeticInterpreterTest extends MockObjectTestCase {
 		for (SimpleSuperChar ssc: emision) {
 			assertEquals(probabilidades, ssc, interprete.decompress(table));
 		}
-		
+		interprete.close();
 	}
 	/**
 	 * Voy a emitir una cadena aleatoria con probabilidades extremas. 
@@ -153,7 +154,25 @@ public class ArithmeticInterpreterTest extends MockObjectTestCase {
 		for (SimpleSuperChar ssc: emision) {
 			assertEquals(probabilidades, ssc, interprete.decompress(table));
 		}
+		interprete.close();
 		
+	}
+	/**
+	 * Voy a pedirle que emita dos veces un mismo caracter.
+	 * Luego, tomando el resultado emitido, voy a pedirle que lo interprete 
+	 * @throws Exception
+	 */
+	public void testOneSimpleCharIn5Bytes() throws Exception {
+		arrayByte = new SimpleArrayByte(new byte[6]);
+		emisor = new ArithmeticEmissor(new ArrayOutputBuffer(arrayByte));
+		SimpleSuperChar caracterAEmitir = new SimpleSuperChar('a');
+		ProbabilityTable table = constructTable(new SuperChar[] {new SimpleSuperChar('b'), caracterAEmitir},
+										  		new Integer[] 	{5,					 		5});
+		emisor.compress(caracterAEmitir, table);
+		emisor.close();
+		ArithmeticInterpreter interprete = new ArithmeticInterpreter(new ArrayInputBuffer(arrayByte));
+		assertEquals(caracterAEmitir, interprete.decompress(table));
+		interprete.close();
 	}
 	public ProbabilityTable constructTable(SuperChar[] superChars,
 			Integer[] integers) {
