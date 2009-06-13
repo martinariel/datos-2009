@@ -156,12 +156,16 @@ public abstract class Document {
              if (this.currentLine == null || this.relativePosition + 1 > this.currentLine.length()){
                  this.currentLine = this.readLine();
                  this.relativePosition = 0;
-                 while (this.currentLine != null && this.relativePosition + 1 > this.currentLine.length()) {
-                     this.currentLine = this.readLine();
-                     this.relativePosition = 0;
-                 }
+                 
                  if (this.currentLine != null && this.linePosition < this.multipleReadble.getLinesCount()) 
                 	 this.currentLine += "\n";
+                 else if ( this.linePosition == this.multipleReadble.getLinesCount() ){
+                	 while (this.currentLine != null && this.relativePosition + 1 > this.currentLine.length()) {
+                         this.currentLine = this.readLine();
+                         this.relativePosition = 0;
+                     } 
+                 }
+              
              }
 
              this.currentPosition++;
