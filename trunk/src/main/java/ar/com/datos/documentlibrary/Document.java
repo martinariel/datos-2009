@@ -160,6 +160,8 @@ public abstract class Document {
                      this.currentLine = this.readLine();
                      this.relativePosition = 0;
                  }
+                 if (this.currentLine != null && this.linePosition < this.multipleReadble.getLinesCount()) 
+                	 this.currentLine += "\n";
              }
 
              this.currentPosition++;
