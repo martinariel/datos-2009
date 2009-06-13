@@ -25,7 +25,7 @@ public class TestDocumentCharIterator extends TestCase {
 
         doc.close();
 
-        assertEquals(i, 1000);
+        assertEquals(i, 1099);
 
     }
 
@@ -101,7 +101,7 @@ public class TestDocumentCharIterator extends TestCase {
         for (int i = 0; i < test.length(); i++)
             doc.addLine(new Character(test.charAt(i)).toString());
 
-        Iterator<Character> iterador = doc.getCharacterIterator(15);
+        Iterator<Character> iterador = doc.getCharacterIterator(30);
 
         if (iterador.hasNext()){
             assertEquals ( iterador.next().charValue() , 'g');
