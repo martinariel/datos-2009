@@ -5,6 +5,14 @@ import java.util.Collection;
 import ar.com.datos.persistencia.SoundPersistenceService;
 import ar.com.datos.persistencia.exception.WordIsAlreadyRegisteredException;
 
+/**
+ * 
+ *	WordsRecorder dummie, agrega al servicio de persistencia audio de un byte por cada 
+ *  palabra no encontrada, notificando unicamente a la vista cuando recorre todas las palabras.
+ *  
+ * @author mfernandez
+ *
+ */
 public class DummieWordsRecorder  implements WordsRecorder {
 
 	private SoundPersistenceService persistenceService;
@@ -17,10 +25,10 @@ public class DummieWordsRecorder  implements WordsRecorder {
 	
 	@Override
 	public void recordWords(Collection<String> palabras) {
-		//TODO: Definir audio vacio.
-		byte[] audio = { 0 , 0 } ;
+		byte[] audio = { 0 } ;
 		for (String palabra : palabras){
 			AnotherInputStream stream = new AnotherInputStream(audio);
+			
             if (!persistenceService.isRegistered(palabra)){
                 try {
 					persistenceService.addWord(palabra, stream);
