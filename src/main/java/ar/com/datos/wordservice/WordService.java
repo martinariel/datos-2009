@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.util.List;
 
 import ar.com.datos.audio.DocumentPlayer;
+import ar.com.datos.audio.DummieWordsRecorder;
 import ar.com.datos.audio.IWordsRecorderConector;
+import ar.com.datos.audio.AudioWordsRecorder;
 import ar.com.datos.audio.WordsRecorder;
 import ar.com.datos.audio.exception.AudioServiceHandlerException;
 import ar.com.datos.documentlibrary.Document;
@@ -38,6 +40,7 @@ public class WordService implements Closeable {
     private StopWordsDiscriminator stopWords;
     private Boolean closed = false;
     private boolean boostMic = false;
+    private boolean micOpened = true;
     private static final String soundsFileName 		= "sonidos";
     private static final String wordsFileName 		= "palabras";
     private static final String documentsFileName 	= "documentos";
@@ -67,7 +70,10 @@ public class WordService implements Closeable {
     public void setBoostMic(boolean value) {
     	boostMic = value;	
     }
-
+    
+    public void setMicOpened( boolean value){
+    	this.micOpened = value;
+    }
 
     /**
      * Agrega un documento al sistema
@@ -79,7 +85,9 @@ public class WordService implements Closeable {
      *
      */
     public void addDocument(Document document , IWordsRecorderConector view){
-        WordsRecorder recorder = new WordsRecorder(view, soundPersistenceService, boostMic);
+        WordsRecorder recorder = (micOpened)?
+        	new AudioWordsRecorder(view, soundPersistenceService, boostMic) :
+        	new DummieWordsRecorder(view ,soundPersistenceService);
         
         try {
         	recorder.recordWords(crawler.addDocument(document));

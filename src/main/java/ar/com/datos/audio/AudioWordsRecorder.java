@@ -11,7 +11,7 @@ import ar.com.datos.persistencia.exception.WordIsAlreadyRegisteredException;
  * @author mfernandez
  *
  */
-public class WordsRecorder implements AudioStopper{
+public class AudioWordsRecorder implements AudioStopper, WordsRecorder{
     private AudioServiceHandler servicioAudio;
     private SoundPersistenceService servicioArchivos;
     private IWordsRecorderConector interfazUsuario;
@@ -19,7 +19,7 @@ public class WordsRecorder implements AudioStopper{
     private String palabraActual;
     private boolean boostMic;
 
-    public WordsRecorder(IWordsRecorderConector view, SoundPersistenceService audioService, boolean boostMic ){
+    public AudioWordsRecorder(IWordsRecorderConector view, SoundPersistenceService audioService, boolean boostMic ){
    	 servicioAudio = AudioServiceHandler.getInstance();
         this.servicioArchivos = audioService;
         this.interfazUsuario = view;
@@ -28,7 +28,7 @@ public class WordsRecorder implements AudioStopper{
         this.boostMic = boostMic;
    }
     
-    public WordsRecorder(IWordsRecorderConector interfazUsuario, SoundPersistenceService servicioArchivos) {
+    public AudioWordsRecorder(IWordsRecorderConector interfazUsuario, SoundPersistenceService servicioArchivos) {
     	this(interfazUsuario, servicioArchivos, false);
     }
 
@@ -51,10 +51,9 @@ public class WordsRecorder implements AudioStopper{
         stopRecording();
     }
 
-    /**
-     * Detiene la grabacion
-     *
-     */
+    /* (non-Javadoc)
+	 * @see ar.com.datos.audio.WordsRecorder#stopRecording()
+	 */
     public void stopRecording(){
         if (servicioAudio.isRecording()){
         	audio.setAcceptData(!boostMic);
@@ -93,12 +92,9 @@ public class WordsRecorder implements AudioStopper{
     }
 
 
-    /**
-     * Analiza la existencia de cada una de las palabras de la coleccion,
-     * si una de ellas no existe se solicitara su grabacion.
-     *
-     * @param palabras
-     */
+    /* (non-Javadoc)
+	 * @see ar.com.datos.audio.WordsRecorder#recordWords(java.util.Collection)
+	 */
     public void recordWords(Collection<String> palabras){
 
         for (String palabra : palabras){
