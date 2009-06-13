@@ -1,5 +1,6 @@
 package ar.com.datos.compressor.arithmetic.dynamic;
 
+import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -9,31 +10,40 @@ import ar.com.datos.compressor.ProbabilityTableByFrequencies;
 import ar.com.datos.compressor.SimpleSuperChar;
 import ar.com.datos.compressor.SuperChar;
 import ar.com.datos.compressor.arithmetic.ArithmeticInterpreter;
+import ar.com.datos.compressor.arithmetic.traceable.ArithmeticInterpreterWithTrace;
+import ar.com.datos.documentlibrary.Document;
 
 public class DynamicArithmeticDecompressor {
 	/** Contextos del modelo */
 	private Map<Character, ProbabilityTableByFrequencies> contexts;
+	private PrintStream tracer;
 
 	public DynamicArithmeticDecompressor() {
 		cleanContexts();
 	}
-	
-	public void decompress(InputBuffer input, OutputBuffer output) {
-		ArithmeticInterpreter interpreter = new ArithmeticInterpreter(input);
+	public DynamicArithmeticDecompressor(PrintStream out) {
+		this();
+		this.tracer = out;
+	}
+	public void decompress(InputBuffer input, Document document) {
+		ArithmeticInterpreter interpreter = constructArithmeticInterpreter(input);
 		SuperChar current = this.decompressInner(null, interpreter);;
 		Character context = current.charValue();
 		while (!SimpleSuperChar.EOF.equals(current)) {
-			this.write(output,current);
+			document.addLine(context.toString());
 			current = this.decompressInner(context, interpreter);
 			context = current.charValue();
 		}
 		interpreter.close();
 	}
+	private ArithmeticInterpreter constructArithmeticInterpreter(InputBuffer input) {
+		return this.tracer == null? new ArithmeticInterpreter(input) : new ArithmeticInterpreterWithTrace(input, this.tracer);
+	}
 
 	protected void write(OutputBuffer output, SuperChar current) {
 		char aChar = current.charValue();
-		output.write((byte)(aChar));
 		output.write((byte)(aChar >> 8));
+		output.write((byte)(aChar));
 	}
 
 	protected SuperChar decompressInner(Character context, ArithmeticInterpreter interpreter) {

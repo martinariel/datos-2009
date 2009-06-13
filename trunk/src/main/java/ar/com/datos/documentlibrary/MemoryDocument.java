@@ -21,6 +21,7 @@ public class MemoryDocument extends Document implements SizeKnowerDocumentReadab
         pos = -1;
     }
 
+    @Override
     public void addLine(String line){
         lineas.add(line);
     }

@@ -56,9 +56,9 @@ public abstract class ArithmeticProcessor implements Closeable {
 		boolean matched = false;
 		Tuple<SuperChar, Double> current = null;
 		double probabilityFloor = getMinimumProbability(table);
-		long currentFloor = this.floor;
-		long currentCeiling = this.floor - 1;
-		long range = this.ceiling - this.floor + 1 - table.countCharsWithProbabilityUnder(probabilityFloor);
+		long currentFloor = getFloor();
+		long currentCeiling = getFloor() - 1;
+		long range = getCeiling() - getFloor() + 1 - table.countCharsWithProbabilityUnder(probabilityFloor);
 		while (tableIterator.hasNext() && !matched) {
 			current = tableIterator.next();
 			currentFloor = currentCeiling + 1;
@@ -103,7 +103,7 @@ public abstract class ArithmeticProcessor implements Closeable {
 	protected double getMinimumProbability(ProbabilityTable table) {
 		// Importante que range sea double para que la división se realice
 		// en punto flotante
-		double range = this.ceiling - this.floor + 1;
+		double range = getCeiling() - getFloor() + 1;
 		double minimumProbability = 1 / range;
 		int previousAmmountOfChars = 0;
 		int currentAmmountOfChars = table.countCharsWithProbabilityUnder(minimumProbability);
@@ -124,11 +124,11 @@ public abstract class ArithmeticProcessor implements Closeable {
 	protected void clearUnderflow() {
 		while (this.isInUnderflow()) {
 			// Saco el uno, hago shift y reagrego el uno (esto me da un shiftleft desde los bits 30 al 0
-			this.ceiling = removeTheOneInOverflowPosition(this.ceiling);
+			this.ceiling = removeTheOneInOverflowPosition(getCeiling());
 			zoomCeiling();
-			this.ceiling = addTheOneInOverflowPosition(this.ceiling);
+			this.ceiling = addTheOneInOverflowPosition(getCeiling());
 			// hago el shift completo y saco el uno que estaba en la posición de underflow
-			this.floor   = removeTheOneInUnderflowPosition(this.floor);
+			this.floor   = removeTheOneInUnderflowPosition(getFloor());
 			zoomFloor();
 			this.underflowCounter ++;
 			notifyUnderflow();
@@ -178,8 +178,8 @@ public abstract class ArithmeticProcessor implements Closeable {
 	 * Notifica también de un overflow de bit uno 
 	 */
 	protected void clearHigherOverflow() {
-		this.ceiling = removeTheOneInOverflowPosition(this.ceiling);
-		this.floor = removeTheOneInOverflowPosition(this.floor);
+		this.ceiling = removeTheOneInOverflowPosition(getCeiling());
+		this.floor = removeTheOneInOverflowPosition(getFloor());
 		zoomCeiling();
 		zoomFloor();
 		flushOverflow((byte)1);
@@ -190,7 +190,7 @@ public abstract class ArithmeticProcessor implements Closeable {
 	 */
 	@Override
 	public void close() {
-		this.ceiling = this.floor;
+		this.ceiling = getFloor();
 		clearOverflow();
 	}
 	
@@ -217,14 +217,14 @@ public abstract class ArithmeticProcessor implements Closeable {
 	 * Corro en un lugar todos los bits e inyecto un cero
 	 */
 	protected void zoomFloor() {
-		this.floor = shiftOneLeft(this.floor);
+		this.floor = shiftOneLeft(getFloor());
 	}
 
 	/**
 	 * Corro en un lugar todos los bits e inyecto un cero
 	 */
 	protected void zoomCeiling() {
-		this.ceiling = shiftOneLeft(this.ceiling) + 1L;
+		this.ceiling = shiftOneLeft(getCeiling()) + 1L;
 	}
 
 	/**
@@ -268,7 +268,7 @@ public abstract class ArithmeticProcessor implements Closeable {
 	 * @return
 	 */
 	protected boolean isInUnderflow() {
-		return this.ceiling  <= UNDERFLOW_CEILING_SEPARATOR && this.floor >= UNDERFLOW_FLOOR_SEPARATOR;
+		return getCeiling()  <= UNDERFLOW_CEILING_SEPARATOR && getFloor() >= UNDERFLOW_FLOOR_SEPARATOR;
 	}
 
 	/**
@@ -284,7 +284,7 @@ public abstract class ArithmeticProcessor implements Closeable {
 	 * @return
 	 */
 	protected boolean isInLowerOverflow() {
-		return this.ceiling < OVERFLOW_SEPARATOR;
+		return getCeiling() < OVERFLOW_SEPARATOR;
 	}
 
 	/**
@@ -292,7 +292,7 @@ public abstract class ArithmeticProcessor implements Closeable {
 	 * @return
 	 */
 	protected boolean isInHigherOverflow() {
-		return this.floor >=  OVERFLOW_SEPARATOR;
+		return getFloor() >=  OVERFLOW_SEPARATOR;
 	}
 
 	/**
@@ -308,6 +308,14 @@ public abstract class ArithmeticProcessor implements Closeable {
 	 * @return
 	 */
 	protected boolean isInRange(long value) {
-		return value <= this.ceiling && value >= this.floor;
+		return value <= getCeiling() && value >= getFloor();
+	}
+
+	protected long getFloor() {
+		return this.floor;
+	}
+
+	protected long getCeiling() {
+		return this.ceiling;
 	}
 }

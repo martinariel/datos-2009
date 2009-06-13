@@ -1,8 +1,10 @@
 package ar.com.datos.documentlibrary;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 
 /**
@@ -17,6 +19,7 @@ public class FileSystemDocument extends Document {
     private boolean opened;
     private BufferedReader reader;
     private MemoryDocument memoryDocument;
+	private BufferedWriter writer;
 
     public FileSystemDocument(String path){
         filePath 		= path;
@@ -54,7 +57,14 @@ public class FileSystemDocument extends Document {
         }
 
     }
-
+    public void openWrite() {
+        try {
+			writer = new BufferedWriter(new FileWriter(file));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+        
+    }
     @Override
     public void close() {
         if (opened){
@@ -65,6 +75,13 @@ public class FileSystemDocument extends Document {
                 catch(IOException e){}
             }
             opened = false;
+        }
+        if (writer != null) {
+        	try {
+				writer.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
         }
     }
 
@@ -104,7 +121,16 @@ public class FileSystemDocument extends Document {
         return this.getMemoryDocument().getMultipleReadableDocument();
     }
 
-
-
+	@Override
+	public void addLine(String linea) {
+        if (writer != null){
+        	try {
+				writer.write(linea);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+        }
+        	
+	}
 
 }

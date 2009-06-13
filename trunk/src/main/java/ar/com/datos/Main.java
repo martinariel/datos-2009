@@ -209,11 +209,12 @@ public class Main implements IWordsRecorderConector{
 			sendMessageLn("Ingrese ruta para el archivo descomprimido");
 	        rutaSalida = readKeyboardString();
 		} while (!isValidFileOutput(rutaSalida));
-		DynamicArithmeticDecompressor dac = new DynamicArithmeticDecompressor();
-		StandardFileWrapper file = new StandardFileWrapper(rutaSalida);
-		file.getFile().delete();
+		DynamicArithmeticDecompressor dac = new DynamicArithmeticDecompressor(System.out);
+		new File(rutaSalida).delete();
+		FileSystemDocument document = new FileSystemDocument(rutaSalida);
+		document.openWrite();
 		try {
-			dac.decompress(new FileInputBuffer(new StandardFileWrapper(rutaEntrada)), new FileOutputBuffer(file));
+			dac.decompress(new FileInputBuffer(new StandardFileWrapper(rutaEntrada)), document);
 		} catch (OutOfBoundsException e) {
 			sendMessageLn("*** Error al descomprimir ***");
 			sendMessageLn("El archivo proveido no estaba comprimido con la opción 4");
@@ -221,7 +222,7 @@ public class Main implements IWordsRecorderConector{
 			sendMessageLn("*** Error al descomprimir ***");
 			sendMessageLn("El archivo proveido no estaba comprimido con la opción 4");
 		} finally {
-			file.close();
+			document.close();
 		}
 	}
 

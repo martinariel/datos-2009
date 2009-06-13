@@ -1,5 +1,6 @@
 package ar.com.datos.compressor.arithmetic.dynamic;
 
+import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -9,6 +10,7 @@ import ar.com.datos.compressor.ProbabilityTableByFrequencies;
 import ar.com.datos.compressor.SimpleSuperChar;
 import ar.com.datos.compressor.SuperChar;
 import ar.com.datos.compressor.arithmetic.ArithmeticEmissor;
+import ar.com.datos.compressor.arithmetic.traceable.ArithmeticEmissorWithTrace;
 import ar.com.datos.documentlibrary.Document;
 
 /**
@@ -19,12 +21,17 @@ import ar.com.datos.documentlibrary.Document;
 public class DynamicArithmeticCompressor {
 	/** Contextos del modelo */
 	private Map<Character, ProbabilityTableByFrequencies> contexts;
+	private PrintStream tracer;
 	public DynamicArithmeticCompressor() {
 		cleanContexts();
 	}
+	public DynamicArithmeticCompressor(PrintStream out) {
+		this();
+		this.tracer = out;
+	}
 	public void compress(Document documento, OutputBuffer output) {
 		Iterator<Character> iterator = documento.getCharacterIterator();
-		ArithmeticEmissor emissor = new ArithmeticEmissor(output);
+		ArithmeticEmissor emissor = constructEmissor(output);
 		Character context = null;
 		Character aChar = null;
 		
@@ -35,6 +42,9 @@ public class DynamicArithmeticCompressor {
 		}
 		this.compress(context, SimpleSuperChar.EOF, emissor);
 		emissor.close();
+	}
+	private ArithmeticEmissor constructEmissor(OutputBuffer output) {
+		return this.tracer == null? new ArithmeticEmissor(output) : new ArithmeticEmissorWithTrace(output, tracer);
 	}
 	
 	public void compress(Character context, SuperChar aSuperChar, ArithmeticEmissor emissor) {
