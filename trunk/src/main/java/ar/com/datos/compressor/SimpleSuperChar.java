@@ -25,7 +25,12 @@ public class SimpleSuperChar implements SuperChar {
 		
 		return returnValue;		
 	}
-	
+	public String toAnotherString() {
+		if (this.charCode <= PRE_EOF_SUPER_CHAR.charValue()) return new Character(this.charValue()).toString();
+		if (this.equals(EOF)) return "EOF";
+		if (this.equals(ESC)) return "ESC";
+		return "undefined";
+	}
 	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Comparable#compareTo(java.lang.Object)
