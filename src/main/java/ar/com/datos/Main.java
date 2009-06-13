@@ -2,11 +2,16 @@ package ar.com.datos;
 
 import ar.com.datos.audio.AudioStopper;
 import ar.com.datos.audio.IWordsRecorderConector;
+import ar.com.datos.buffer.FileInputBuffer;
+import ar.com.datos.buffer.FileOutputBuffer;
 import ar.com.datos.util.Tuple;
 import ar.com.datos.wordservice.WordService;
+import ar.com.datos.compressor.arithmetic.dynamic.DynamicArithmeticCompressor;
+import ar.com.datos.compressor.arithmetic.dynamic.DynamicArithmeticDecompressor;
 import ar.com.datos.documentlibrary.Document;
 import ar.com.datos.documentlibrary.FileSystemDocument;
 import ar.com.datos.documentlibrary.MemoryDocument;
+import ar.com.datos.file.StandardFileWrapper;
 
 import java.io.*;
 import java.util.HashSet;
@@ -165,7 +170,7 @@ public class Main implements IWordsRecorderConector{
     	try {
             return Integer.parseInt(readKeyboardString());
     	} catch (NumberFormatException nfe) {
-        	sendMessageLn("ingrese SOLO números");
+        	sendMessageLn("ingrese SOLO nï¿½meros");
         	return readKeyBoardInt();
         }
     }
@@ -181,6 +186,8 @@ public class Main implements IWordsRecorderConector{
         	sendMessageLn("1 - Carga de documentos");
         	sendMessageLn("2 - Reproduccion documento de FileSystem");
 	        sendMessageLn("3 - Busqueda de documentos.");
+	        sendMessageLn("4 - Prueba de Aritmético - Compresión.");
+	        sendMessageLn("5 - Prueba de Aritmético - Compresión.");
 	        sendMessageLn("Cualquier otra tecla: Salir");
 	        sendMessageLn("Seleccione una opcion:");
 	
@@ -188,6 +195,8 @@ public class Main implements IWordsRecorderConector{
 	        case '1': loadDocument();break;
 	        case '2': playDocument();break;
 	        case '3': searchDocument();break;
+	        case '4': testArithmeticCompression();break;
+	        case '5': testArithmeticDecompression();break;
 	        default :  
 	            //Finalizo el backend
 	            try {
@@ -199,9 +208,58 @@ public class Main implements IWordsRecorderConector{
 	        }
         }
     }
-
-
     /**
+     * 
+     */
+	private void testArithmeticDecompression() {
+		String rutaEntrada;
+		String rutaSalida;
+		do {
+			sendMessageLn("Ingrese archivo a descomprimir");
+	        rutaEntrada = readKeyboardString();
+		} while (!isValidFileInput(rutaEntrada));
+        
+		do {
+			sendMessageLn("Ingrese ruta para el archivo descomprimido");
+	        rutaSalida = readKeyboardString();
+		} while (!isValidFileOutput(rutaSalida));
+		DynamicArithmeticDecompressor dac = new DynamicArithmeticDecompressor();
+		StandardFileWrapper file = new StandardFileWrapper(rutaSalida);
+		file.getFile().delete();
+		dac.decompress(new FileInputBuffer(new StandardFileWrapper(rutaEntrada)), new FileOutputBuffer(file));
+		file.close();
+	}
+
+	private void testArithmeticCompression() {
+		String rutaEntrada;
+		String rutaSalida;
+		do {
+			sendMessageLn("Ingrese archivo a comprimir");
+	        rutaEntrada = readKeyboardString();
+		} while (!isValidFileInput(rutaEntrada));
+        
+		do {
+			sendMessageLn("Ingrese ruta del archivo comprimido");
+	        rutaSalida = readKeyboardString();
+		} while (!isValidFileOutput(rutaSalida));
+		DynamicArithmeticCompressor dac = new DynamicArithmeticCompressor();
+		StandardFileWrapper file = new StandardFileWrapper(rutaSalida);
+		file.getFile().delete();
+		dac.compress(new FileSystemDocument(rutaEntrada), new FileOutputBuffer(file));
+		file.close();
+	}
+
+	protected boolean isValidFileOutput(String rutaSalida) {
+		File f = new File(rutaSalida);
+		return !f.isDirectory() && ((f.exists() && f.canWrite()) || f.getParentFile().canWrite());
+	}
+
+	protected boolean isValidFileInput(String rutaEntrada) {
+		File f = new File(rutaEntrada);
+		return f.isFile() && f.canRead();
+	}
+
+	/**
      * Solicita al usuario la ruta del documento e intenta parsearlo,
      * y luego guarda las palabras no existentes
      */
@@ -315,7 +373,7 @@ public class Main implements IWordsRecorderConector{
                		if (searchOption > 0 && searchOption <= searchResult.size()) {
                			backend.playDocument(searchResult.get(searchOption - 1).getSecond(), this);
                		} else {
-               			sendMessageLn("No es un número de documento valido");
+               			sendMessageLn("No es un nï¿½mero de documento valido");
                		}
            			sendMessageLn("Desea reproducir otro documento(s/n):");
             	} else {

@@ -7,7 +7,9 @@ public class FileInputBuffer implements InputBuffer {
 
 	private StandardFileWrapper dataSource;
 	private Long currentOffset;
-	
+	public FileInputBuffer(StandardFileWrapper dataSource) {
+		this(dataSource, 0L);
+	}
 	public FileInputBuffer(StandardFileWrapper dataSource, Long currentOffset) {
 		super();
 		this.dataSource = dataSource;

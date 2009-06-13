@@ -86,7 +86,7 @@ public class StandardFileWrapper implements Closeable {
 		}
 	}
 
-	protected File getFile() {
+	public File getFile() {
 		return file;
 	}
 
