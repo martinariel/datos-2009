@@ -40,7 +40,7 @@ public class WordService implements Closeable {
     private StopWordsDiscriminator stopWords;
     private Boolean closed = false;
     private boolean boostMic = false;
-    private boolean micOpened = true;
+    private boolean recordingEnabled = true;
     private static final String soundsFileName 		= "sonidos";
     private static final String wordsFileName 		= "palabras";
     private static final String documentsFileName 	= "documentos";
@@ -71,8 +71,8 @@ public class WordService implements Closeable {
     	boostMic = value;	
     }
     
-    public void setMicOpened( boolean value){
-    	this.micOpened = value;
+    public void setRecordingEnabled( boolean value){
+    	this.recordingEnabled = value;
     }
 
     /**
@@ -85,7 +85,7 @@ public class WordService implements Closeable {
      *
      */
     public void addDocument(Document document , IWordsRecorderConector view){
-        WordsRecorder recorder = (micOpened)?
+        WordsRecorder recorder = (recordingEnabled)?
         	new AudioWordsRecorder(view, soundPersistenceService, boostMic) :
         	new DummieWordsRecorder(view ,soundPersistenceService);
         

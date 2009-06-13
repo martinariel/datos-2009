@@ -29,7 +29,6 @@ public class Main implements IWordsRecorderConector{
     private WordService backend;
     private AudioStopper stopper;
     private List<Tuple<Double, Document>> searchResult;
-    private boolean openMic;
     
 
     /**
@@ -37,13 +36,14 @@ public class Main implements IWordsRecorderConector{
      * @param directorioArchivos
      * Directorio de trabajo.
      * @param openMic
-     * Determina si el microfono se controla automaticamente.
+     * Determina si el audio se controla automaticamente, es decir, se agrega audio automaticamente sin
+     * utilizar el servicio de audio.
      * @param boostAudio
      * Determina si el OutputStream de grabacion de audio es cortado inmediatamente
      * despues del stop.
      */
     public Main (String directorioArchivos, boolean openMic, boolean boostAudio){
-
+    	
         directorioArchivos = directorioArchivos.trim();
 
         directorioArchivos +=
@@ -51,11 +51,10 @@ public class Main implements IWordsRecorderConector{
 
         this.backend 			 = new WordService(directorioArchivos);
         this.bufferReaderTeclado = new BufferedReader(new InputStreamReader(System.in));
-        this.openMic 			 = openMic;
         
         this.backend.setBoostMic(boostAudio);
-        this.backend.setMicOpened(openMic);
-        
+        this.backend.setRecordingEnabled(!openMic);
+       
         if (openMic) sendMessageLn("open-mic on");
         if (boostAudio) sendMessageLn("boost-audio on");
     }
@@ -76,9 +75,7 @@ public class Main implements IWordsRecorderConector{
     @Override
     public boolean canStartRecording(){
         sendMessageLn("Ingrese 'i' si quiere grabar la palabra.");
-        
-        //remove
-        return (openMic)? true : readKeyBoardChar() == 'i';
+        return readKeyBoardChar() == 'i';
     }
 
     @Override
@@ -87,8 +84,7 @@ public class Main implements IWordsRecorderConector{
         sendMessageLn("s: Guardar la palabra.");
         sendMessageLn("Grabar nuevamente (cualquier otra tecla).");
 
-        //remove
-        return (openMic)? true : readKeyBoardChar() == 's';
+        return readKeyBoardChar() == 's';
     }
 
     @Override
@@ -100,25 +96,13 @@ public class Main implements IWordsRecorderConector{
     public void recordingWordStarted(){
         sendMessageLn("Grabando!!!!, ingrese 'f' para finalizar la grabacion.");
         
-        if (openMic){
-           //esto se puede quitar
-           try {
-        	  
-        	  Thread.sleep(100);
-          
-          } catch (InterruptedException e) {
-			e.printStackTrace();
-          }
-         
-        } 
-        else {
-        	if (readKeyBoardChar() == 'f'){
-                stopper.stop();
-            }
-            else {
-                recordingWordStarted();
-            }
+    	if (readKeyBoardChar() == 'f'){
+            stopper.stop();
         }
+        else {
+            recordingWordStarted();
+        }
+        
     }
 
     @Override
