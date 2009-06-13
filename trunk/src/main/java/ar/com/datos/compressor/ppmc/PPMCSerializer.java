@@ -6,8 +6,6 @@ import ar.com.datos.buffer.InputBuffer;
 import ar.com.datos.buffer.OutputBuffer;
 import ar.com.datos.compressor.SimpleSuperChar;
 import ar.com.datos.compressor.arithmetic.ArithmeticEmissor;
-import ar.com.datos.compressor.arithmetic.ArithmeticInterpreter;
-import ar.com.datos.compressor.ppmc.context.Context;
 import ar.com.datos.documentlibrary.Document;
 import ar.com.datos.serializer.Serializer;
 import ar.com.datos.serializer.exception.SerializerException;

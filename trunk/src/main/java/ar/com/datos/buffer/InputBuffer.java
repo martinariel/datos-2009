@@ -3,8 +3,7 @@ package ar.com.datos.buffer;
 import ar.com.datos.buffer.exception.BufferException;
 
 /**
- * Se encarga de manejar un buffer interno para operaciones de lectura.
- * Utiliza un array interno como buffer para los bytes que se van leyendo
+ * Interfaz para datos de entrada
  */
 public interface InputBuffer {
 	/**
