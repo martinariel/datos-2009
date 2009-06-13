@@ -1,8 +1,12 @@
 package ar.com.datos.compressor.ppmc;
 
-import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
+import java.util.HashSet;
 
+import ar.com.datos.buffer.OutputBuffer;
 import ar.com.datos.compressor.ProbabilityTableByFrequencies;
 import ar.com.datos.compressor.SimpleSuperChar;
 import ar.com.datos.compressor.SuperChar;
@@ -10,9 +14,11 @@ import ar.com.datos.compressor.arithmetic.ArithmeticEmissor;
 import ar.com.datos.compressor.ppmc.context.BaseContext;
 import ar.com.datos.compressor.ppmc.context.Context;
 import ar.com.datos.compressor.ppmc.context.ContextFactory;
+import ar.com.datos.documentlibrary.Document;
 
 public class PPMCCompressor {
 	
+	/** por defecto el orden del compresor es 4 */
 	private static final int DEFAULT_COMPRESSOR_ORDER = 4;
 	
 	/** compresor aritmetico */
@@ -23,7 +29,7 @@ public class PPMCCompressor {
 	
 	/** Array de super chars que contiene lo que se va leyendo del documento. 
 	 *  Por ej "papagayo" en O(4) contendra "papa" "apag" "paga" "agay" "gayo"*/
-	private SuperChar[] currentContext;
+	private LinkedList<SuperChar> currentContext;
 	
 	/** contexto de orden 0 (los demas se consiguen a partir de este) */
 	private Context zeroContext; 
@@ -33,14 +39,14 @@ public class PPMCCompressor {
 	
 	/** set con los caracteres a excluir al comprimir */
 	private Set<SuperChar> exclusionSet;
-
+	
 	public PPMCCompressor(int order) {
 		if (order < 0 || order > 4){
 			throw new RuntimeException("El rango de " +
 				"orden permitido para el compresor PPMC es de 0 a 4");
 		}
 		this.compressorOrder = order;
-		this.currentContext = new SuperChar[this.compressorOrder];
+		this.currentContext = new LinkedList<SuperChar>();
 		this.exclusionSet = new HashSet<SuperChar>();
 		this.constructContexts();
 	}
@@ -52,109 +58,167 @@ public class PPMCCompressor {
 	/**
 	 * Comprime un caracter leido.
 	 * Dispara el proceso de recorrer recursivamente los contextos a partir del 
-	 * orden 0 y utilizando un set de exclusion para aplicar exclusion completa
-	 * cada contexto va emitiendo lo que corresponda.
+	 * orden 0 y utilizando un set de exclusion para aplicar exclusion completa.
+	 * Cada contexto trata de emitir el caracter y si no puede, emite ESC.
+	 * 
 	 * Si ningun contexto partiendo del 0 pudo emitir el caracter buscado, se
-	 * emite el caracter desde el contexto de orden -1. En este caso, estamos
-	 * seguro que si no se encontro el caracter en un orden superior, debe
-	 * necesariamente estar en el orden -1.
+	 * emite el caracter desde el contexto de orden -1. Estamos seguro que si no
+	 * se encontro el caracter en un orden superior, debe estar en el orden -1.
 	 *  
-	 * @param ch el caracter a comprimir
+	 * @param charToCompress el caracter a comprimir
 	 */
-	public void compress(SuperChar charToCompress){
-		// uso un set de exclusion vacio, se ira llenando en el caso que sea 
-		// necesario aplicar exclusion completa.
+	private void compress(SuperChar charToCompress){
+		// uso un set de exclusion vacio que se ira llenando en el caso que sea 
+		// necesario aplicar exclusion completa
 		this.exclusionSet.clear();
 		
-		if (!this.processContext(this.zeroContext, charToCompress, exclusionSet)){
-			// debo comprimir con el contexto de orden -1 usando el set de 
-			// exclusion que vengo arrastrando de contextos superiores.
+		// creo una copia del contexto actual (porque en las llamadas recursivas 
+		// se va modificando)
+		LinkedList<SuperChar> charContext = new LinkedList<SuperChar>(this.currentContext);
+		
+		// intento comprimir desde el contexto de orden 0, si no se pudo, pruebo
+		// con el contexto de orden -1
+		if (!this.processContext(this.zeroContext, charContext, charToCompress, exclusionSet)){
 			
 			// obtengo la tabla de probabilidades del contexto de orden -1
 			ProbabilityTableByFrequencies table = this.negativeContext.getProbabilityTable();
 			
-			// intento comprimir el caracter
-			this.arithmetic.compress(charToCompress, table);
+			// intento comprimir el caracter recibido
+			SuperChar character = this.arithmetic.compress(charToCompress, table);
 			
 			// agrego el caracter al set de exclusion del orden -1 porque
-			// ya fue agregado al orden 0.
+			// (estoy seguro que ya fue agregado al orden 0)
 			table.addToExcludedSet(charToCompress);
 		}
+		// estas ultimas lineas actualizan cual sera el contexto siguiente.
+		// Por ejemplo para "COMPRESOR" (usando un PPMC de orden 4)
+		// [C,O,M,P] ===pasara a ser===> [O,M,P,R]
+		// para los primeros caso, no remueve el del principio, solo agrega:
+		// [C,O,null,null] ===pasara a ser===> [C,O,M,null]
+		if (this.currentContext.size() == this.compressorOrder){
+			this.currentContext.poll();
+		}
+		this.currentContext.offer(charToCompress);
 	}
 
 	/**
-	 * Procesa los contextos intentando comprimir un caracter, parte de un 
-	 * contexto base (por ej. el contexto de orden 0) y va "entrando" en los
-	 * contextos hijos de orden superior para tratar de encontrar el mejor
-	 * contexto con el cual emitir el caracter a comprimir.
+	 * Comprime un documento utilizando el compresor PPMC del orden especificado.
+	 * Itera sobre todos los caracteres del documento, comprimiendo uno por uno,
+	 * y al final comprime un EOF y cierra el compresor aritmetico para que 
+	 * pueda emitir los ultimos bits.
 	 *  
-	 * @param context el contexto a procesar
-	 * @param charToCompress el caracter a emitir
-	 * @param exclusionSet el set de exclusion con los caracteres que no se 
-	 * 		  deben considerar al calcular las probabilidades.
-	 * @return true si se pudo emitir el caracter en este contexto o en un contexto 
-	 * 		   hijo; false si se emitio ESC en este y los contextos hijos.
+	 * @param document el documento a comprimir
+	 * @param output el OutputBuffer donde se emitira lo comprimido
 	 */
-	private boolean processContext(Context context, SuperChar charToCompress, 
-			Set<SuperChar> exclusionSet){
-		// si el contexto es null (esto sucede solo cuando se inicia la 
-		// compresion, en los primeros pasos) no puedo emitir nada
+	public void compress(Document document, OutputBuffer output){
+		// creo un comresor aritmetico con el OuputBuffer recibido
+		this.arithmetic = new ArithmeticEmissor(output);
+		
+		// itero sobre los caracteres del documento a comprimir
+		Iterator<Character> it = document.getCharacterIterator();
+		while (it.hasNext()){
+			Character ch = it.next();
+			// comprimo este caracter
+			this.compress(new SimpleSuperChar(ch));
+		}
+		// finalmente comprimo el end-of-file
+		this.compress(SuperChar.EOF);
+		
+		// cierro el aritmetico para que emita los ultimos bits
+		this.arithmetic.close();
+	}
+	
+	/**
+	 * 
+	 * @param context
+	 * @param charContext
+	 * @param charToCompress
+	 * @param exclusionSet
+	 * @return
+	 */
+	private boolean processContext(Context context, List<SuperChar> charContext, 
+			SuperChar charToCompress, Set<SuperChar> exclusionSet){
+		
 		if (context == null){ 
 			return false;
 		}
 		
-		// Siempre debo ir hasta el ultimo contexto posible. 
-		// Entro recursivamente, tratando de procesar los contextos de orden
-		// superior. Si se pudo emitir el caracter en un contexto hijo, ya no 
-		// debo hacer nada. 
-		// Si no se pudo emtitir el caracter en un contexto hijo, debo intentar
-		// emitirlo desde este contexto.
-		if (this.processContext(context.getNextContextFor(
-				this.currentContext[context.getOrder()]), charToCompress, exclusionSet)){
-			
-			// segun los ejemplos de la pagina cuando se emite en algun orden,
-			// los contextos de orden inferior quedan intactos :S
+		if (charContext.size() > context.getOrder()){
+			if (!this.processContext(context.getNextContextFor(
+					charContext.get(context.getOrder())), charContext, 
+					charToCompress,exclusionSet)){
+				
+				if (charContext.size() == 1){
+					return this.processContext(this.zeroContext, new LinkedList<SuperChar>(), charToCompress, exclusionSet);
+				} else {
+					charContext.remove(0);
+					return this.processContext(this.findContextFor(new LinkedList<SuperChar>(charContext)),
+						charContext, charToCompress, exclusionSet);
+				}
+			}
 			return true;
 		} else {
-			// obtengo la tabla de probabilidades del contexto actual
 			ProbabilityTableByFrequencies table = context.getProbabilityTable();
 
-			// intento comprimir con el exclusion set que recibo
-			table.setExcludedSet(exclusionSet);
+			table.setExcludedSet(exclusionSet); 
 			SuperChar character = this.arithmetic.compress(charToCompress, table);
-			
-			// sumo una ocurrencia al caracter DESPUES de haber emitido
-			context.addOcurrency(charToCompress);
-			
-			// si se emitio un ESC debo agregar al set de exclusion, los
-			// caracteres de esta tabla (que no se usaran en otros contextos).
-			boolean wasESCEmitted = character.equals(SuperChar.ESC); 
+
+			boolean wasESCEmitted = character.equals(SuperChar.ESC);
 			if (wasESCEmitted){
-				// this.exclusionSet.addAll(table.getCharacters());
+				Set<SuperChar> characters = table.getCharacters();
+				this.exclusionSet.addAll(characters);
+				this.exclusionSet.remove(SuperChar.ESC);
 			}
-			// indico si pude comprimir el caracter leido.
-			return wasESCEmitted;
+			context.addOcurrency(charToCompress);
+			return !wasESCEmitted;
 		}
+	}
+
+	/**
+	 * Busca un contexto partiendo del contexto de orden 0, en base a una list
+	 * de SuperChar que represente el contexto a buscar, por ej. que contenga:
+	 * [T,A,T,A] busca el contexto de orden 4 para "TATA"
+	 * 
+	 * Llama a una funcion que busca el contexto recursivamente.
+	 * 
+	 * @param charContext el contexto a buscar como List<SuperChar>
+	 * @return el contexto buscado o null si no se encuentra.
+	 */
+	private Context findContextFor(List<SuperChar> charContext){
+		return this.findContext(charContext, this.zeroContext);
+	}
+
+	/**
+	 * Funcion que busca un contexto recursivamente en base al contexto recibido
+	 * y a la list de SuperChar que representa el contexto a buscar.
+	 * @param charContext charContext el contexto a buscar como List<SuperChar>
+	 * @param context el Context desde el cual buscar
+	 * @return el contexto buscado o null si no se encuentra.
+	 */
+	private Context findContext(List<SuperChar> charContext, Context context){
+		if (charContext.size() == 1){
+			return context.getNextContextFor(charContext.get(0));
+		} else if (charContext.size() == 0){
+			return null;
+		}
+		SuperChar ch = charContext.remove(0);
+		return findContext(charContext, context.getNextContextFor(ch));
 	}
 		
 	/**
 	 * Construye la estructura de contextos en base al orden del PPMC.
-	 * Debe llamarse al inicio y dejar todo listo para 
-	 * que se pueda comprimir/descomprimir. 
+	 * Debe llamarse en el constructor y dejar todo listo para que se pueda  
+	 * comprimir/descomprimir. 
 	 */
 	private void constructContexts() {
 		ContextFactory factory = new ContextFactory(this.compressorOrder);
 		
 		// creo el contexto de orden -1 (con un rango definido)
 		this.negativeContext = new BaseContext(-1, 
-				new ProbabilityTableByFrequencies(new SimpleSuperChar(0), SuperChar.EOF));
+				new ProbabilityTableByFrequencies(new SimpleSuperChar(0), 
+						SuperChar.EOF));
 		
 		// creo el contexto de orden 0 (sin un rango definido). Agrego ESC.
 		this.zeroContext = factory.createContextForOrder(0);
-	}
-	
-	public void setArithmeticCompressor(ArithmeticEmissor arithmetic){
-		this.arithmetic = arithmetic;
-	}
-	
+	}	
 }
