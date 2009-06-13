@@ -49,6 +49,7 @@ public class Main implements IWordsRecorderConector{
         this.openMic 			 = openMic;
         
         this.backend.setBoostMic(boostAudio);
+        this.backend.setMicOpened(openMic);
         
         if (openMic) sendMessageLn("open-mic on");
         if (boostAudio) sendMessageLn("boost-audio on");
@@ -71,6 +72,7 @@ public class Main implements IWordsRecorderConector{
     public boolean canStartRecording(){
         sendMessageLn("Ingrese 'i' si quiere grabar la palabra.");
         
+        //remove
         return (openMic)? true : readKeyBoardChar() == 'i';
     }
 
@@ -80,6 +82,7 @@ public class Main implements IWordsRecorderConector{
         sendMessageLn("s: Guardar la palabra.");
         sendMessageLn("Grabar nuevamente (cualquier otra tecla).");
 
+        //remove
         return (openMic)? true : readKeyBoardChar() == 's';
     }
 
@@ -93,14 +96,15 @@ public class Main implements IWordsRecorderConector{
         sendMessageLn("Grabando!!!!, ingrese 'f' para finalizar la grabacion.");
         
         if (openMic){
-          try {
+           //esto se puede quitar
+           try {
         	  
         	  Thread.sleep(100);
           
           } catch (InterruptedException e) {
 			e.printStackTrace();
           }
-          stopper.stop();
+         
         } 
         else {
         	if (readKeyBoardChar() == 'f'){
