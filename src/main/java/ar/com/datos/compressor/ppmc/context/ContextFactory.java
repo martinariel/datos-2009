@@ -12,11 +12,12 @@ public class ContextFactory {
 
 	public Context createContextForOrder(int order){
 		ProbabilityTableByFrequencies table = new ProbabilityTableByFrequencies();
+		table.addOccurrence(SuperChar.ESC);
 		if (order < this.maxOrder){
-			table.addOccurrence(SuperChar.ESC);
 			return new SimpleContext(order, table, this);
 		} else {
 			return new BaseContext(order, table);
+			
 		}
 	}
 }

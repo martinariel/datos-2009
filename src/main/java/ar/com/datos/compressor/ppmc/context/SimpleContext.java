@@ -20,7 +20,7 @@ public class SimpleContext extends BaseContext {
 	@Override
 	public void addOcurrency(SuperChar ch) {
 		// si no tengo existe un contexto de orden superior, lo creo.
-		if (!this.nextContexts.containsKey(ch)){
+		if (!ch.equals(SuperChar.ESC) && !this.nextContexts.containsKey(ch)){
 			this.nextContexts.put(ch, 
 					this.factory.createContextForOrder(this.order+1));
 		}
@@ -28,5 +28,8 @@ public class SimpleContext extends BaseContext {
 		// aunque se haya emitido ESC)
 		super.addOcurrency(ch);
 	}
-
+	@Override
+	public String toString(){
+		return "Context("+this.order+"): "+this.table.getCharacters();
+	}
 }
