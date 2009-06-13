@@ -18,6 +18,11 @@ public abstract class Document {
     public abstract String readLine();
 
     /**
+     * Agrega una linea al final del documento
+     */
+    public abstract void addLine(String linea);
+
+    /**
      * Abre el documento
      */
     public abstract void open();

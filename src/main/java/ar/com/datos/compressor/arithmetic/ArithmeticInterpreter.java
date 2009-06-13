@@ -45,7 +45,11 @@ public class ArithmeticInterpreter extends ArithmeticProcessor {
 	 * Toma un bit de la entrada y lo agrega al valor actual
 	 */
 	protected void fillCurrentValue() {
-		this.currentValue = this.shiftOneLeft(this.currentValue) + this.bitStream.next();
+		this.currentValue = this.shiftOneLeft(getCurrentValue()) + this.bitStream.next();
+	}
+
+	protected long getCurrentValue() {
+		return this.currentValue;
 	}
 
 	/**
@@ -81,7 +85,7 @@ public class ArithmeticInterpreter extends ArithmeticProcessor {
 	@Override
 	protected void notifyUnderflow() {
 		byte previousUnderflowBit = this.underflowBit;
-		if (this.currentValue > OVERFLOW_SEPARATOR) {
+		if (getCurrentValue() > OVERFLOW_SEPARATOR) {
 			this.underflowBit = 0;
 			this.currentValue = removeTheOneInOverflowPosition(currentValue);
 			zoomValue();
@@ -113,7 +117,7 @@ public class ArithmeticInterpreter extends ArithmeticProcessor {
 	 * @return
 	 */
 	protected boolean isInRange() {
-		return this.isInRange(this.currentValue);
+		return this.isInRange(getCurrentValue());
 	}
 
 	/**

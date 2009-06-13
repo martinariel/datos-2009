@@ -69,4 +69,9 @@ public class DocumentFromDocumentLibrary extends Document {
         return this.realDocument.getMultipleReadableDocument();
     }
 
+	@Override
+	public void addLine(String linea) {
+		this.realDocument.addLine(linea);
+	}
+
 }
