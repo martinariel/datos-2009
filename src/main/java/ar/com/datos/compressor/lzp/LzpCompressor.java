@@ -22,8 +22,8 @@ import ar.com.datos.util.Tuple;
 public class LzpCompressor {
 	private static int LONGEST_MATCH = ((1 << 16) - 1);
 //	private StringBuffer outputAAritmetico; // DEBUG
-	
-	// DEBUG
+//	
+//	// DEBUG
 //	public String getOutputAAritmetico() {
 //		return this.outputAAritmetico.toString();
 //	}
@@ -160,12 +160,14 @@ public class LzpCompressor {
 			sendOutLength(arithmetic, zeroOrderLzpModel, triple.getFirst());
 			sendOutEOF(arithmetic, firstOrderLzpModel, triple.getSecond().getFirst());
 		} else {
-			// La última emisión tuvo una longitud igual a 0 (no hubo match al final).
+			// La última emisión tuvo una longitud igual a 0 (no hubo match al final) o
+			// nunca pasé del segundo caracter.
 			sendOutLength(arithmetic, zeroOrderLzpModel, 0);
 			if (triple != null) {
 				sendOutEOF(arithmetic, firstOrderLzpModel, triple.getSecond().getSecond());
 			} else {
-				sendOutEOF(arithmetic, firstOrderLzpModel, null);
+				// Nunca pasé del segundo caracter.
+				sendOutEOF(arithmetic, firstOrderLzpModel, previousChar);
 			}
 		}
 		
@@ -193,9 +195,9 @@ public class LzpCompressor {
 	 * Mantiene actualizado el modelo recibido.
 	 */
 	private void sendOutCharacter(ArithmeticEmissor arithmetic, FirstOrderLzpModel firstOrderLzpModel, Character contextCharacter, Character character) {
+		ProbabilityTable probabilityTable = firstOrderLzpModel.getProbabilityTableFor(contextCharacter);
 //		this.outputAAritmetico.append("<Caracter>\n"); // DEBUG
 //		this.outputAAritmetico.append("Contexto: " + (contextCharacter == null ? "null" : contextCharacter) + "\n"); // DEBUG
-		ProbabilityTable probabilityTable = firstOrderLzpModel.getProbabilityTableFor(contextCharacter);
 //		this.outputAAritmetico.append("TablaFrecuencias:\n"); // DEBUG
 //		this.outputAAritmetico.append(probabilityTable); //DEBUG
 //		this.outputAAritmetico.append("\nCaracter: " + character + "\n"); // DEBUG
@@ -208,9 +210,9 @@ public class LzpCompressor {
 	 * Emite EOF
 	 */
 	private void sendOutEOF(ArithmeticEmissor arithmetic, FirstOrderLzpModel firstOrderLzpModel, Character contextCharacter) {
+		ProbabilityTable probabilityTable = firstOrderLzpModel.getProbabilityTableFor(contextCharacter);
 //		this.outputAAritmetico.append("<Caracter>\n"); // DEBUG
 //		this.outputAAritmetico.append("Contexto: " + (contextCharacter == null ? "null" : contextCharacter) + "\n"); // DEBUG
-		ProbabilityTable probabilityTable = firstOrderLzpModel.getProbabilityTableFor(contextCharacter);
 //		this.outputAAritmetico.append("TablaFrecuencias:\n"); // DEBUG
 //		this.outputAAritmetico.append(probabilityTable); //DEBUG
 //		this.outputAAritmetico.append("\nCaracter: EOF\n"); // DEBUG

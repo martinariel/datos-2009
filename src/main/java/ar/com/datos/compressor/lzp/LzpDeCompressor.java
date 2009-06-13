@@ -22,8 +22,8 @@ import ar.com.datos.compressor.lzp.text.impl.MemoryTextEmisorAndReceiver;
  */
 public class LzpDeCompressor {
 //	private StringBuffer inputDesdeAritmetico; // DEBUG
-	
-	// DEBUG
+//	
+//	// DEBUG
 //	public String getInputDesdeAritmetico() {
 //		return this.inputDesdeAritmetico.toString();
 //	}
@@ -134,10 +134,10 @@ public class LzpDeCompressor {
 	 * Mantiene actualizada la tabla de probabilidades recibida.
 	 */
 	private int getLength(ArithmeticInterpreter arithmetic, ProbabilityTableByFrequencies zeroOrderLzpModel) {
+		SuperChar lengthRepresentation = arithmetic.decompress(zeroOrderLzpModel);
 //		this.inputDesdeAritmetico.append("<Longitud>\n"); // DEBUG
 //		this.inputDesdeAritmetico.append("TablaFrecuencias:\n"); // DEBUG
 //		this.inputDesdeAritmetico.append(zeroOrderLzpModel); // DEBUG
-		SuperChar lengthRepresentation = arithmetic.decompress(zeroOrderLzpModel);
 //		this.inputDesdeAritmetico.append("\nLong: " + lengthRepresentation.intValue() + "\n"); // DEBUG
 //		this.inputDesdeAritmetico.append("</Longitud>\n"); // DEBUG
 		zeroOrderLzpModel.addOccurrence(lengthRepresentation);
@@ -152,9 +152,9 @@ public class LzpDeCompressor {
 	 * Mantiene actualizado el modelo recibido. 
 	 */
 	private Character getCharacter(ArithmeticInterpreter arithmetic, FirstOrderLzpModel firstOrderLzpModel, Character contextCharacter) {
-//		this.inputDesdeAritmetico.append("<Caracter>\n"); // DEBUG
-//		this.inputDesdeAritmetico.append("Contexto: " + (contextCharacter == null ? "null" : contextCharacter) + "\n"); // DEBUG 
 		ProbabilityTable probabilityTable = firstOrderLzpModel.getProbabilityTableFor(contextCharacter);
+//		this.inputDesdeAritmetico.append("<Caracter>\n"); // DEBUG
+//		this.inputDesdeAritmetico.append("Contexto: " + (contextCharacter == null ? "null" : contextCharacter) + "\n"); // DEBUG
 //		this.inputDesdeAritmetico.append("TablaFrecuencias:\n"); // DEBUG
 //		this.inputDesdeAritmetico.append(probabilityTable); //DEBUG
 		SuperChar superChar = arithmetic.decompress(probabilityTable);
