@@ -6,12 +6,14 @@ import ar.com.datos.buffer.FileInputBuffer;
 import ar.com.datos.buffer.FileOutputBuffer;
 import ar.com.datos.util.Tuple;
 import ar.com.datos.wordservice.WordService;
+import ar.com.datos.compressor.arithmetic.ArithmeticInvalidDataException;
 import ar.com.datos.compressor.arithmetic.dynamic.DynamicArithmeticCompressor;
 import ar.com.datos.compressor.arithmetic.dynamic.DynamicArithmeticDecompressor;
 import ar.com.datos.documentlibrary.Document;
 import ar.com.datos.documentlibrary.FileSystemDocument;
 import ar.com.datos.documentlibrary.MemoryDocument;
 import ar.com.datos.file.StandardFileWrapper;
+import ar.com.datos.file.exception.OutOfBoundsException;
 
 import java.io.*;
 import java.util.HashSet;
@@ -171,7 +173,7 @@ public class Main implements IWordsRecorderConector{
         	sendMessageLn("2 - Reproduccion documento de FileSystem");
 	        sendMessageLn("3 - Busqueda de documentos.");
 	        sendMessageLn("4 - Prueba de Aritmético - Compresión.");
-	        sendMessageLn("5 - Prueba de Aritmético - Compresión.");
+	        sendMessageLn("5 - Prueba de Aritmético - Descompresión.");
 	        sendMessageLn("Cualquier otra tecla: Salir");
 	        sendMessageLn("Seleccione una opcion:");
 	
@@ -210,8 +212,17 @@ public class Main implements IWordsRecorderConector{
 		DynamicArithmeticDecompressor dac = new DynamicArithmeticDecompressor();
 		StandardFileWrapper file = new StandardFileWrapper(rutaSalida);
 		file.getFile().delete();
-		dac.decompress(new FileInputBuffer(new StandardFileWrapper(rutaEntrada)), new FileOutputBuffer(file));
-		file.close();
+		try {
+			dac.decompress(new FileInputBuffer(new StandardFileWrapper(rutaEntrada)), new FileOutputBuffer(file));
+		} catch (OutOfBoundsException e) {
+			sendMessageLn("*** Error al descomprimir ***");
+			sendMessageLn("El archivo proveido no estaba comprimido con la opción 4");
+		} catch (ArithmeticInvalidDataException e) {
+			sendMessageLn("*** Error al descomprimir ***");
+			sendMessageLn("El archivo proveido no estaba comprimido con la opción 4");
+		} finally {
+			file.close();
+		}
 	}
 
 	private void testArithmeticCompression() {
@@ -226,7 +237,7 @@ public class Main implements IWordsRecorderConector{
 			sendMessageLn("Ingrese ruta del archivo comprimido");
 	        rutaSalida = readKeyboardString();
 		} while (!isValidFileOutput(rutaSalida));
-		DynamicArithmeticCompressor dac = new DynamicArithmeticCompressor();
+		DynamicArithmeticCompressor dac = new DynamicArithmeticCompressor(System.out);
 		StandardFileWrapper file = new StandardFileWrapper(rutaSalida);
 		file.getFile().delete();
 		dac.compress(new FileSystemDocument(rutaEntrada), new FileOutputBuffer(file));
