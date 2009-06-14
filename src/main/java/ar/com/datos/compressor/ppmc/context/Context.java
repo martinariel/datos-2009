@@ -27,7 +27,7 @@ public interface Context {
 	 * Las implementaciones pueden crear y linkear nuevos contextos en el caso
 	 * de que sea necesario (orden 0 a n-1). 
 	 */
-	public void addOcurrency(SuperChar ch);
+	public void addOccurrence(SuperChar ch);
 	
 	/**
 	 * Devuelve la tabla de probabilidad correspondiente a este contexto.

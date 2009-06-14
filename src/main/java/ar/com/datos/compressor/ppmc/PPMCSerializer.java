@@ -14,14 +14,14 @@ public class PPMCSerializer implements Serializer<Document> {
 	public void dehydrate(OutputBuffer output, Document document)
 			throws SerializerException {
 		
-		// creo un nuevo aritmetico para comprimir con el compresor PPMC
+		// creo el compresor PPMC y comprimo el documento
 		PPMCCompressor compressor = new PPMCCompressor();
 		compressor.compress(document, output);
 	}
 
 	@Override
 	public Document hydrate(InputBuffer input) throws SerializerException {
-		
+		// creo el descompresor PPMC y descomprimo del input buffer
 		PPMCDecompressor decompressor = new PPMCDecompressor();
 		return decompressor.decompress(input);
 	}
