@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintStream;
 import java.util.HashSet;
 import java.util.List;
 
@@ -230,19 +231,20 @@ public class Main implements IWordsRecorderConector{
     		compressor = readKeyBoardByte();
     	}
     	
+    	PrintStream ps = System.out;
     	switch (compressor) {
 			case 1: {
-				returnValue = (decompressor) ? new DynamicArithmeticDecompressor(System.out) : new DynamicArithmeticCompressor(System.out);
+				returnValue = (decompressor) ? new DynamicArithmeticDecompressor(ps) : new DynamicArithmeticCompressor(ps);
 				break;
 			}
 			case 2: {
-				returnValue = (decompressor) ? new LzpFileDeCompressor(System.out) : new LzpFileCompressor(System.out);
+				returnValue = (decompressor) ? new LzpFileDeCompressor(ps) : new LzpFileCompressor(ps);
 				break;
 			}
 //			TODO
 // NOTA: Aclarar con un mensaje que se usa el PPMC por defecto!!! (modelo 4 creo)
 //			case 3: {
-//				returnValue = (decompressor) ? new PpmcFileDeCompressor(System.out) : new PpmcFileCompressor(System.out);
+//				returnValue = (decompressor) ? new PpmcFileDeCompressor(ps) : new PpmcFileCompressor(ps);
 //				break;
 //			}
 		}
