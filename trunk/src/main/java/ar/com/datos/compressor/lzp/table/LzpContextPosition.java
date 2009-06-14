@@ -11,7 +11,8 @@ import ar.com.datos.util.UnsignedInt;
  * @author fvalido
  */
 public class LzpContextPosition implements Element<LzpContext> {
-	private LzpContext lzpContext;
+	private char firstChar;
+	private char secondChar;
 	private UnsignedInt position;
 	
 	/*
@@ -20,7 +21,7 @@ public class LzpContextPosition implements Element<LzpContext> {
 	 */
 	@Override
 	public LzpContext getKey() {
-		return this.lzpContext;
+		return new LzpContext(this.firstChar, this.secondChar);
 	}
 	
 	/*
@@ -42,7 +43,8 @@ public class LzpContextPosition implements Element<LzpContext> {
 	 * Constructor.
 	 */
 	public LzpContextPosition(LzpContext lzpContext, UnsignedInt position) {
-		this.lzpContext = lzpContext;
+		this.firstChar = lzpContext.getFirstChar();
+		this.secondChar = lzpContext.getSecondChar();
 		this.position = position;
 	}
 
@@ -67,7 +69,7 @@ public class LzpContextPosition implements Element<LzpContext> {
 		
 		LzpContextPosition o = (LzpContextPosition) obj;
 		
-		return this.lzpContext.equals(o.lzpContext);
+		return this.getKey().equals(o.getKey());
 	}
 	
 	/*
@@ -76,7 +78,7 @@ public class LzpContextPosition implements Element<LzpContext> {
 	 */
 	@Override
 	public String toString() {
-		return "<" + this.lzpContext.toString() + "=" + this.position.toString() + ">"; 
+		return "<" + this.getKey().toString() + "=" + this.position.toString() + ">"; 
 	}
 
 	/**
