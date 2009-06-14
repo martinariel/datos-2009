@@ -47,21 +47,6 @@ public class MemoryDocument extends Document implements SizeKnowerDocumentReadab
         return true;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see ar.com.datos.documentlibrary.Document#equals(java.lang.Object)
-     */
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null || MemoryDocument.class.isAssignableFrom(obj.getClass())) {
-            return super.equals(obj);
-        }
-
-        MemoryDocument o = (MemoryDocument)obj;
-
-        return this.lineas.equals(o.lineas);
-    }
-
     @Override
     public String getLineAtPosition(int position) {
 

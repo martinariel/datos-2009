@@ -25,7 +25,7 @@ public class TestPPMC extends TestCase{
 		this.document.addLine(line);
 		this.serializer.dehydrate(this.output, this.document);
 		Document hydratedDocument = this.serializer.hydrate(this.output.getAsInputBuffer());
-		assertEquals(this.document.readLine(), hydratedDocument.readLine());
+		assertEquals(this.document, hydratedDocument);
 	}
 	public void test1() {
 		doTest("TATAAAAALO");
@@ -750,6 +750,6 @@ public class TestPPMC extends TestCase{
 		
 		this.serializer.dehydrate(this.output, this.document);
 		Document hydratedDocument = this.serializer.hydrate(this.output.getAsInputBuffer());
-		assertEquals(this.document.readLine(), hydratedDocument.readLine());
+		assertEquals(this.document, hydratedDocument);
 	}
 }
