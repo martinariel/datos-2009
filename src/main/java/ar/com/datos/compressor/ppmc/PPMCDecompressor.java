@@ -59,7 +59,7 @@ public class PPMCDecompressor extends AbstractPPMC{
 		
 		// descomprimo  caracter a caracter hasta encontrar un EOF
 		while(!ch.equals(SuperChar.EOF)){
-			buffer.append(ch);
+			buffer.append(ch.charValue());
 			ch = this.decompress();
 		}
 		this.tracer.append("\n\nEl resultado de la descompresion es:"+buffer.toString());
