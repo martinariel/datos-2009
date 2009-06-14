@@ -1,5 +1,5 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Definición del tipo de documento.                                           %
+% Definición del tipo de documento.                                           % 
 % Posibles tipos de papel: a4paper, letterpaper, legalpapper                  %
 % Posibles tamaños de letra: 10pt, 11pt, 12pt                                 %
 % Posibles clases de documentos: article, report, book, slides                %
@@ -77,20 +77,7 @@ nuevos serializadores que serán capaces de comprimir, en nuestro caso, los Docum
 	\caption{Diagrama de clases general de la arquitectura propuesta}
 \end{figure}
 
-\section{Compresor Aritmético}
-La clase \textit{ArithmeticCompressor} es el compresor aritmético \textit{per se}. Encargado de determinar que bits 
-deben ser emitidos de acuerdo a la tabla de probabilidades que se le entrega y al caracter que se le indica que 
-corresponde ser emitido. Dado que nuestros buffers trabajan de a bytes el compresor delega en un wrapper de dicho 
-buffer que permite ingresar la información de a un bit por vez (y que luego emite de a bytes compltos). Luego, el 
-compresor va iterando sobre los caracteres de la tabla (Que, si bien se muestran como char, esta clase es un wrapper de 
-la clase Character de Java, ver mas adelante) y calcula los pisos y techos para cada caracter hasta que encuentre que 
-el caracter a emitir \textit{matchea} con el caracter iterado. Luego de verificar si hay Overflow o Underflow, y emitir 
-lo que corresponda, actualiza su piso y techo para estar listo para un nuevo caracter a emitir.
-\newpage
-El proceso de descompresión es el proceso inverso, en base a la tabla de probabilidades va armando los pisos y techos 
-del caracter actual hasta que encuentra que la información de su buffer se encuentra dentro de dicho rango. Actualiza 
-Overflow y Underflow, si corresponde, y devuelve el caracter correspondiente al nuevo rango para que el que el usuario 
-del compresor pueda actualizar contextos y demás tareas.
+\include{arithmetic_core}
 
 \subsection{La clase Char}
 La clase \textit{Char} permite tener valores fuera de los reales en un texto, es decir, el caracter \textbf{EOF}, y el 
