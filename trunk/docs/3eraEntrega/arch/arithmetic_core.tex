@@ -7,3 +7,10 @@ Esto también nos facilitó el agregado de \textit{tracers} para el aritmético 
 \subsection{Compresor y Descompresor Aritmético}
 Como se comentó anteriormente, ambas clases extienden del proceso aritmético. Tratan de a un caracter por vez para que los compresores que se utilizan dentro de su forma de trabajo un aritmético puedan usarlo sin problema y nunca modifican la tabla de probabilidades que reciben ya que los usuarios de estas clases son los encargados de hacer mantenimiento de las mismas.
 El Compresor, como se mencionó anteriormente, sólo emite los overflow que el proceso le indique. El matcher que define se basa en el caracter a comprimir. Mientras que el descompresor toma bits de la entrada cada vez que necesita nueva información (esto ocurre cuando se detectan overflows o underflows).
+Debido a que todo el sistema se basa en emisiones y lecturas de bytes (InputBuffer y OutputBuffer) pero el funcionamiento del aritmético emite y lee de a bits se implementaron dos clases cuyo único fin es adaptar esta diferencia de emisiones. El \textit{BitEmisor} toma información en bytes de un \textit{InputBuffer} y entrega bits (esto lo hace iterando sobre los bits de cada byte). El \textit{BitReceiver} junta octetos de bits que se le pide emitir, arma un byte y lo envía al \textit{OutputBuffer}.
+\begin{figure}[!htp]
+\centering
+\makebox[\textwidth]{\includegraphics[scale=0.5,natwidth=20pt,natheight=10pt]{img/bits.png}}
+	\caption{Diagrama de clases para BitEmisor y BitReceiver}
+\end{figure}
+
