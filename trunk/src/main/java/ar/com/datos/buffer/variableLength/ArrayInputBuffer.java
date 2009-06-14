@@ -25,7 +25,11 @@ public class ArrayInputBuffer implements InputBuffer {
 	@Override
 	public byte read() throws BufferException {
 		this.currentPos++;
-		return this.array.getByte(currentPos);
+		try {
+			return this.array.getByte(currentPos);
+		} catch (ArrayIndexOutOfBoundsException e) {
+			throw new BufferException(e);
+		}
 	}
 
 }
