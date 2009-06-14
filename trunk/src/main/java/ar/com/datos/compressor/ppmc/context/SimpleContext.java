@@ -18,7 +18,7 @@ public class SimpleContext extends BaseContext {
 	}
 	
 	@Override
-	public void addOcurrency(SuperChar ch) {
+	public void addOccurrence(SuperChar ch) {
 		// si no tengo existe un contexto de orden superior, lo creo.
 		if (!ch.equals(SuperChar.ESC) && !this.nextContexts.containsKey(ch)){
 			this.nextContexts.put(ch, 
@@ -26,7 +26,7 @@ public class SimpleContext extends BaseContext {
 		}
 		// agrego una ocurrencia del caracter que se queria emitir (incluso
 		// aunque se haya emitido ESC)
-		super.addOcurrency(ch);
+		super.addOccurrence(ch);
 	}
 	@Override
 	public String toString(){

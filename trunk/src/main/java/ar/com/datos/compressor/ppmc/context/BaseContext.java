@@ -28,7 +28,7 @@ public class BaseContext implements Context {
 	 * @see ar.com.datos.compressor.ppmc.context.Context#addOcurrency(ar.com.datos.compressor.SuperChar)
 	 */
 	@Override
-	public void addOcurrency(SuperChar ch){
+	public void addOccurrence(SuperChar ch){
 		this.table.addOccurrence(ch);
 	}
 
