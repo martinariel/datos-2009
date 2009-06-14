@@ -17,7 +17,7 @@ public class TestBitsBuffer extends ExtendedTestCase {
 		OutputBufferTest o = new OutputBufferTest();
 		OutputBufferBitReceiver oBit = new OutputBufferBitReceiver(o);
 		
-		int size = 505;
+		int size = 509;
 		byte[] bits = new byte[size];
 		for(int i = 0; i < size; i++){
 			bits[i] = (byte)(Math.round(Math.random()));

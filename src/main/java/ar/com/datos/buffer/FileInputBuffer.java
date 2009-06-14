@@ -18,9 +18,13 @@ public class FileInputBuffer implements InputBuffer {
 
 	@Override
 	public byte[] read(byte[] data) throws BufferException {
-		this.dataSource.read(currentOffset, data);
-		currentOffset += data.length;
-		return data;
+		try {
+			this.dataSource.read(currentOffset, data);
+			currentOffset += data.length;
+			return data;
+		} catch (Exception e) {
+			throw new BufferException(e);
+		}
 	}
 
 	@Override
