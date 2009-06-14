@@ -25,9 +25,6 @@ public class TestPPMC extends TestCase{
 		this.document.addLine(line);
 		this.serializer.dehydrate(this.output, this.document);
 		Document hydratedDocument = this.serializer.hydrate(this.output.getAsInputBuffer());
-		System.out.println("");
-		System.out.println(this.document);
-		System.out.println(hydratedDocument);
 		assertEquals(this.document.readLine(), hydratedDocument.readLine());
 	}
 	public void test1() {

@@ -11,8 +11,6 @@ import ar.com.datos.compressor.SimpleSuperChar;
 import ar.com.datos.compressor.SuperChar;
 import ar.com.datos.compressor.arithmetic.ArithmeticInterpreter;
 import ar.com.datos.compressor.ppmc.context.Context;
-import ar.com.datos.documentlibrary.Document;
-import ar.com.datos.documentlibrary.MemoryDocument;
 import ar.com.datos.util.NullPrintStream;
 
 public class PPMCDecompressor extends AbstractPPMC{
@@ -48,9 +46,7 @@ public class PPMCDecompressor extends AbstractPPMC{
 	 * @param input
 	 * @return
 	 */
-	public Document decompress(InputBuffer input){
-		// creo el documento a devolver
-		MemoryDocument document = new MemoryDocument();
+	public String decompress(InputBuffer input){
 		// creo el aritmetico que se usara para descomprimir
 		this.arithmetic = new ArithmeticInterpreter(input);
 
@@ -67,8 +63,7 @@ public class PPMCDecompressor extends AbstractPPMC{
 			ch = this.decompress();
 		}
 		this.tracer.append("\n\nEl resultado de la descompresion es:"+buffer.toString());
-		document.addLine(buffer.toString());
-		return document;
+		return buffer.toString();
 	}
 	
 	

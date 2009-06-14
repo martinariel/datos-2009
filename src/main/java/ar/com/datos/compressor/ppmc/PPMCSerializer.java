@@ -3,6 +3,7 @@ package ar.com.datos.compressor.ppmc;
 import ar.com.datos.buffer.InputBuffer;
 import ar.com.datos.buffer.OutputBuffer;
 import ar.com.datos.documentlibrary.Document;
+import ar.com.datos.documentlibrary.MemoryDocument;
 import ar.com.datos.serializer.Serializer;
 import ar.com.datos.serializer.exception.SerializerException;
 
@@ -21,14 +22,15 @@ public class PPMCSerializer implements Serializer<Document> {
 
 	@Override
 	public Document hydrate(InputBuffer input) throws SerializerException {
+		MemoryDocument document = new MemoryDocument();
 		// creo el descompresor PPMC y descomprimo del input buffer
 		PPMCDecompressor decompressor = new PPMCDecompressor();
-		return decompressor.decompress(input);
+		document.addLine(decompressor.decompress(input));
+		return document;
 	}
 	
 	@Override
 	public long getDehydrateSize(Document object) {
-		// TODO Auto-generated method stub
-		return 0;
+		throw new UnsupportedOperationException();
 	}
 }
