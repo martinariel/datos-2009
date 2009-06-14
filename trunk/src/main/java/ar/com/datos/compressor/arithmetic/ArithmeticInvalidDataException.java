@@ -1,6 +1,8 @@
 package ar.com.datos.compressor.arithmetic;
 
-public class ArithmeticInvalidDataException extends RuntimeException {
+import ar.com.datos.compressor.CompressorException;
+
+public class ArithmeticInvalidDataException extends CompressorException {
 
 	private static final long serialVersionUID = -83701653218101110L;
 

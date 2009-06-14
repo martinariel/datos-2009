@@ -1,23 +1,30 @@
 package ar.com.datos;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.HashSet;
+import java.util.List;
+
 import ar.com.datos.audio.AudioStopper;
 import ar.com.datos.audio.IWordsRecorderConector;
 import ar.com.datos.buffer.FileInputBuffer;
 import ar.com.datos.buffer.FileOutputBuffer;
-import ar.com.datos.util.Tuple;
-import ar.com.datos.wordservice.WordService;
-import ar.com.datos.compressor.arithmetic.ArithmeticInvalidDataException;
+import ar.com.datos.compressor.CompressorException;
+import ar.com.datos.compressor.FileCompressor;
+import ar.com.datos.compressor.FileDeCompressor;
 import ar.com.datos.compressor.arithmetic.dynamic.DynamicArithmeticCompressor;
 import ar.com.datos.compressor.arithmetic.dynamic.DynamicArithmeticDecompressor;
+import ar.com.datos.compressor.lzp.file.LzpFileCompressor;
+import ar.com.datos.compressor.lzp.file.LzpFileDeCompressor;
 import ar.com.datos.documentlibrary.Document;
 import ar.com.datos.documentlibrary.FileSystemDocument;
 import ar.com.datos.documentlibrary.MemoryDocument;
 import ar.com.datos.file.StandardFileWrapper;
 import ar.com.datos.file.exception.OutOfBoundsException;
-
-import java.io.*;
-import java.util.HashSet;
-import java.util.List;
+import ar.com.datos.util.Tuple;
+import ar.com.datos.wordservice.WordService;
 
 /**
  *
@@ -188,8 +195,8 @@ public class Main implements IWordsRecorderConector{
         	sendMessageLn("1 - Carga de documentos");
         	sendMessageLn("2 - Reproduccion documento de FileSystem");
 	        sendMessageLn("3 - Busqueda de documentos.");
-	        sendMessageLn("4 - Prueba de Aritmético - Compresión.");
-	        sendMessageLn("5 - Prueba de Aritmético - Descompresión.");
+	        sendMessageLn("4 - Prueba de Compresión.");
+	        sendMessageLn("5 - Prueba de Descompresión.");
 	        sendMessageLn("Cualquier otra tecla: Salir");
 	        sendMessageLn("Seleccione una opcion:");
 	
@@ -210,6 +217,39 @@ public class Main implements IWordsRecorderConector{
 	        }
         }
     }
+    
+    private Object chooseCompressorForTest(boolean decompressor) {
+    	Object returnValue = null;
+    	Byte compressor = 0;
+    	sendMessageLn("Seleccione el tipo de compresor:");
+    	sendMessageLn("1 - ARITMETICO.");
+    	sendMessageLn("2 - LZP.");
+    	sendMessageLn("3 - PPMC.");
+    	while (compressor < 1 || compressor > 3) {
+    		sendMessage("1-3: ");
+    		compressor = readKeyBoardByte();
+    	}
+    	
+    	switch (compressor) {
+			case 1: {
+				returnValue = (decompressor) ? new DynamicArithmeticDecompressor(System.out) : new DynamicArithmeticCompressor(System.out);
+				break;
+			}
+			case 2: {
+				returnValue = (decompressor) ? new LzpFileDeCompressor(System.out) : new LzpFileCompressor(System.out);
+				break;
+			}
+//			TODO
+// NOTA: Aclarar con un mensaje que se usa el PPMC por defecto!!! (modelo 4 creo)
+//			case 3: {
+//				returnValue = (decompressor) ? new PpmcFileDeCompressor(System.out) : new PpmcFileCompressor(System.out);
+//				break;
+//			}
+		}
+    	
+    	return returnValue;
+    }
+    
     /**
      * 
      */
@@ -225,20 +265,21 @@ public class Main implements IWordsRecorderConector{
 			sendMessageLn("Ingrese ruta para el archivo descomprimido");
 	        rutaSalida = readKeyboardString();
 		} while (!isValidFileOutput(rutaSalida));
-		DynamicArithmeticDecompressor dac = new DynamicArithmeticDecompressor(System.out);
+		FileDeCompressor fileDeCompressor = (FileDeCompressor)chooseCompressorForTest(true);
 		new File(rutaSalida).delete();
 		FileSystemDocument document = new FileSystemDocument(rutaSalida);
 		document.openWrite();
 		try {
-			dac.decompress(new FileInputBuffer(new StandardFileWrapper(rutaEntrada)), document);
+			fileDeCompressor.decompress(new FileInputBuffer(new StandardFileWrapper(rutaEntrada)), document);
 		} catch (OutOfBoundsException e) {
 			sendMessageLn("*** Error al descomprimir ***");
-			sendMessageLn("El archivo proveido no estaba comprimido con la opción 4");
-		} catch (ArithmeticInvalidDataException e) {
+			sendMessageLn("El archivo provisto no estaba comprimido con un " + fileDeCompressor.getCompressorName());
+		} catch (CompressorException e) {
 			sendMessageLn("*** Error al descomprimir ***");
-			sendMessageLn("El archivo proveido no estaba comprimido con la opción 4");
+			sendMessageLn("El archivo provisto no estaba comprimido con un " + fileDeCompressor.getCompressorName());
 		} finally {
 			document.close();
+			sendMessageLn("");
 		}
 	}
 
@@ -254,16 +295,16 @@ public class Main implements IWordsRecorderConector{
 			sendMessageLn("Ingrese ruta del archivo comprimido");
 	        rutaSalida = readKeyboardString();
 		} while (!isValidFileOutput(rutaSalida));
-		DynamicArithmeticCompressor dac = new DynamicArithmeticCompressor(System.out);
+		FileCompressor fileCompressor = (FileCompressor)chooseCompressorForTest(false);
 		StandardFileWrapper file = new StandardFileWrapper(rutaSalida);
 		file.getFile().delete();
-		dac.compress(new FileSystemDocument(rutaEntrada), new FileOutputBuffer(file));
+		fileCompressor.compress(new FileSystemDocument(rutaEntrada), new FileOutputBuffer(file));
 		file.close();
 	}
 
 	protected boolean isValidFileOutput(String rutaSalida) {
 		File f = new File(rutaSalida);
-		return !f.isDirectory() && ((f.exists() && f.canWrite()) || f.getParentFile().canWrite());
+		return !rutaSalida.equals("") && !f.isDirectory() && ((f.exists() && f.canWrite()) || f.getAbsoluteFile().getParentFile().canWrite());
 	}
 
 	protected boolean isValidFileInput(String rutaEntrada) {

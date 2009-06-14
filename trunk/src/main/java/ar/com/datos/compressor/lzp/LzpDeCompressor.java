@@ -1,8 +1,10 @@
 package ar.com.datos.compressor.lzp;
 
+import java.io.PrintStream;
 import java.util.Iterator;
 
 import ar.com.datos.buffer.InputBuffer;
+import ar.com.datos.compressor.CompressorException;
 import ar.com.datos.compressor.ProbabilityTable;
 import ar.com.datos.compressor.ProbabilityTableByFrequencies;
 import ar.com.datos.compressor.SimpleSuperChar;
@@ -14,6 +16,7 @@ import ar.com.datos.compressor.lzp.table.LzpContextWorkingTable4K;
 import ar.com.datos.compressor.lzp.text.TextEmisor;
 import ar.com.datos.compressor.lzp.text.TextReceiver;
 import ar.com.datos.compressor.lzp.text.impl.MemoryTextEmisorAndReceiver;
+import ar.com.datos.util.NullPrintStream;
 
 /**
  * Descompresor LZP.
@@ -21,12 +24,32 @@ import ar.com.datos.compressor.lzp.text.impl.MemoryTextEmisorAndReceiver;
  * @author fvalido
  */
 public class LzpDeCompressor {
-//	private StringBuffer inputDesdeAritmetico; // DEBUG
-//	
-//	// DEBUG
-//	public String getInputDesdeAritmetico() {
-//		return this.inputDesdeAritmetico.toString();
-//	}
+	/** Lugar donde se envian los datos correspondientes al trace (p/DEBUG)*/
+	private PrintStream tracer;
+	
+	/**
+	 * Constructor.
+	 */
+	public LzpDeCompressor() {
+		this.tracer = new NullPrintStream();
+	}
+
+	/**
+	 * Constructor
+	 * 
+	 * @param tracer
+	 * Establece donde enviar los datos correspondientes al trace (p/DEBUG).
+	 */
+	public LzpDeCompressor(PrintStream tracer) {
+		this.tracer = tracer;
+	}
+	
+	/**
+	 * Permite establecer donde enviar los datos correspondientes al trace (p/DEBUG). 
+	 */
+	public void setTracer(PrintStream tracer) {
+		this.tracer = tracer;
+	}
 	
 	/**
 	 * A partir de la longitud y el contexto recibido toma la cantidad indicada de caracteres
@@ -79,54 +102,57 @@ public class LzpDeCompressor {
 	/**
 	 * Descomprime el texto recibido usando como fuente el {@link InputBuffer} recibido.
 	 */
-	public String decompress(InputBuffer input) {
-//		this.inputDesdeAritmetico = new StringBuffer(); // DEBUG
-		LzpContextWorkingTable lzpContextWorkingTable = new LzpContextWorkingTable4K();
-		ArithmeticInterpreter arithmetic = new ArithmeticInterpreter(input);
-		FirstOrderLzpModel firstOrderLzpModel = new FirstOrderLzpModel();
-		ProbabilityTableByFrequencies zeroOrderLzpModel = new ProbabilityTableByFrequencies(new SimpleSuperChar(0), SuperChar.PRE_EOF_SUPER_CHAR);
-		
-		MemoryTextEmisorAndReceiver memoryTextEmisorAndReceiver = new MemoryTextEmisorAndReceiver();
-		Integer sizeMatch;
-		Character addCharacter, lastAddedCharacter = null;
-		LzpContext lzpContext = null; // contexto lzp actual.
-		int lzpContextPosition = 0;
-		boolean foundEOF = false;
-		
-		// Primero proceso los 2 primeros caracters (hasta ahi no tengo contexto y la longitud es seguro 0).
-		getLength(arithmetic, zeroOrderLzpModel); // No me interesa. Es 0.
-		foundEOF = true;
-		addCharacter = getCharacter(arithmetic, firstOrderLzpModel, null);
-		if (addCharacter != null) {
-			memoryTextEmisorAndReceiver.addChar(addCharacter);
-
+	public String decompress(InputBuffer input) throws CompressorException {
+		try {
+			LzpContextWorkingTable lzpContextWorkingTable = new LzpContextWorkingTable4K();
+			ArithmeticInterpreter arithmetic = new ArithmeticInterpreter(input);
+			FirstOrderLzpModel firstOrderLzpModel = new FirstOrderLzpModel();
+			ProbabilityTableByFrequencies zeroOrderLzpModel = new ProbabilityTableByFrequencies(new SimpleSuperChar(0), SuperChar.PRE_EOF_SUPER_CHAR);
+			
+			MemoryTextEmisorAndReceiver memoryTextEmisorAndReceiver = new MemoryTextEmisorAndReceiver();
+			Integer sizeMatch;
+			Character addCharacter, lastAddedCharacter = null;
+			LzpContext lzpContext = null; // contexto lzp actual.
+			int lzpContextPosition = 0;
+			boolean foundEOF = false;
+			
+			// Primero proceso los 2 primeros caracters (hasta ahi no tengo contexto y la longitud es seguro 0).
 			getLength(arithmetic, zeroOrderLzpModel); // No me interesa. Es 0.
-			lzpContext = addCharacter(arithmetic, firstOrderLzpModel, memoryTextEmisorAndReceiver, addCharacter);
-			lzpContextPosition = 2;
-			foundEOF = (lzpContext == null);
-		}
-
-
-		// Ahora puedo usar un algoritmo general pues no hay más casos especiales.
-		while (!foundEOF) {
-			sizeMatch = getLength(arithmetic, zeroOrderLzpModel);
-			lastAddedCharacter = recoverCharacters(sizeMatch, memoryTextEmisorAndReceiver, memoryTextEmisorAndReceiver,
-												   lzpContext, lzpContextWorkingTable);
+			foundEOF = true;
+			addCharacter = getCharacter(arithmetic, firstOrderLzpModel, null);
+			if (addCharacter != null) {
+				memoryTextEmisorAndReceiver.addChar(addCharacter);
+	
+				getLength(arithmetic, zeroOrderLzpModel); // No me interesa. Es 0.
+				lzpContext = addCharacter(arithmetic, firstOrderLzpModel, memoryTextEmisorAndReceiver, addCharacter);
+				lzpContextPosition = 2;
+				foundEOF = (lzpContext == null);
+			}
+	
+	
+			// Ahora puedo usar un algoritmo general pues no hay más casos especiales.
+			while (!foundEOF) {
+				sizeMatch = getLength(arithmetic, zeroOrderLzpModel);
+				lastAddedCharacter = recoverCharacters(sizeMatch, memoryTextEmisorAndReceiver, memoryTextEmisorAndReceiver,
+													   lzpContext, lzpContextWorkingTable);
+				
+				// Actualizo el contexto en la tabla de contextos
+				lzpContextWorkingTable.addOrReplace(lzpContext, lzpContextPosition);
+				
+				// Busco el siguiente caracter en el aritmético, lo agrego al texto, y obtengo el siguiente contexto.
+				lzpContext = addCharacter(arithmetic, firstOrderLzpModel, memoryTextEmisorAndReceiver, lastAddedCharacter);
+	
+				// Calculo la posición para el nuevo contexto.
+				lzpContextPosition += sizeMatch + 1;
+				foundEOF = (lzpContext == null);
+			}
+			lzpContextWorkingTable.close();
+			arithmetic.close();
 			
-			// Actualizo el contexto en la tabla de contextos
-			lzpContextWorkingTable.addOrReplace(lzpContext, lzpContextPosition);
-			
-			// Busco el siguiente caracter en el aritmético, lo agrego al texto, y obtengo el siguiente contexto.
-			lzpContext = addCharacter(arithmetic, firstOrderLzpModel, memoryTextEmisorAndReceiver, lastAddedCharacter);
-
-			// Calculo la posición para el nuevo contexto.
-			lzpContextPosition += sizeMatch + 1;
-			foundEOF = (lzpContext == null);
+			return memoryTextEmisorAndReceiver.getText();
+		} catch (Exception e) {
+			throw new CompressorException();
 		}
-		lzpContextWorkingTable.close();
-		arithmetic.close();
-		
-		return memoryTextEmisorAndReceiver.getText();
 	}
 	
 	/**
@@ -135,11 +161,12 @@ public class LzpDeCompressor {
 	 */
 	private int getLength(ArithmeticInterpreter arithmetic, ProbabilityTableByFrequencies zeroOrderLzpModel) {
 		SuperChar lengthRepresentation = arithmetic.decompress(zeroOrderLzpModel);
-//		this.inputDesdeAritmetico.append("<Longitud>\n"); // DEBUG
-//		this.inputDesdeAritmetico.append("TablaFrecuencias:\n"); // DEBUG
-//		this.inputDesdeAritmetico.append(zeroOrderLzpModel); // DEBUG
-//		this.inputDesdeAritmetico.append("\nLong: " + lengthRepresentation.intValue() + "\n"); // DEBUG
-//		this.inputDesdeAritmetico.append("</Longitud>\n"); // DEBUG
+		this.tracer.append("<Longitud>\n"); 				// DEBUG
+		this.tracer.append("TablaFrecuencias:\n");			// DEBUG
+		this.tracer.append(zeroOrderLzpModel.toString());	// DEBUG
+		this.tracer.append("\nLong: " + 
+				lengthRepresentation.intValue() + "\n");	// DEBUG
+		this.tracer.append("</Longitud>\n"); 				// DEBUG
 		zeroOrderLzpModel.addOccurrence(lengthRepresentation);
 
 		return lengthRepresentation.intValue();
@@ -153,18 +180,20 @@ public class LzpDeCompressor {
 	 */
 	private Character getCharacter(ArithmeticInterpreter arithmetic, FirstOrderLzpModel firstOrderLzpModel, Character contextCharacter) {
 		ProbabilityTable probabilityTable = firstOrderLzpModel.getProbabilityTableFor(contextCharacter);
-//		this.inputDesdeAritmetico.append("<Caracter>\n"); // DEBUG
-//		this.inputDesdeAritmetico.append("Contexto: " + (contextCharacter == null ? "null" : contextCharacter) + "\n"); // DEBUG
-//		this.inputDesdeAritmetico.append("TablaFrecuencias:\n"); // DEBUG
-//		this.inputDesdeAritmetico.append(probabilityTable); //DEBUG
+		this.tracer.append("<Caracter>\n"); 									// DEBUG
+		this.tracer.append("Contexto: " + 
+				(contextCharacter == null ? "null" : contextCharacter) + "\n"); // DEBUG
+		this.tracer.append("TablaFrecuencias:\n"); 								// DEBUG
+		this.tracer.append(probabilityTable.toString()); 						// DEBUG
 		SuperChar superChar = arithmetic.decompress(probabilityTable);
 		Character returnValue = null;
 		if (!superChar.equals(SuperChar.EOF)) {
 			returnValue = superChar.charValue();
 			firstOrderLzpModel.addOccurrence(contextCharacter, returnValue);
 		}
-//		this.inputDesdeAritmetico.append("\nCaracter: " + (returnValue == null ? "EOF" : returnValue) + "\n"); // DEBUG
-//		this.inputDesdeAritmetico.append("</Caracter>\n\n"); // DEBUG
+		this.tracer.append("\nCaracter: " + 
+				(returnValue == null ? "EOF" : returnValue) + "\n"); 			// DEBUG
+		this.tracer.append("</Caracter>\n\n"); 									// DEBUG
 		
 		return returnValue;
 	}

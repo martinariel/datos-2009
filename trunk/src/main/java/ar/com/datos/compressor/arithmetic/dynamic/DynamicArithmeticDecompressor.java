@@ -6,6 +6,8 @@ import java.util.Map;
 
 import ar.com.datos.buffer.InputBuffer;
 import ar.com.datos.buffer.OutputBuffer;
+import ar.com.datos.compressor.CompressorException;
+import ar.com.datos.compressor.FileDeCompressor;
 import ar.com.datos.compressor.ProbabilityTableByFrequencies;
 import ar.com.datos.compressor.SimpleSuperChar;
 import ar.com.datos.compressor.SuperChar;
@@ -13,7 +15,7 @@ import ar.com.datos.compressor.arithmetic.ArithmeticInterpreter;
 import ar.com.datos.compressor.arithmetic.traceable.ArithmeticInterpreterWithTrace;
 import ar.com.datos.documentlibrary.Document;
 
-public class DynamicArithmeticDecompressor {
+public class DynamicArithmeticDecompressor implements FileDeCompressor {
 	/** Contextos del modelo */
 	private Map<Character, ProbabilityTableByFrequencies> contexts;
 	private PrintStream tracer;
@@ -25,7 +27,7 @@ public class DynamicArithmeticDecompressor {
 		this();
 		this.tracer = out;
 	}
-	public void decompress(InputBuffer input, Document document) {
+	public void decompress(InputBuffer input, Document document) throws CompressorException {
 		ArithmeticInterpreter interpreter = constructArithmeticInterpreter(input);
 		SuperChar current = this.decompressInner(null, interpreter);;
 		Character context = current.charValue();
@@ -73,5 +75,9 @@ public class DynamicArithmeticDecompressor {
 
 	public void cleanContexts() {
 		this.contexts = new HashMap<Character, ProbabilityTableByFrequencies>();
+	}
+	
+	public String getCompressorName() {
+		return "ARITMÉTICO";
 	}
 }

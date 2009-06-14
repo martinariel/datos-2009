@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import ar.com.datos.buffer.OutputBuffer;
+import ar.com.datos.compressor.FileCompressor;
 import ar.com.datos.compressor.ProbabilityTableByFrequencies;
 import ar.com.datos.compressor.SimpleSuperChar;
 import ar.com.datos.compressor.SuperChar;
@@ -18,7 +19,7 @@ import ar.com.datos.documentlibrary.Document;
  * @author jbarreneche
  *
  */
-public class DynamicArithmeticCompressor {
+public class DynamicArithmeticCompressor implements FileCompressor {
 	/** Contextos del modelo */
 	private Map<Character, ProbabilityTableByFrequencies> contexts;
 	private PrintStream tracer;
