@@ -54,8 +54,6 @@ public class Main implements IWordsRecorderConector{
         this.backend 			 = new WordService(directorioArchivos);
         this.bufferReaderTeclado = new BufferedReader(new InputStreamReader(System.in));
         
-        openMic = true;
-        
         this.backend.setBoostMic(boostAudio);
         this.backend.setRecordingEnabled(!openMic);
        
