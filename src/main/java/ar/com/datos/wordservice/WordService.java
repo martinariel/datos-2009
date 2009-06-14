@@ -67,6 +67,8 @@ public class WordService implements Closeable {
 
     }
     
+    
+    
     public void setBoostMic(boolean value) {
     	boostMic = value;	
     }
@@ -84,10 +86,12 @@ public class WordService implements Closeable {
      * IWordsRecorderConector a notificar la grabacion de las palabras
      *
      */
-    public void addDocument(Document document , IWordsRecorderConector view){
+    public void addDocument(Document document , IWordsRecorderConector view, Byte compressor){
         WordsRecorder recorder = (recordingEnabled)?
         	new AudioWordsRecorder(view, soundPersistenceService, boostMic) :
         	new DummieWordsRecorder(view ,soundPersistenceService);
+        	
+        this.documentLibrary.setCompressor(compressor);
         
         try {
         	recorder.recordWords(crawler.addDocument(document));

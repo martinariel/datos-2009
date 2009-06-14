@@ -14,10 +14,15 @@ public class DocumentLibrary {
 	private StraightVariableLengthFile<LibraryData> documentFile;
 	private boolean isClosed;
 	private LibraryStateSerializer serializer;
+	private Byte compressor = LibraryDocumentDataSerializer.NO_COMPRESSION;
 	public DocumentLibrary(String fileName){
 		this.serializer = new LibraryStateSerializer();
 		this.documentFile = new StraightVariableLengthFile<LibraryData>(fileName, this.serializer);
 		this.isClosed = false;
+	}
+	
+	public void setCompressor ( Byte compressor){
+		this.compressor = compressor;
 	}
 	
 	/**
@@ -43,9 +48,12 @@ public class DocumentLibrary {
 		if (this.isClosed) {
 			throw new RuntimeException();
 		}
+		this.serializer.setCompressor(compressor);
 		this.incrementDocumentCounter();
 		return documentFile.addEntity(new LibraryDocumentData(document));
 	}
+	
+
 	
 	protected void incrementDocumentCounter() {
 		getSerializer().setCurrentToCounter();
