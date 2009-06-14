@@ -1,5 +1,6 @@
 package ar.com.datos.compressor.lzp;
 
+import java.io.PrintStream;
 import java.util.Iterator;
 
 import ar.com.datos.buffer.OutputBuffer;
@@ -12,6 +13,7 @@ import ar.com.datos.compressor.lzp.table.LzpContext;
 import ar.com.datos.compressor.lzp.table.LzpContextWorkingTable;
 import ar.com.datos.compressor.lzp.table.LzpContextWorkingTable4K;
 import ar.com.datos.compressor.lzp.text.TextEmisor;
+import ar.com.datos.util.NullPrintStream;
 import ar.com.datos.util.Tuple;
 
 /**
@@ -21,12 +23,32 @@ import ar.com.datos.util.Tuple;
  */
 public class LzpCompressor {
 	private static int LONGEST_MATCH = ((1 << 16) - 1);
-//	private StringBuffer outputAAritmetico; // DEBUG
-//	
-//	// DEBUG
-//	public String getOutputAAritmetico() {
-//		return this.outputAAritmetico.toString();
-//	}
+	/** Lugar donde se envian los datos correspondientes al trace (p/DEBUG)*/
+	private PrintStream tracer;
+	
+	/**
+	 * Constructor.
+	 */
+	public LzpCompressor() {
+		this.tracer = new NullPrintStream();
+	}
+
+	/**
+	 * Constructor
+	 * 
+	 * @param tracer
+	 * Establece donde enviar los datos correspondientes al trace (p/DEBUG).
+	 */
+	public LzpCompressor(PrintStream tracer) {
+		this.tracer = tracer;
+	}
+	
+	/**
+	 * Permite establecer donde enviar los datos correspondientes al trace (p/DEBUG). 
+	 */
+	public void setTracer(PrintStream tracer) {
+		this.tracer = tracer;
+	}
 	
 	/**
 	 * Compara el texto que se obtiene a partir de iteratorCurrent con el texto posterior a la última aparición
@@ -103,7 +125,6 @@ public class LzpCompressor {
 	 * Comprime el texto recibido dejando la salida en el {@link OutputBuffer}.
 	 */
 	public void compress(TextEmisor textEmisor, OutputBuffer output) {
-//		this.outputAAritmetico = new StringBuffer(); // DEBUG
 		LzpContextWorkingTable lzpContextWorkingTable = new LzpContextWorkingTable4K();
 		ArithmeticEmissor arithmetic = new ArithmeticEmissor(output);
 		FirstOrderLzpModel firstOrderLzpModel = new FirstOrderLzpModel();
@@ -180,11 +201,11 @@ public class LzpCompressor {
 	 * Mantiene actualizada la tabla de probabilidades recibida.
 	 */
 	private void sendOutLength(ArithmeticEmissor arithmetic, ProbabilityTableByFrequencies zeroOrderLzpModel, int length) {
-//		this.outputAAritmetico.append("<Longitud>\n"); // DEBUG
-//		this.outputAAritmetico.append("TablaFrecuencias:\n"); // DEBUG
-//		this.outputAAritmetico.append(zeroOrderLzpModel); // DEBUG
-//		this.outputAAritmetico.append("\nLong: " + length + "\n"); // DEBUG
-//		this.outputAAritmetico.append("</Longitud>\n"); // DEBUG
+		this.tracer.append("<Longitud>\n"); 				// DEBUG
+		this.tracer.append("TablaFrecuencias:\n"); 			// DEBUG
+		this.tracer.append(zeroOrderLzpModel.toString()); 	// DEBUG
+		this.tracer.append("\nLong: " + length + "\n"); 	// DEBUG
+		this.tracer.append("</Longitud>\n"); 				// DEBUG
 		SuperChar lengthRepresentation = new SimpleSuperChar(length);
 		arithmetic.compress(lengthRepresentation, zeroOrderLzpModel);
 		zeroOrderLzpModel.addOccurrence(lengthRepresentation);
@@ -196,12 +217,13 @@ public class LzpCompressor {
 	 */
 	private void sendOutCharacter(ArithmeticEmissor arithmetic, FirstOrderLzpModel firstOrderLzpModel, Character contextCharacter, Character character) {
 		ProbabilityTable probabilityTable = firstOrderLzpModel.getProbabilityTableFor(contextCharacter);
-//		this.outputAAritmetico.append("<Caracter>\n"); // DEBUG
-//		this.outputAAritmetico.append("Contexto: " + (contextCharacter == null ? "null" : contextCharacter) + "\n"); // DEBUG
-//		this.outputAAritmetico.append("TablaFrecuencias:\n"); // DEBUG
-//		this.outputAAritmetico.append(probabilityTable); //DEBUG
-//		this.outputAAritmetico.append("\nCaracter: " + character + "\n"); // DEBUG
-//		this.outputAAritmetico.append("</Caracter>\n\n"); // DEBUG
+		this.tracer.append("<Caracter>\n"); 									// DEBUG
+		this.tracer.append("Contexto: " + 
+				(contextCharacter == null ? "null" : contextCharacter) + "\n"); // DEBUG
+		this.tracer.append("TablaFrecuencias:\n"); 								// DEBUG
+		this.tracer.append(probabilityTable.toString()); 						// DEBUG
+		this.tracer.append("\nCaracter: " + character + "\n"); 					// DEBUG
+		this.tracer.append("</Caracter>\n\n"); 									// DEBUG
 		arithmetic.compress(new SimpleSuperChar(character), probabilityTable);
 		firstOrderLzpModel.addOccurrence(contextCharacter, character);
 	}
@@ -211,12 +233,13 @@ public class LzpCompressor {
 	 */
 	private void sendOutEOF(ArithmeticEmissor arithmetic, FirstOrderLzpModel firstOrderLzpModel, Character contextCharacter) {
 		ProbabilityTable probabilityTable = firstOrderLzpModel.getProbabilityTableFor(contextCharacter);
-//		this.outputAAritmetico.append("<Caracter>\n"); // DEBUG
-//		this.outputAAritmetico.append("Contexto: " + (contextCharacter == null ? "null" : contextCharacter) + "\n"); // DEBUG
-//		this.outputAAritmetico.append("TablaFrecuencias:\n"); // DEBUG
-//		this.outputAAritmetico.append(probabilityTable); //DEBUG
-//		this.outputAAritmetico.append("\nCaracter: EOF\n"); // DEBUG
-//		this.outputAAritmetico.append("</Caracter>\n\n"); // DEBUG
+		this.tracer.append("<Caracter>\n"); 									// DEBUG
+		this.tracer.append("Contexto: " + 
+				(contextCharacter == null ? "null" : contextCharacter) + "\n"); // DEBUG
+		this.tracer.append("TablaFrecuencias:\n"); 								// DEBUG
+		this.tracer.append(probabilityTable.toString());						// DEBUG
+		this.tracer.append("\nCaracter: EOF\n"); 								// DEBUG
+		this.tracer.append("</Caracter>\n\n"); 									// DEBUG
 		arithmetic.compress(SuperChar.EOF, probabilityTable);
 	}
 }
