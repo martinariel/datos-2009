@@ -19,6 +19,8 @@ import ar.com.datos.compressor.arithmetic.dynamic.DynamicArithmeticCompressor;
 import ar.com.datos.compressor.arithmetic.dynamic.DynamicArithmeticDecompressor;
 import ar.com.datos.compressor.lzp.file.LzpFileCompressor;
 import ar.com.datos.compressor.lzp.file.LzpFileDeCompressor;
+import ar.com.datos.compressor.ppmc.file.PPMCFileCompressor;
+import ar.com.datos.compressor.ppmc.file.PPMCFileDecompressor;
 import ar.com.datos.documentlibrary.Document;
 import ar.com.datos.documentlibrary.FileSystemDocument;
 import ar.com.datos.documentlibrary.MemoryDocument;
@@ -241,14 +243,12 @@ public class Main implements IWordsRecorderConector{
 				returnValue = (decompressor) ? new LzpFileDeCompressor(ps) : new LzpFileCompressor(ps);
 				break;
 			}
-//			TODO
-// NOTA: Aclarar con un mensaje que se usa el PPMC por defecto!!! (modelo 4 creo)
-//			case 3: {
-//				returnValue = (decompressor) ? new PpmcFileDeCompressor(ps) : new PpmcFileCompressor(ps);
-//				break;
-//			}
+			case 3: {
+				sendMessageLn("Se utilizara por defecto PPMC de orden 4");
+				returnValue = (decompressor) ? new PPMCFileDecompressor(ps) : new PPMCFileCompressor(ps);
+				break;
+			}
 		}
-    	
     	return returnValue;
     }
     
