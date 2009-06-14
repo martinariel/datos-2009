@@ -8,6 +8,8 @@ import ar.com.datos.serializer.exception.SerializerException;
 public class LibraryStateSerializer implements Serializer<LibraryData> {
 
 	private Serializer<LibraryData> serializer;
+	private Byte compressor = LibraryDocumentDataSerializer.NO_COMPRESSION;
+	
 	public LibraryStateSerializer() {
 		setCurrentToDocument();
 	}
@@ -31,6 +33,12 @@ public class LibraryStateSerializer implements Serializer<LibraryData> {
 
 	public void setCurrentToDocument() {
 		this.serializer = new LibraryDocumentDataSerializer();
+		((LibraryDocumentDataSerializer)this.serializer).setCompressor(this.compressor);
 	}
+	
+	public void setCompressor( Byte compressor){
+		this.compressor = compressor;
+	}
+	
 
 }

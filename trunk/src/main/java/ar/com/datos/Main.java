@@ -54,6 +54,8 @@ public class Main implements IWordsRecorderConector{
         this.backend 			 = new WordService(directorioArchivos);
         this.bufferReaderTeclado = new BufferedReader(new InputStreamReader(System.in));
         
+        openMic = true;
+        
         this.backend.setBoostMic(boostAudio);
         this.backend.setRecordingEnabled(!openMic);
        
@@ -156,11 +158,27 @@ public class Main implements IWordsRecorderConector{
     	try {
             return Integer.parseInt(readKeyboardString());
     	} catch (NumberFormatException nfe) {
-        	sendMessageLn("ingrese SOLO n�meros");
+        	sendMessageLn("ingrese SOLO numeros");
         	return readKeyBoardInt();
         }
     }
 
+    /**
+     * 
+     * @return Byte leido de teclado.
+     */
+    private byte readKeyBoardByte()
+    {
+    	try{
+    		return Byte.parseByte(readKeyboardString());
+    	}
+    	catch (NumberFormatException nfe) {
+    		sendMessageLn("ingrese SOLO numeros");
+    		return readKeyBoardByte();
+    	}
+    	
+    }
+    
     /**
      * Menu Inicial
      *
@@ -269,7 +287,16 @@ public class Main implements IWordsRecorderConector{
            Document documento = new FileSystemDocument(ruta);
 
            if (documento.canOpen()){
-               backend.addDocument(documento, this);
+        	   
+        	   sendMessageLn("Seleccione el tipo de compresor:");
+        	   sendMessageLn("1 - LZP.");
+        	   sendMessageLn("2 - PPMC.");
+        	   sendMessageLn("Cualquier otro numero: Sin compresion.");
+        	   
+        	   Byte compresor = readKeyBoardByte();
+               backend.addDocument(documento, this, compresor);
+               
+               
            }
            else
            {
