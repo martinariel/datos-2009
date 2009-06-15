@@ -6,7 +6,7 @@ El compresor utiliza el \textit{OutputBuffer} recibido para crear un \textit{Ari
 
 \begin{figure}[!htp]
 \centering
-\makebox[\textwidth]{\includegraphics[scale=1.2,natwidth=20pt,natheight=10pt,width=1.15\textwidth]{img/LzpMainPicture.png}}
+\makebox[\textwidth]{\includegraphics[scale=1.2,natwidth=20pt,natheight=10pt,width=0.85\textwidth]{img/LzpMainPicture.png}}
 \caption{LzpMainPicture}
 \end{figure}
 
@@ -17,17 +17,18 @@ Tanto el compresor como el descompresor tiene una \textit{ProbabilityTable} para
 
 Además tanto el compresor como el descompresor utilizan una \textit{LzpContextWorkingTable} para almacenar la última aparición de cada digrama.
 
+\newpage
 \subsection{TextEmisor y TextReceiver}
+
+\begin{figure}[!htp]
+\centering
+\makebox[\textwidth]{\includegraphics[scale=1.2,natwidth=20pt,natheight=10pt,width=0.75\textwidth]{img/LzpTextManagementClasses.png}}
+\caption{LzpTextManagementClasses}
+\end{figure}
 
 Un \textit{TextEmisor} es un emisor de caracteres. Debe poder ser iterador a partir de cualquier posición.
 
 Un \textit{TextReceiver} es un receptor de caracteres. Debe poderse agregar caracteres al final de él.
-
-\begin{figure}[!htp]
-\centering
-\makebox[\textwidth]{\includegraphics[scale=1.2,natwidth=20pt,natheight=10pt,width=1.15\textwidth]{img/LzpTextManagementClasses.png}}
-\caption{LzpTextManagementClasses}
-\end{figure}
 
 \textit{DocumentTextEmisor} es un \textit{TextEmisor} basado en un \textit{Document}. Permite la interacción de la compresión LZP con un Document sin acoplarlos. El \textit{LzpCompressor} recibe esto.
 
@@ -41,7 +42,7 @@ Se eligió entonces el uso de un array primitivo, cuyos elementos son la unión (c
 
 \begin{figure}[!htp]
 \centering
-\makebox[\textwidth]{\includegraphics[scale=1.2,natwidth=20pt,natheight=10pt,width=1.15\textwidth]{img/LzpContextWorkingTable.png}}
+\makebox[\textwidth]{\includegraphics[scale=1.2,natwidth=20pt,natheight=10pt,width=0.75\textwidth]{img/LzpContextWorkingTable.png}}
 \caption{LzpContextWorkingTable}
 \end{figure}
 
