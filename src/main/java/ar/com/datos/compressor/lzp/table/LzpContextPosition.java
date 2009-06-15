@@ -13,7 +13,7 @@ import ar.com.datos.util.UnsignedInt;
 public class LzpContextPosition implements Element<LzpContext> {
 	private char firstChar;
 	private char secondChar;
-	private UnsignedInt position;
+	private int position;
 	
 	/*
 	 * (non-Javadoc)
@@ -31,7 +31,7 @@ public class LzpContextPosition implements Element<LzpContext> {
 	@Override
 	public boolean updateElement(Element<LzpContext> element) {
 		LzpContextPosition lzpContextPosition = (LzpContextPosition)element;
-		boolean returnValue = (this.position.equals(lzpContextPosition.position)); 
+		boolean returnValue = (this.position == lzpContextPosition.position); 
 		
 		this.position = lzpContextPosition.position;
 		
@@ -45,7 +45,7 @@ public class LzpContextPosition implements Element<LzpContext> {
 	public LzpContextPosition(LzpContext lzpContext, UnsignedInt position) {
 		this.firstChar = lzpContext.getFirstChar();
 		this.secondChar = lzpContext.getSecondChar();
-		this.position = position;
+		this.position = position.getAsSignedInt();
 	}
 
 	/*
@@ -78,13 +78,13 @@ public class LzpContextPosition implements Element<LzpContext> {
 	 */
 	@Override
 	public String toString() {
-		return "<" + this.getKey().toString() + "=" + this.position.toString() + ">"; 
+		return "<" + this.getKey().toString() + "=" + getPosition() + ">"; 
 	}
 
 	/**
 	 * Permite obtener la posición.
 	 */
 	public UnsignedInt getPosition() {
-		return position;
+		return new UnsignedInt(this.position);
 	}
 }
