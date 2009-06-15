@@ -35,7 +35,7 @@ Un \textit{TextReceiver} es un receptor de caracteres. Debe poderse agregar cara
 
 \subsection{LzpContextWorkingTable}
 
-Por disponer solo de 4kb de memoria debía utilizarse una estructura que podamos medir su tamaño ocupado en memoria. Además se debía intentar economizar el espacio de memoria utilizado por ser muy poca la disponible.
+Por disponer solo de 4KB de memoria debía utilizarse una estructura que podamos medir su tamaño ocupado en memoria. Además se debía intentar economizar el espacio de memoria utilizado por ser muy poca la disponible.
 
 Se eligió entonces el uso de un array primitivo, cuyos elementos son la unión (como si fuera un struct de c) de un char, otro char y un int (lo que llamaremos \textit{LzpContextPosition}). Los chars se corresponden con los caracteres del contexto o digrama y el int con la longitud. El int se maneja como un \textit{UnsignedInt} (una clase especial creada para la ocasión) para dar la posibilidad de disponer de una longitud máxima mayor (el doble) que si fuera signed. Todo esto nos da un total de 8 bytes por posición del array.
 
@@ -47,10 +47,10 @@ Se eligió entonces el uso de un array primitivo, cuyos elementos son la unión (c
 
 Para el manejo del array se eligió hacer una especie de hashtable basada en el vector. Es decir elegimos un módulo, en este caso 22. Se divide al array en 22 partes iguales, obteniendo 22 partes de 23 posiciones (22*23*8 = 4048 [los bytes restantes son usados en otras cosas o reservados]). Para ver en que parte debe ponerse o buscarse un digrama se obtiene el hashCode del digrama y se le aplica el módulo de 22. Si se buscara un contexto/digrama y no se lo encontrase en la porción elegida por el hashCode, se lo buscará en disco (sin modificar para nada la estructura en memoria). Si se estuviera intentando agregar un digrama y no hubiese lugar en esa porción del array se baja a disco el contexto/digrama más antiguo de los contenidos en esa porción del array (que puede o no ser el más antiguo de todo el array) y se deja el digrama en la posición liberada. Notar que las operaciones de búsqueda/agregado son independientes; cuando se busca algo, sea encontrado en memoria o en disco, por como funciona lzp terminará siendo agregado a la tabla con la posición actualizada, pero esta será una operación independiente de la búsqueda. En el caso de necesitar liberar una posición en la hashtable por agregarse un digrama que no se encuentra en memoria en ese momento, solo será bajado a disco UN solo LzpContextPosition.
 
-Para el guardado en disco se utiliza un Arbol B#. Se utilizó el arbol b# genérico que fue documentado en la segunda entrega. Se crearon para ello los serializadores correspondientes a la clave (el digrama) y el elemento (LzpContextPosition).
+Para el guardado en disco se utiliza un Arbol B\#. Se utilizó el arbol B\# genérico que fue documentado en la segunda entrega. Se crearon para ello los serializadores correspondientes a la clave (el digrama) y el elemento (LzpContextPosition).
 
 La estructura simil hashtable elegida es mucho más rápida que si se hubiese usado una tabla secuencial. Como contrapartida la estructura secuencial mantendría en memoria siempre los digramas más recientes. Notar que, en el caso de hashtable, el extremo de usar un mod 506 (22*23 = 506) sería lo mismo que usar una tabla secuencial. En el otro extremo, usar un mod 1 se tendría acceso inmediato al LzpContextPosition buscado pero no se utilizaría en absoluto el criterio de mantener en memoria los registros más recientes. El mod elegido (22) es el que promedia ambas situaciones.
 
 \subsection{Serializer}
 
-Se creó además un \textit{LzpSerializer} que utiliza para la deshidratación un \texit{LzpCompressor} y para la hidratación un \textit{LzpDeCompressor}. Ver diagrama LzpMainPicture.
+Se creó además un \textit{LzpSerializer} que utiliza para la deshidratación un \textit{LzpCompressor} y para la hidratación un \textit{LzpDeCompressor}. Ver diagrama LzpMainPicture.
