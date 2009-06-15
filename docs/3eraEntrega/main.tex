@@ -1,0 +1,95 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Definición del tipo de documento.                                           % 
+% Posibles tipos de papel: a4paper, letterpaper, legalpapper                  %
+% Posibles tamaños de letra: 10pt, 11pt, 12pt                                 %
+% Posibles clases de documentos: article, report, book, slides                %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[10pt, spanish, a4paper]{article}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Los paquetes permiten ampliar las capacidades de LaTeX.                     %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage[spanish]{babel}     % Paquete para definir el idioma usado.
+\usepackage[latin1]{inputenc}   % Define la codificación de caracteres 
+                                % (latin1 es ISO 8859-1)
+%\usepackage[T1]{fontenc}        % Agrega caracteres extendidos al font
+\usepackage{t1enc}
+\usepackage{palatino}           % Cambia el font por omision a Palatino
+\usepackage{graphicx}           % Paquete para inclusión de gráficos.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Modifico los margenes para tener más espacio por linea
+\oddsidemargin 0.0in    % margen derecho
+\evensidemargin 1.0in   % margen izquierdo
+\textwidth 6.0in        % ancho del texto
+
+% Tí­tulo principal del documento.
+\title{\textbf{The Speaker (3era Entrega)}}
+
+% Información sobre los autores.
+\author{    
+            Juan Manuel Barrenche, \textit{Padrón Nro. 86.152}                 \\
+            \texttt{ snipperme@gmail.com }                                     \\
+            Martí­n Fernández, \textit{Padrón Nro. 88.171}                      \\
+            \texttt{ tinchof@gmail.com }                                       \\
+            Marcos J. Medrano, \textit{Padrón Nro. 86.729}                     \\
+            \texttt{ marcosmedrano0@gmail.com }                                \\
+            Federico Valido, \textit{Padrón Nro. 82.490}                       \\
+            \texttt{ fvalido@gmail.com }                                       \\ 
+                                                                               \\
+            \normalsize{Grupo Nro. 11 (YES)}                                   \\
+            \normalsize{Ayudante: Renzo Navas}                         	       \\
+            \normalsize{1er. Cuatrimestre de 2009}                             \\
+            \normalsize{75.06 Organización de Datos - Titular: Arturo Servetto}\\
+            \normalsize{Facultad de Ingeniería, Universidad de Buenos Aires}   \\
+       }
+\date{Lunes 15 de Junio de 2009}
+
+
+% Comienzo del documento
+\begin{document}
+
+\maketitle                % Inserta el título.
+\thispagestyle{empty}     % Quita el número en la primer página.
+
+% Resumen que aparece en la primera página (antes de la tabla de contenidos)
+\begin{abstract}
+Documentación de la arquitectura y compresores utilizados en la 3era entrega del trabajo práctico del curso de \textit{75.06 Organización de Datos} de la cátedra Servetto.\\
+Se detallan las clases e interfaces principales y su interacción, pero no se hace referencia a la arquitectura 
+utilizada en las entregas anteriores ya que el punto de contacto con la nueva funcionalidad es mínimo.
+Este documento ha sido desarrollado en \LaTeX.
+\end{abstract}
+
+\newpage
+\tableofcontents        % Comentar si no se desea la Table Of Content.
+\newpage
+
+\section{The Big Picture}
+
+Se implementaron los compresores como \textbf{Serializadores}. En nuestra arquitectura actual, los serializadores son utilizados en todos los manejadores de archivos (VLFM, StraightFM,...) para hidratar y deshidratar objetos. \\
+Implementando los compresores de esta manera obtuvimos la ventaja de no tener que modificar nuestra arquitectura actual, que actualmente está funcionando correctamente. Simplemente se reemplazan serializadores actuales por los nuevos serializadores que serán capaces de comprimir, en nuestro caso, los Documentos.
+
+\begin{figure}[!htp]
+\centering
+\makebox[\textwidth]{\includegraphics[scale=0.5,natwidth=20pt,natheight=10pt]{img/general.png}}
+	\caption{Diagrama de clases general de la arquitectura}
+\end{figure}
+
+Todos los serializadores que fue necesario implementar se apoyan, para su emisión, en el funcionamiento de un aritmético. Como se verá mas adelante, este proceso de emisión interactúa con otras dos clases claves de la solución implementada que son una tabla de probabilidades (\textit{ProbabilityTable}) y una clase especial de (\textit{SuperChar}) que permite la inclusión de símbolos específicos para los compresores (tales como \textbf{EOF} y \textbf{Escape}).
+
+\include{probabilityTable}
+
+\include{arithmetic_core}
+
+\include{ppmc}
+
+\include{lzp}
+
+\section{Otras observaciones y variantes}
+Finalmente tenemos 2 serializadores distintos para comprimir los documentos (LZP y PPMC), sin embargo, los documentos se almacenan en un único archivo que posee un único serializador. Por lo cual, el serializador de \textit{DocumentLibrary} es el encargado de lidiar con esos dos serializadores dependiendo de que modo se seleccione para la compresión del documento a almacenar. Durante la recuperación de los mismos, para que se pueda identificar de que modo se almacenó, el serializador agrega información de control que es lo primero que lee antes de hidratar el documento.
+
+Algo para destacar, común a todos los compresores, es que los por consigna/requisito del TP debe utilizarse un alfabeto de 16 bits (y en lzp longitudes de 16 bits). Pero los textos que utiliza como entrada el programa utilizan una codificación de 8 bits (ISO8859-1). Y la codificación más utilizada (UTF-8) también lo hace. Esto provoca que en textos cortos o medianos la compresión genere una salida de mayor tamaño que el texto original. Nos planteamos tomar desde disco los caracteres de a dos, manejándolos como ''raw'', generando un caracter de fantasia de 16 bits, pero haciendo esto hubiesemos perdido la ventaja de usar PPMC y LZP que son compresores pensados para trabajar con texto de lenguaje natural.
+
+Los documentos, por facilidad, se trataron en memoria, pero también estuvo el planteo de volcarlos a archivos de trabajo y hacer lecturas de dicha información cuando fuera requerida. Si bien tiene la ventaja de reducir la memoria consumida incrementan las lecturas a disco y teniendo casos como el LZP que requiere la relectura de información pasada podría, si no se implementa algún caché de lectura, ralentizar el proceso.
+
+\end{document}
