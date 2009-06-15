@@ -1,0 +1,54 @@
+\section{Compresión LZP}
+
+Se separó el compresor y el descompresor en clases aparte. El compresor recibe un \textit{TextEmisor} (ver luego) y un \textit{OutputBuffer} donde dejar los bits de la compresión. Mientras que el descompresor recibe un \textit{InputBuffer} desde donde obtener los bits a descomprimir y devuelve un String representando la descompresión realizada.
+
+El compresor utiliza el \textit{OutputBuffer} recibido para crear un \textit{ArithmeticEmissor} que recibirá las emisiones del LzpCompressor, y dejará estas emisiones representadas en bits dentro del \textit{OutputBuffer}.
+
+\begin{figure}[!htp]
+\centering
+\makebox[\textwidth]{\includegraphics[scale=1.2,natwidth=20pt,natheight=10pt,width=1.15\textwidth]{img/LzpMainPicture.png}}
+\caption{LzpMainPicture}
+\end{figure}
+
+El descompresor utiliza el \textit{InputBuffer} recibido para crear un \textit{ArithmeticInterpreter} que le brindará, a partir de los bits obtenidos desde el \textit{InputBuffer}, emisiones al descompresor que utilizara para obtener la salida.
+
+Tanto el compresor como el descompresor tiene una \textit{ProbabilityTable} para manejar las probabilidades de las longitudes, y un \textit{FirstOrderLzpModel} que les permite administrar las tablas de probabilidades de cada contexto para los caracteres. Cada vez que el compresor/descompresor hace uso del aritmético envia, junto con el símbolo ("caracter" [+EOF] o longitud) a comprimir/descomprimir, la tabla de probabilidades correspondiente.
+\textit{FirstOrderLzpModel} mantiene las tablas de probabilidades para cada contexto, o las crea de manera lazy si no existían al momento de ser pedidas.
+
+Además tanto el compresor como el descompresor utilizan una \textit{LzpContextWorkingTable} para almacenar la última aparición de cada digrama.
+
+\subsection{TextEmisor y TextReceiver}
+
+Un \textit{TextEmisor} es un emisor de caracteres. Debe poder ser iterador a partir de cualquier posición.
+
+Un \textit{TextReceiver} es un receptor de caracteres. Debe poderse agregar caracteres al final de él.
+
+\begin{figure}[!htp]
+\centering
+\makebox[\textwidth]{\includegraphics[scale=1.2,natwidth=20pt,natheight=10pt,width=1.15\textwidth]{img/LzpTextManagementClasses.png}}
+\caption{LzpTextManagementClasses}
+\end{figure}
+
+\textit{DocumentTextEmisor} es un \textit{TextEmisor} basado en un \textit{Document}. Permite la interacción de la compresión LZP con un Document sin acoplarlos. El \textit{LzpCompressor} recibe esto.
+
+\textit{MemoryTextEmisorAndReceiver} es un \textit{TextEmisor} y \textit{TextReceiver} basado en un \textit{StringBuffer}. El iterador, además de poder iterar a partir de cualquier posición del texto, permite iterar sobre los datos agregados en el transcurso de la iteración. Esto es algo necesario para que pueda llevar a cabo su función el \textit{LzpDeCompressor}.
+
+\subsection{LzpContextWorkingTable}
+
+Por disponer solo de 4kb de memoria debía utilizarse una estructura que podamos medir su tamaño ocupado en memoria. Además se debía intentar economizar el espacio de memoria utilizado por ser muy poca la disponible.
+
+Se eligió entonces el uso de un array primitivo, cuyos elementos son la unión (como si fuera un struct de c) de un char, otro char y un int (lo que llamaremos \textit{LzpContextPosition}). Los chars se corresponden con los caracteres del contexto o digrama y el int con la longitud. El int se maneja como un \textit{UnsignedInt} (una clase especial creada para la ocasión) para dar la posibilidad de disponer de una longitud máxima mayor (el doble) que si fuera signed. Todo esto nos da un total de 8 bytes por posición del array.
+
+\begin{figure}[!htp]
+\centering
+\makebox[\textwidth]{\includegraphics[scale=1.2,natwidth=20pt,natheight=10pt,width=1.15\textwidth]{img/LzpContextWorkingTable.png}}
+\caption{LzpContextWorkingTable}
+\end{figure}
+
+Para el manejo del array se eligió hacer una especie de hashtable basada en el vector. Es decir elegimos un módulo, en este caso 22. Se divide al array en 22 partes iguales, obteniendo 22 partes de 23 posiciones (22*23*8 = 4048 [los bytes restantes son usados en otras cosas o reservados]). Para ver en que parte debe ponerse o buscarse un digrama se obtiene el hashCode del digrama y se le aplica el módulo de 22. Si se buscara un contexto/digrama y no se lo encontrase en la porción elegida por el hashCode, se lo buscará en disco (sin modificar para nada la estructura en memoria). Si se estuviera intentando agregar un digrama y no hubiese lugar en esa porción del array se baja a disco el contexto/digrama más antiguo de los contenidos en esa porción del array (que puede o no ser el más antiguo de todo el array) y se deja el digrama en la posición liberada. Notar que las operaciones de búsqueda/agregado son independientes; cuando se busca algo, sea encontrado en memoria o en disco, por como funciona lzp terminará siendo agregado a la tabla con la posición actualizada, pero esta será una operación independiente de la búsqueda. En el caso de necesitar liberar una posición en la hashtable por agregarse un digrama que no se encuentra en memoria en ese momento, solo será bajado a disco UN solo LzpContextPosition.
+
+Para el guardado en disco se utiliza un Arbol B#. Se utilizó el arbol b# genérico que fue documentado en la segunda entrega. Se crearon para ello los serializadores correspondientes a la clave (el digrama) y el elemento (LzpContextPosition).
+
+La estructura simil hashtable elegida es mucho más rápida que si se hubiese usado una tabla secuencial. Como contrapartida la estructura secuencial mantendría en memoria siempre los digramas más recientes. Notar que, en el caso de hashtable, el extremo de usar un mod 506 (22*23 = 506) sería lo mismo que usar una tabla secuencial. En el otro extremo, usar un mod 1 se tendría acceso inmediato al LzpContextPosition buscado pero no se utilizaría en absoluto el criterio de mantener en memoria los registros más recientes. El mod elegido (22) es el que promedia ambas situaciones.
+
+
