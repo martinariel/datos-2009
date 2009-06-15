@@ -25,7 +25,7 @@ public class DummieWordsRecorder  implements WordsRecorder {
 	
 	@Override
 	public void recordWords(Collection<String> palabras) {
-		byte[] audio = { 0 } ;
+		byte[] audio = { 46, 115, 110, 100, 0, 0, 0, 24, -1, -1, -1, -1, 0, 0, 0, 3, 0, 0, -84, 68, 0, 0, 0, 2, -1, -15 } ;
 		for (String palabra : palabras){
 			AnotherInputStream stream = new AnotherInputStream(audio);
 			
