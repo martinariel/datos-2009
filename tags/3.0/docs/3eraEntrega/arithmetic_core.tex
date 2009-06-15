@@ -1,0 +1,30 @@
+\section{Procesado Aritmético}
+Todo el manejo de rangos propio del aritmético se concentró en la clase \textit{ArithmeticProcessor}. La cual mantiene el estado de piso y techo y, además, conoce cuando deben generarse overflows y underflows. Cada vez que se le pide procesa un único paso de aritmético (sin importar si es compresión o descompresión) con una tabla que se le pasa por parámetro y un objeto que se encarga únicamente de decirle cual es la posición de la tabla de probabilidades que tiene que utilizar para quedarse como nuevo techo y piso (a este objeto se lo denomina matcher).
+
+Esta clase es abstracta para que sus subclasificaciones definan la acción a realizar (comprimir o descomprimir) ya que no define ninguna interfaz pública. Las subclases dirán que se hace con el resultado del proceso de la tabla. Este procesado invoca métodos templates para hacerle saber a sus descendientes que está ocurriendo en el process (por ejemplo, avisa cuando ocurren overflows y de que bits, etc.). 
+
+Por ejemplo, para el caso de compresión, el objeto de matcher definido se basa en el caracter a comprimir y cada vez que ocurre overflow o se "limpian" los underflows acumulados emite el bit correspondiente.
+
+En cambio, el caso de descompresión, toma de una entrada los bits y el matcher se basa en que valores tiene el rango para decidir en que momento debe para el proceso de la tabla. Cuando ocurren los overflow o underflows el mismo descarta de su valor actual dichos bits y solicita mas bits a la entrada. También verifica que los bits ocultados cuando ocurrió la el underflow sean los opuestos al primer overflow que ocurra.
+
+Esto también nos facilitó el agregado de \textit{tracers} para el aritmético de Orden 1 que se implementó para la prueba de este módulo.
+\subsection{Emisión y lectura}
+Debido a que la arquitectura de los Serializadores se basa en emisiones y lecturas de bytes (InputBuffer y OutputBuffer) pero el funcionamiento del aritmético emite y lee de a bits se implementaron dos clases cuyo único fin es adaptar esta diferencia de tamaños de manejo de datos.
+La primera de ellas es el \textit{BitEmisor}, el cual toma información en bytes de un \textit{InputBuffer} y entrega bits (esto lo hace iterando sobre los bits de cada byte). 
+Su contraparte es el \textit{BitReceiver}, al cual se le puede pasar datos de a bits, los junta hasta obtener un octetos que luego emite en un único byte en el \textit{OutputBuffer} que se le haya configurado de salida. La contra que tiene es que se le debe forzar el última emisión por si no llegó a obtener los 8 bits.
+
+\begin{figure}[!htp]
+\centering
+\makebox[\textwidth]{\includegraphics[scale=0.5,natwidth=20pt,natheight=10pt]{img/Bits.png}}
+	\caption{Diagrama de clases para BitEmisor y BitReceiver}
+\end{figure}
+
+\subsection{Compresor y Descompresor Aritmético}
+Como se comentó anteriormente, ambas clases extienden del proceso aritmético. Tratan de a un caracter por vez para que los compresores que se utilizan dentro de su forma de trabajo un aritmético puedan usarlo sin problema y nunca modifican la tabla de probabilidades que reciben ya que los usuarios de estas clases son los encargados de hacer mantenimiento de las mismas.
+
+El Compresor, como se mencionó anteriormente, sólo emite los overflow que el proceso le indique. El matcher que define se basa en el caracter a comprimir. Mientras que el descompresor toma bits de la entrada cada vez que necesita nueva información (esto ocurre cuando se detectan overflows o underflows).
+
+\subsection{Trace del proceso aritmético}
+Parte de los requerimientos era implementar una interfaz de consola para verificar el funcionamiento del compresor aritmético. Para ello se implementó un aritmético dinámico de Orden 1 (que maneja los contextos por medio de HashMaps) y que puede ser configurado con un PrintStream al que se le enviará, a modo de Log, información sobre que está sucediendo dentro del aritmético.
+
+Estas capacidad de trace fue agregada en subclasificaciones de las clases de compresión y descompresión para manetener limpio el código de las mismas.

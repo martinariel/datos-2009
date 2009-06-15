@@ -1,0 +1,48 @@
+\section{Probability Table}
+
+\subsection{SuperChar}
+
+Se necesitaba una forma de representar símbolos, que fuera lo más amplia y flexible posible. Se inventó entonces el concepto de \textit{SuperChar} que no es más que una abstracción colocada por sobre un entero. De esta manera pueden representarse los caracteres de un alfabeto de 16 bits junto con ''caracteres'' especiales como EOF y ESC. Además se puede utilizar para representar longitudes (es decir, que los símbolos sean números y no letras), lo cual era necesario para el compresor LZP.
+
+La interface \textit{SuperChar} define un método llamado \textit{matches()} que permite saber si un SuperChar concuerda con otro. Concordar en este caso no es lo mismo que ser igual. Por ejemplo, existe un caracter especial llamado \textit{ESC} que tiene la particularidad de concordar con cualquier otro SuperChar.
+
+En adelante se usarán indistintamente los términos SuperChar y símbolo.
+
+\subsection{Interface ProbabilityTable}
+
+La tabla de probabilidades cumple con la interfaz requerida por el \textit{Aritmético}:
+\begin{enumerate}
+\item \textit{iterator()}: Permite iterar la tabla de probabilidades obteniendo en cada paso una tupla conteniendo un \textit{SuperChar} y un Double correspondiente a la probabilidad de ese símbolo. El iterador será recorrido de manera que los símbolos más probables sean obtenidos primero, y, a igual probabilidad, se utilizará como criterio el valor entero del SuperChar (en el caso de SuperChars representando letras esto significará el uso del orden alfabético). La excepción a la regla de recorrida mencionada es \textit{ESC} que en caso de existir en la tabla será devuelto siempre al final, cualquiera sea su probabilidad.
+\item \textit{getNumberOfChars()}: Permite obtener el número total de símbolos en la tabla.
+\item \textit{countCharsWithProbabilityUnder()}: Este método, junto con el anterior, permite responder a un problema posible del aritmético\footnote{El aritmético debe garantizar que todos los símbolos tengan al menos una posición en el rango. Pero a veces, cuando varios símbolos tienen probabilidad muy baja y se encuentran en posiciones contiguas podría provocar que se les asigne a ambos el mismo intervalo (esto es debido a un problema de precisión). Lo que hace el aritmético para solucionarlo es calcular la probabilidad mínima para que a un símbolo le corresponda una posición del rango. Luego, con esa probabilidad mínima pide a la tabla de probabilidades la cantidad de símbolos con una probabilidad por debajo de ella. Esa cantidad la utiliza el aritmético para achicar el rango utilizado para calcular la cantidad de posiciones correspondientes a cada símbolo. Luego en las posiciones que restringió anteriormente pondrá los símbolos que estaban por debajo de la probabilidad mínima. La reducción del rango debe hacerse (repetirse) hasta que la cantidad de símbolos bajo la probabilidad mínima se ''estabilice'' (puesto que por cada reducción de rango la probabilidad mínima se hace mayor)}. El método devuelve la cantidad de símbolos dentro de la tabla con una probabilidad inferior a la pasada.
+\end{enumerate}
+
+\subsection{Implementación de ProbabilityTable}
+
+\begin{figure}[!htp]
+\centering
+\makebox[\textwidth]{\includegraphics[scale=0.5,natwidth=20pt,natheight=10pt,width=0.55\textwidth]{img/ProbabilityTable.png}}
+\caption{ProbabilityTable}
+\end{figure}
+
+La implementación de \textit{ProbabilityTable} fue realizada mediante la representación de las frecuencias.
+
+La clase \textit{ProbabilityTableByFrecuencies} tiene:
+\begin{enumerate}
+\item Dos \textit{SuperChar} correspondientes a un rango (los SuperChar son el mínimo y el máximo). Todos los símbolos de este rango, que no estén incluidos en los items siguientes, tienen una frecuencia de 1.
+\item Un Set (conjunto, sin repeticiones [de SuperChar]) ordenado de tuplas formadas por un \textit{SuperChar} y un Long correspondiente a la frecuencia, llamado \textit{frequenciesTable}. El criterio de ordenamiento es: primero por frecuencia descendente, y a igual frecuencia por orden de \textit{SuperChar}. Esto permite recorrerlo secuencialmente usando este orden y encontrar subconjuntos con menos de cierta frecuencia. Pero no permite buscar, sin hacer una recorrida secuencial, un determinado SuperChar. Para solucionar esto, se tiene otra estructura: un Mapa cuya clave es un SuperChar y cuyo valor es una tupla de SuperChar y Long, siendo el SuperChar de la tupla el mismo que el de la clave; esta estructura se llama \textit{frequenciesTableIndex}. Las tuplas correspondientes a los valores de \textit{frequenciesTableIndex} son las mismas que están contenidas en el Set \textit{frequenciesTable}.
+\item Un Set (conjunto, sin repeticiones) sin orden de \textit{SuperChar} llamado \textit{excluded}. Los SuperChar contenidos en esta estructura no son contabilizados a la hora de calcular las probabilidades o de recorrer los elementos.
+\item La sumatoria total de frecuencias de los items (se contemplan rango y excluidos). Usado para calcular la probabilidad de un símbolo.
+\end{enumerate}
+
+Con estas estructuras, y algunos métodos explicados a continuación, puede lograrse la implementación de la interface \textit{ProbabilityTable} para los diferentes casos requeridos por los compresores de manera muy rápida y eficiente.
+
+A los métodos definidos por la interface \textit{ProbabilityTable}, esta implementación agrega los siguientes:
+\begin{enumerate}
+\item \textit{addOcurrence()}: Agrega 1 a la frecuencia de un símbolo.
+\item \textit{getCharacters()}: Obtiene los símbolos contenidos dentro de \textit{frequenciesTableIndex}. Necesario para que PPMC pueda obtener la lista de exclusión para un modelo de orden inferior.
+\item \textit{setExcludedSet()}: Establece una nueva lista de exclusión. Usado por los órdenes 0-4 de PPMC.
+\item \textit{addToExcludedSet()}: Agrega un símbolo al Set \textit{excluded}. Se hace notar que si nunca se llama a \textit{setExcludedSet()} se arranca con un Set vacio. Esto es útil para el orden -1 de PPMC.
+\end{enumerate}
+
+Además el constructor recibe el \textit{lowestSuperChar} y el \textit{highestSuperChar}, con lo que se establece el rango de SuperChars que tienen frecuencia inicial 1.

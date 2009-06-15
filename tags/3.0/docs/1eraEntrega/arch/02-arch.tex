@@ -1,0 +1,27 @@
+\section{Arquitectura del Sistema}
+
+Se busco encontrar una solución general, siempre que fuera posible, a los problemas particulares planteados. Para ello en primer lugar se dividió el problema principal en varios subproblemas de alcance acotado.
+
+\subsection{Módulos}
+
+Se definieron entonces los siguientes módulos:
+\begin{itemize}
+\item Parser: Se encarga de la normalización del texto y extracción de las diferentes palabras. Es utilizado por el programa principal, pidiéndole el listado de palabras normalizadas de un archivo.
+\item AudioService: Abstracción de las clases de manejo de audio proporcionada por la materia. Se incluye un InputStream para proporcionar a la biblioteca de audio que facilita la serializacion de ese InputStream. Es utilizado por el programa principal para la obtención y reproducción de audios.
+\item Buffers: Permiten el intercambio de datos con los archivos, funcionando como una memoria temporal donde se acumulan los datos leidos y los que se van a escribir. Son utilizados por el FileManager como herramienta para la lectura y escritura de datos en conjunto con los serializadores. Es la herramienta de intercambio de datos entre el FileManager y los Serializadores.
+\item Serializers: permiten realizar la transformación de los datos hacia un tipo unificado que pueda ser almacenado en los archivos y su posterior recuperación. Brinda una interfaz unificada para que el FileManager pueda realizar la conversión de los datos recibidos. Intercambia los datos con el FileManager mediante el uso de Buffers. Se hicieron implementaciones genéricas (para los datos primitivos) e implementaciones customizadas para nuestros registros que usan auxiliarmente a las genéricas.
+\item FileManager: Manejador de archivos de registros de longitud variable en bloques. Es una implementación generica que se customiza indicando el tamaño de los bloques y el serializador a usar. Permite el encadenado de bloques de manera tal que un registro serializado que exceda un bloque pueda ser guardado. Utiliza auxiliarmente a los Buffers para la acumulación de datos desde y hacia los archivos y para la interacción con los serializadores.
+\item PersistenceService: Es, principalmente, una customización (dos en realidad) del FileManager para la interacción con los archivos de los requerimientos; esta customización implica la definición de los serializadores (dos también) adecuados para los registros a usar. Además provee herramientas al principal para la realización a un nivel más alto de las acciones con los archivos requeridas.
+\end{itemize}
+
+\begin{figure}[!htp]
+	\begin{center}
+		\includegraphics[scale=0.60,natwidth=512pt, natheight=163pt]{img/Componentes.png}
+	\end{center}
+	\caption{Diagrama de \textbf{Módulos}} 
+\end{figure}
+
+\subsection{Definición de los datos}
+
+La definición de los datos sigue la propuesta por los requerimientos, con la salvedad de que, dado que se usaron archivos con manejo de bloques, el offset del archivo de palabras fue dividido en dos partes; la primera indica el número de bloque que almacena el sonido correspondiente; la segunda, el número de objeto dentro de ese bloque.
+Físicamente, los bloques contienen información de control extra para el encadenamiento de bloques ya mencionado, pero esto se explica mejor en la sección correspondiente al FileManager

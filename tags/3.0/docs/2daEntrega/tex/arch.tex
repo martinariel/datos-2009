@@ -1,0 +1,140 @@
+\section{Arquitectura}
+
+El Main será simplemente una vista de WordService que es el backend de la aplicación y quien brinda todos los servicios a la vista. Estos servicios son:
+\begin{enumerate}
+\item Agregar un Documento.
+\item Realizar una búsqueda.
+\item Reproducir un Documento.
+\end{enumerate}
+
+Veamos la arquitectura parte por parte. Pero antes definamos el concepto de Documento, que es común a todas las partes.
+
+\subsection{Documento}
+
+Es una interfaz que permite manejar un documento obteniendo de él renglones.
+Posee tres implementaciones, una que contiene un documento totalmente en memoria, otra que trabaja con un archivo que lee desde disco a medida que va necesitándolo, y otra que trabaja con los documentos prealmacenados que obtiene de forma \textit{lazy}.
+
+Ahora si, veamos la arquitectura de cada una de las partes antes mencionadas.
+
+\subsection{Agregar un Documento}
+
+Se divide en divide en dos grandes partes:
+\begin{enumerate}
+\item Agregarlo al indice.
+\item Agregarlo al diccionario de sonidos.
+\end{enumerate}
+
+Existe una característica en común entre estas dos partes: el parseo. Es por eso que la arquitectura se definió de tal forma que el parseo se haga en una sola oportunidad como se mostrará luego (esto tiene una pequeña consecuencia que se mencionará al explicar la adición al diccionario de sonidos).
+
+\subsubsection{Agregar un Documento al indice}
+
+
+Quien se encarga de realizar esto es el \textit{Crawler}, quien recibirá un \textit{Documento}. En primer lugar le pasa el documento al \textit{Parser} que lo utilizará como fuente para datos.
+
+El Parser permite manejar un documento en forma de \textit{Frases}, entendiendo por tal a un conjunto de palabras separadas por un signo de puntuación (\textit{'.', ',', ';', '?', '!'}, etc.). A estas frases les aplicará un reemplazo de símbolos diacríticos, retiro de símbolos extraños, símbolos numéricos, etc, y case folding, obteniendo por resultado una lista de palabras limpia. De esta manera el \textit{Crawler} puede obtener \textit{Frases} limpias desde el parser al que inicialmente le pasa el documento como fuente.
+
+La colección de palabras obtenida será procesada por el módulo \textit{StopWords Discriminator}, cuya implementación tendrá un listado en memoria (que levanta al iniciar la aplicación desde un archivo) de frases y de palabras sueltas que son stop words para hacer el procesamiento.
+
+El \textit{Crawler} obtiene del \textit{StopWords Discriminator} una colección (ordenada o desordenada, no importa, pero con repeticiones, si importa) de palabras que no contienen stop words. Esta colección (correspondiente a una sola \textit{Frase}) le será entregada al \textit{Indexer}.
+
+El \textit{Indexer} es la interfaz utilizada para acceder al índice (un \textit{Árbol b\#}) (también podría haberselo llamado Index en vez de Indexer). El \textit{Crawler} maneja una session con el \textit{Indexer}, que comienza al procesar un \textit{Documento} y termina al agregar la última \textit{Frase} (cuando el \textit{Parser} deja de brindarle datos). El \textit{Indexer} parametriza un \textit{BTree\#}, un módulo que maneja un árbol b\# de manera genérica. El \textit{Indexer} a su vez maneja una session idéntica a la que tiene con el \textit{Crawler} con el módulo \textit{Inversion Sort Handler}, y solo agregará las palabras al árbol una vez que el \textit{Crawler} finalice la session con el \textit{Indexer}.
+
+El \textit{BTree\#} es una implementación genérica de árbol b\# que utiliza 2 archivos, uno para nodos internos y otro para hojas, y que maneja una equiparación entre nodos y bloques. Utiliza el \textit{VariableLengthFileManager} en su implementación en disco. Debe ser parametrizado con una \textit{Key} (clave de los nodos internos) y un \textit{Element} (registro de las hojas que contiene entre otras cosas a la clave). Este \textit{Element} se definirá de tal manera que tenga el listado de \textit{Documentos} en su interior; este listado de \textit{Documentos} se implementará utilizado el \textit{VariableLengthFileManager}. No se muestra a \textit{Key} ni a \textit{Element}, ni al archivo del listado de \textit{Documentos} en el diagrama por simplificación. Además deben brindarse los \textit{Serializer} correspondientes a una colección ordenada de \textit{Keys} y de \textit{Elements} para parametrizar al \textit{BTree\#}.
+
+Las sessiones mencionadas (entre el \textit{Crawler} y \textit{Indexer}, y entre el \textit{Indexer} y el \textit{Inversion Sort Handler}) sirven para evitar tener un documento completo en memoria.
+
+Al mismo tiempo que el \textit{Crawler} va procesando las frases, va a agregando todas las palabras encontradas en un Set (conjunto sin repeticiones), de esta manera obtiene el vocabulario completo. Ese Set será devuelto al \textit{WordService} como respuesta al pedido de indexar un documento.
+
+\subsubsection{Agregar un Documento al diccionario de sonidos}
+
+Como puede adivinarse, el vocabulario completo obtenido al agregar un docuemento al índice es la entrada usada para realizar el agregado al diccionario de sonidos. Esto tiene como consecuencia que el agregado de sonidos será en distinto orden al original del documento. Pero tiene como ventaja el no tener que procesar dos veces el documento por el \textit{Parser} (y a no tener que leerlo de nuevo desde disco si es que no se lo quiere tener completo en memoria como planteamos antes).
+
+El módulo usado para esta acción es el llamado \textit{WordsRecorder}.
+
+Si bien se modificó levemente la interacción entre los módulos, la arquitectura es básicamente la misma que para la entrega 1, y la interacción entre módulos puede verse claramente en el esquema.
+
+La única gran modificación consiste en el reemplazo del "índice secuencial de sonidos" por un \textit{Trie}, que utiliza para su implementación un \textit{VariableLengthFileManager}.
+
+\subsection{Realizar una Búsqueda}
+
+Esta acción es responsabilidad del \textit{Search Engine}. Para hacerlo primero debe limpiar la cadena de búsqueda, para lo cual interactura con el \textit{Parser} y con el \textit{StopWords Discriminator}.
+Una vez que tiene la consulta limpia, realiza la búsqueda utilizando el \textit{Indexer}, que a su vez utilizará el \textit{BTree\#}.
+
+El \textit{SearchEngine} realiza las operaciones de ordenado necesarias y devuelve un listado ordenado de \textit{documentos}.
+
+\subsection{Reproducir un Documento}
+
+La reproducción la realizará el \textit{DocumentPlayer}, que recibirá un \textit{Documento} que deberá parsear utilizando el \textit{Parser}. A medida que va obteniendo las palabras correspondientes las irá reproduciendo delegando toda la complejidad en el \textit{WordsPlayer}.
+
+El \textit{WordsPlayer} es la contrapartida del \textit{WordsRecorder} explicado antes, y su arquitectura es coincidente con la de este.
+
+\subsection{VariableLengtFileManager - Archivo de registros de longitud variable en bloques}
+El \textit{VariableLengthFileManager} que ya existía en la entrega anterior, ahora permite actualizaciones de los registros.
+Recordemos que el \textit{Address} en este archivo consta de dos partes. La primera el bloque donde se encuentra el registro y la segunda el número de objeto que representa el registro. Ahora bien, si una actualización de un registro aumentara el tamaño del mismo y esto hiciera que la suma de los tamaños de los registros que se encuentran en dicho bloque excediera el tamaño del bloque hay que hacer una reestructuración de los datos. Existen varias alternativas para ello:
+\begin{enumerate}
+\item Tomar como política de reestructuración la decisión de sólo mover los objetos del final que excedan a la capacidad del bloque. Este es, para nuestro caso, impracticable ya que implicaría actualizar todos los datos que tuvieran referencias a dichos objetos. 
+\item Quitar únicamente al objeto que se está actualizando en dicho momento. Esto pareciera traer el mismo inconveniente, ya que al hacer esto, las direcciones de los subsiguientes registros también se verían modificadas porque en el bloque existe un objeto menos y el conteo quedaría diferido en uno (es decir, que si quité el registro cuyo número de objeto 2 el siguiente, con número de objeto 3, pasaría a ser el objeto numero 2). 
+\end{enumerate}
+Entonces, para aplicar la segunda opción se debe evitar que los objetos siguientes al modificado mantengan su lugar en la lista. Así fue que se introdujo el concepto de \textbf{nullObject}.
+
+\subsubsection{NullObject}
+El \textbf{nullObject} es el encargado de ocupar el lugar que originalmente ocupaba un objeto que se encontraba compartiendo un bloque con otros registros y que, luego de su actualización, provocó un desborde del bloque.
+Ahora bien, recordemos que los objetos se encuentran serializados, y que la manera de rehidratandos es para todos la misma. Por lo cual necesitamos que los serializadores puedan hidratar \textbf{nullObject} sin intervención de un proceso de verificación, ni tener que estar agregando metadata listando los objetos que fueron retirados del bloque. Para ello se extendió la interfaz \textit{Serializer} a una nueva llamada \textit{NullableSerializer} la cual indica que dicho serializador puede serializar e hidratar \textbf{nullObjects}. 
+Todas nuestras implementaciones del NullObject se corresponden al valor \textbf{null} de Java, pero no tiene por qué ser así. El requisito es que el método \textit{NullableSerializer\#dehydriateNull} modifique el Buffer de salida con, a lo sumo, el mínimo tamaño de serialización de los objetos no nulos y que además, claro está, el \textit{NullableSerializer\#hydrate} pueda interpretar esa información como un objeto mas (o la referencia \textbf{null}). Este requisito de máximo tamaño para la serialización del \textbf{nullObject} se debe a que este objeto debe terminar ocupando menos que el objeto que lo que ocupaba el objeto a reemplazar antes de intentar ser modificado por el nuevo objeto. De esta manera, sabemos que, al quitarlo, los registros restantes y el \textbf{nullObject} van a caber en el bloque.
+
+\subsubsection{Resultado final}
+Finalmente las actualizaciones quedan de la siguiente manera y se distinguen tres casos de \textbf{desborde}:
+\begin{enumerate}
+\item Actualización de un registro que se encuentra solo en un bloque
+\item Actualización de un registro que se encuentra como último registro del bloque
+\item Actualización de un registro que no se encuentra como último registro del bloque
+\end{enumerate}
+
+\paragraph{Actualización de un registro que se encuentra solo en un bloque}
+
+Este caso es el mas sencillo, ya que el registro está solo y puede extenderse a múltiples bloques. Esto está solucionado en los \textit{writers}, que agregarán la metadata necesaria para asociar los bloques como si fueran uno solo. De manera que los \textit{readers} puedan leer toda la información en conjunto. \footnote{En este caso la dirección del objeto NUNCA cambia}
+
+\paragraph{Actualización de un registro que se encuentra como último registro del bloque}
+
+Este caso es el que le sigue en simplicidad. No requiere tampoco la intervención de los \textbf{nullObjects}, solamente se retira el objeto del bloque y se lo hace ingresar nuevamente al archivo como una inserción. Esto nos devuelve una dirección que es la que se retorna como resultado de la actualización del registro para que el que solicitó la actualización modifique las referencias que poseía hacia el registro.
+
+\paragraph{Actualización de un registro que no se encuentra como último registro del bloque}
+
+Al igual que en el caso anterior, se retira el objeto que se está actualizando, pero esta vez se lo reemplaza por un \textbf{nullObject}. Nuevamente se procede al agregado del objeto al archivo por medio de una inserción que nos devolverá la nueva dirección del objeto que será enviada al que solicitó la actualización para que pueda actualizar todas las referencias que posee al objeto. Vemos que gracias a este concepto (\textbf{nullObject}) los casos quedaron todos similares y sin gran complejidad.
+
+\paragraph{Análisis de ventajas y desventajas}
+
+Esta solución permite que, a lo sumo, un único registro modifique su dirección y que dicho registro sea el que se solicitó actualizar, lo que nos garantiza que es un dato con el que se está trabajando y que su \textit{Address} puede ser modificado donde sea pertinente. 
+
+La desventaja que parece tener es que los bloques se empiezan a llenar con datos que no nos interesa almacenar (los \textbf{nullObjects}). Para evitar esto se pueden implementar políticas de reorganización de bloques. ¿Cómo sería esto? Bueno, a simple vista se puede observar que si tengo que retirar el registro que se encuentra en la última posicisión del bloque todos los nullObjects anteriores (hasta encontrar un objeto que no lo sea) pueden ser también retirados del bloque, ganando, de esta manera, mas espacio para los otros registros que se encuentran en el bloque y que será utilizado cuando dichos registros necesiten expandirse. Finalmente, cuando se actualice el último de los registros reales restantes en el bloque (es decir, el registro que se encuentra en un bloque donde, excluyéndolo a él mismo, en el bloque solo hay \textbf{nullObjects}) este puede retirar todas esas referencias a nullObjects quedando como único propietario del bloque. \footnote{Si bien estas políticas no se encuentran implementadas, debido a falta de tiempo, son facilmente implementables y otorgan un mayor aprovechamiento del espacio reduciendo la fragmentación interna}
+
+\subsection{StraightVariableLengthFile - Archivo de registros de longitud variable sin bloques}
+
+Se agregó una forma mas de persistencia en archivos \textit{StraightVariableLengthFile}. Esta implementación de archivo basa su funcionamiento en los mismos lineamientos que el \textit{VariableLengthFileManager} en la primera parte, exceptuando que no trabaja por bloques. Por lo cual cada registro es serializado a continuación del último. Para recuperar un registro ya almacenado se recibe el \textit{Address} (que en este caso corresponde únicamente a un Offset y que fue entregado por el \textit{StraightVariableLengthFile} al momento de agregarse dicho registro) y se utiliza el Serializador con que fue configurado para hidratar el registro que luego es devuelto al usuario. Las ventajas de esta implementación, respecto a la de por bloques, es que los archivos quedan mas densos y no requiere meta data dentro del archivo (mas allá de la que requiera la serialización, la cual es independiente de la implementación del archivo).
+
+Quedó pendiente, como idea, permitirle al usuario de ambos tipos de archivos (con y sin bloques) que posea una sección con datos reservados (al estilo meta-data) que puedan serializarse de manera diferente que el común de los registros. Observamos que esto sería útil en numerosos casos. Como simples ejemplos, si quisiera almacenar la cantidad de registros en el léxico, si quisiera guardar en árbol el nombre para el archivo de hojas, etc. Si bien, nuestros casos los resolvimos implementando serializadores con estado a los que se le indicaba que tipo de dato esperaban recibir, entendemos que esta configuración complica algo que en concepto es mas sencillo.
+
+\subsection{Otros datos relevantes de la arquitectura}
+
+Se incorporó la abstracción \textit{StraightVariableLengthFile} para el archivo de sonidos (que antes era un \textit{VariableLengthFileManager}) por lo que ahora el archivo correspondiente es 100\% denso. 
+
+El \textit{VariableLengthFileManager} posee dos implementaciones, una que maneja caché de bloques y la otra que no. La primera se usa en casos como el trie ya que todos los registros poseen un mismo serializador (recordemos que el trie está implementado en dos archivos) y la segunda es utilizada en el árbol, ya que la forma de los registros almacenados en los archivos varía durante la vida del árbol y esto fuerza al uso de un serializador mas dependiente del árbol y esto complica el manejo del caché.
+
+\begin{figure}[!htp]
+\centering
+\makebox[\textwidth]{\includegraphics[scale=0.4,natwidth=20pt,natheight=10pt]{img/Arch2daEntrega.png}}
+\caption{Arquitectura VariableLengthFileManager} 
+\end{figure}
+
+\begin{figure}[!htp]
+\centering
+\makebox[\textwidth]{\includegraphics[scale=0.5,natwidth=20pt,natheight=10pt]{img/VariableLengthFileManager.png}}
+\caption{Arquitectura VariableLengthFileManager}
+\end{figure}
+
+\begin{figure}[!htp]
+\centering
+\makebox[\textwidth]{\includegraphics[scale=0.5,natwidth=20pt,natheight=10pt]{img/StraightVariableLengthFile.png}}
+\caption{Arquitectura StraightVariableLengthFile}
+\end{figure}
+

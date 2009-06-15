@@ -1,0 +1,144 @@
+\section{Diccionario de Palabras: Trie}
+Para esta entrega, las palabras del diccionario fueron almacenadas en un Trie de profundidad parametrizable (por defecto 4). 
+Esta estructura presenta una cualidad importante en nuestro contexto que es la optimización de las busquedas de claves. 
+La búsqueda de una clave de longitud $n$ tendrá en el peor de los casos un orden de $O(m)$.
+
+No se explicarán aquí todos los detalles específicos de la estructura del Trie, sino que se hará referencia a alguno de
+los detalles conceptualmente más importantes de la implementación para este trabajo. \footnote{Puede encontrarse más
+información en http://es.wikipedia.org/wiki/Trie}
+
+\subsection{Implementación en Disco}
+A pesar de la estructura relativamente simple del Trie, este ocupa un tamaño considerable cuando se trata de almacenarlo
+en disco por completo. La estructura en sí no impone ninguna limitación sobre la cantidad de niveles que deba tener el
+Trie, y este es un factor importante a tener en cuenta cuando la implementación se hace en disco.
+
+\paragraph{Profundidad del Trie}
+Limitar la profundidad de niveles reduce el espacio necesario para almacenar el Trie, y generalmente es un requisito
+de la implementación en disco. Como consecuencia de la limitación de niveles, el Trie pierde (en parte) su gran ventaja
+que es la rapidez de las busquedas de claves. Esto puede verse claramente pensando que, al buscar una clave de longitud
+mayor a N (siendo N la cantidad de niveles), solo se podrá bajar hasta el último nivel y luego se deberá hacer una 
+busqueda secuencial (o binaria si se mantienen ordenadas) sobre el resto de las claves que compartan los mismas N primeros caracteres.
+
+Considerando este problema, debemos encontrar una solución de compromiso entre el espacio necesario para almacenar el
+Trie y la rapidez de la busqueda de clavez que proporcionará. Usualmente, limitando la cantidad de niveles a un valor 
+entre 4 y 6, se logra una solución bastante equilibrada.
+
+\paragraph{Nodos Hojas: Cantidad de registros}
+Otro problema que surge de la limitación de la cantidad de niveles del Trie es la cantidad de registros que se necesitan
+almacenar en los nodos hojas.
+
+Debido a que muchas claves pueden tener en comun los primero caracteres, algunos nodos hojas pueden tener una cantidad
+elevada de registros con terminaciones de claves, lo cual limita la posibilidad de levantar el nodo completo en memoria.
+Para este problema se diseño una solución que explicaremos más adelante.
+
+\subsection{Diseño del Trie genérico}
+Se intentó realizar una implementación genérica del Trie. Para logra este objetivo, fue necesario definir interfaces 
+extras que permitan trabajar con distintos tipos de datos.
+
+\paragraph{Definición de Entidades}
+
+Las entidades básicas son Element, Key y KeyAtom:
+
+\begin{verbatim}
+Elemento (Element):
+  Es el elemento (o dato) que almacena el Trie.
+
+Clave (Key):
+  Es la clave mediante la cual se recorre el Trie. No necesariamente 
+  debe ser una cadena de caractéres.
+
+Porción de Clave (KeyAtom):
+  Cada clave se divide en porciones ordenadas que se almacenan en 
+  cada nivel. No necesariamente tiene que ser un caracter ya que 
+  la clave podría dividirse en más de un caracteres. 
+\end{verbatim}
+
+Luego las entidades que le dan al Trie su estructura, InternalNode, LeafNode y NodeReference:
+
+\begin{verbatim}
+Referencia a Nodo (NodeReference): 
+  Representa una referencia a un nodo (nodo hijo). Contiene 
+  la dirección del nodo y la porción de clave del nodo hijo.
+  
+Nodo Interno (InternalNode):      
+  Representa un nodo que no es hoja. Puede tener un dato si se
+  agrega una clave que sea mas corta que la cantidad de niveles.
+  
+Nodo Hoja (LeafNode):
+  Este nodo puede contener varios elementos ya que puede haber
+  varios elementos cuya clave tengan el mismo comienzo. 
+\end{verbatim}
+
+\paragraph{Nodos}
+Si no fuera por la limitación de niveles, muy probablemente no sería necesario hacer una diferenciación entre nodo
+interno y nodo hoja. Sin embargo, en nuestro caso, los nodos hojas \textbf{nunca} contienen referencia a nodos hijos. 
+
+\begin{figure}[!htp]
+	\begin{center}
+		\includegraphics[scale=0.5,natwidth=20pt,natheight=10pt]{img/trie_simple.png}
+	\end{center}
+	\caption{Relaciones entre Nodos (Ej: Mariana,Marcos,Mario,Mabel)}
+\end{figure}
+
+\newpage
+
+De la figura se puede prever que un nodo hoja podría eventualmente tener muchas terminaciones de claves (Mariana, Marcos,
+Marcelo, Martes, Marciano, Mariano, Mario, etc). Si suponemos un numero considerable como 50 o 100 elementos en un nodo 
+hoja, ya no podemos considerar que el nodo este por completo en memoria. 
+
+Para solucionar este problema, se decidió tratar a los nodos hojas con \textbf{particiones}. En vez de tener una entidad que 
+represente un nodo hoja, se tiene una entidad que representa una parte de ese nodo hoja. De esta manera podemos levantar
+a memoria, partes del nodo hoja y no el nodo completo.
+
+Definimos entonces el concepto de \textbf{Partición de Nodo Hoja} \textbf{(LeafPartitionNode)}, el cual puede contener 
+adentro una cantidad fija de registros. \footnote{Actualmente utilizamos una cantidad de 10 registros por partición.}
+
+\begin{figure}[!htp]
+	\begin{center}
+		\includegraphics[scale=0.5,natwidth=20pt,natheight=10pt]{img/trie_particion.png}
+	\end{center}
+	\caption{Relaciones entre Nodos Internos y Nodos Hojas} 
+\end{figure}
+
+\paragraph{Clave y Elemento}
+Se implementaron clases particulares para la clave y el elemento. Para la clave se utilizo un StringKey, y en nuestro 
+caso el elemento es el offset en el archivo de audio. Las KeyAtom, en nuestro caso son caracteres individuales.
+Con lo cual donde corresponda \textbf{KeyAtom} se usará un \textbf{char} y en donde corresponda \textbf{Element} se 
+usará un \textbf{long}.
+
+\subsection{Diseño de Datos}
+Teniendo en claro las entidades involucradas en la estructura del Trie, se realizó un diseño de los datos que serían
+necesarios almacenar.
+
+\begin{verbatim}
+Nodo Interno: nivel, elemento (o dato), lista de referencias
+Referencia a Nodo: porción de clave, lista de direcciones
+Particion de Nodo Hoja: resto de la clave, elemento (o dato)
+\end{verbatim}
+
+Se implementaron dos archivos, ambos con \textbf{registros de longitud variable en bloques}, uno para los nodos registros
+de los nodos internos y otro para los de nodos hojas.
+
+\paragraph{Diseño Conceptual de Datos}
+Se realizó un diseño conceptual de datos para los registros:
+\begin{verbatim}
+Arhivo de nodos internos:
+NodoInterno((nivel)1, (dato)?, referencia a nodo(porcion clave,
+direccion((nro bloque)1, (nro objeto)1)*1 )*)
+
+Archivo de nodos hojas:
+ParticionNodoHoja( (resto clave((porcion clave)*))1, (dato)1 )
+\end{verbatim}
+
+\paragraph{Diseño Lógico de Datos}
+Se realizó un diseño lógico de datos para los registros:
+\begin{verbatim}
+Arhivo de nodos internos:
+NodoInterno(nivel:Short, dato:Elemento, (porcion clave:KeyAtom, 
+direccion(nro bloque:Long, nro objeto:Short)))
+
+Archivo de nodos hojas:
+ParticionNodoHoja(Cant de KeyAtom en resto de clave:Short, 
+(porcion clave:KeyAtom), dato:Long)
+\end{verbatim}
+

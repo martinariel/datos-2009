@@ -1,0 +1,36 @@
+\section{SearchEngine: Queries}
+
+El \textit{SearchEngine} es el módulo encargado de resolver las búsquedas en el sistema. Debe recibir la búsqueda y devolver los n documentos más relevantes (con mayor \textit{similitud} a la consulta).
+
+Los requerimientos solicitaban que las consultas fueran resultas de un único modo, pero se penso en una implementación que pudiese ser expandida con otras formas de resolver la consulta.
+
+
+En primer lugar se cuenta con la interface SearchEngine, con un método que recibe la consulta en forma de \textit{Document}. Como respuesta, de una invocación a dicho método se obtendrá una lista formada por la unión de un documento y su similitud con la consulta, ordenada por similitud con la consulta.
+
+La implementación de SearchEngine delega la resolución de la consulta (a saber: obtener los términos relevantes y realizar las operaciones necesarias para obtener los documentos más relevantes) en otra interface llamada \textit{QueryResolver}. La implementación de SearchEngine solo se encarga de interactuar con el \textit{Indexer} para obtener los datos de indexación correspondientes a los términos de la consulta; y de obtener, luego de resulta la consulta, los documentos correspondientes a su offset.
+
+Es \textit{QueryResolver} la interface usada para, a través de sus implementaciones, permitir esa expansión del comportamiento en la forma de resolver una consulta mencionada anteriormente. Actualmente solo existe una implementación de esta interface, pero luego podría implementarse otra vez para que resuelva, por ejemplo, consultas con términos especiales (AND, OR, NOT, etc.).
+
+\begin{figure}[!htp]
+\centering
+\makebox[\textwidth]{\includegraphics[scale=0.5,natwidth=20pt,natheight=10pt]{img/SearchEngine.png}}
+\caption{Search Engine} 
+\end{figure}
+
+\subsection{Detalles de implementación}
+
+SearchEngine pasa el Documento representando la consulta a QueryResolver quien devuelve como respuesta los términos de la consulta. Para ello QueryResolver utiliza el \textit{Parser} y el \textit{StopWordsDiscriminator} de la misma manera en que fue utilizado por el \textit{Crawler} (NOTA: En una implementación alternativa, como se mencionó antes, además debería sacar los términos como OR, AND, etc.).
+
+Luego SearchEngine busca cada uno de los términos en el Indexer obteniendo como resultado los datos de indexación de cada término.
+
+SearchEngine pasa estos datos de indexación al QueryResolver, junto con el document representando la consulta, que los utiliza para calcular la similitud entre la consulta y los documentos que figuran entre los datos de indexación. Para ello el QueryResolver obtiene para cada término las listas del par OffsetDocumento-CantidadDeApariciones y usándolas, junto con la cantidad de documentos en que aparece el término y la cantidad de términos totales, calcula el peso de cada término en cada documento. Las estructuras pedidas e implementadas no permiten calcular la normalización de estos pesos (al menos no sin hacer CONSIDERABLES cálculos y lecturas en disco) por lo que estos pesos no están normalizados. Con estos pesos se calcula la similitud entre cada documento y la consulta, permitiendo obtener los offset de los documentos más relevantes.
+(NOTA: En una implementación alternativa, como se mencionó antes, además deberían hacerse las operaciones de conjunto necesarias para resolver consultas que usen OR, AND, etc.)
+
+El no poder normalizar los pesos nos obligó a tener que traer todas las listas de todos los términos, no pudiendo adoptar una política de descartar ciertos términos en base a su peso global y el máximo número de apariciones del término en un documento.
+
+Por último, SearchEngine utiliza la DocumentLibrary para obtener los documentos correspondientes a los Offsets más relevantes (NOTA: Esto se hace usando un \textit{DocumentFromDocumentLibrary} que trabaja en forma lazy, no trayendo realmente el documento hasta que sea utilizado por primera vez).
+
+Se destaca que las similitudes no tendrán un valor entre 0 y 1 como se esperaría normalmente; esto es debido, nuevamente, a la falta de normalización de los pesos.
+
+
+
