@@ -71,7 +71,7 @@ Implementando los compresores de esta manera obtuvimos la ventaja de no tener qu
 
 \begin{figure}[!htp]
 \centering
-\makebox[\textwidth]{\includegraphics[scale=0.5,natwidth=20pt,natheight=10pt]{img/general.png}}
+\makebox[\textwidth]{\includegraphics[scale=0.5,natwidth=20pt,natheight=10pt,width=0.75\textwidth]{img/General.png}}
 	\caption{Diagrama de clases general de la arquitectura}
 \end{figure}
 
@@ -90,6 +90,6 @@ Finalmente tenemos 2 serializadores distintos para comprimir los documentos (LZP
 
 Algo para destacar, común a todos los compresores, es que por consigna/requisito del TP debe utilizarse un alfabeto de 16 bits (y en lzp longitudes de 16 bits). Pero los textos que utiliza como entrada el programa utilizan una codificación de 8 bits (ISO8859-1). Y la codificación más utilizada (UTF-8) también lo hace. Esto provoca que en textos cortos o medianos la compresión genere una salida de mayor tamaño que el texto original. Nos planteamos tomar desde disco los caracteres de a dos, manejándolos como ''raw'', generando un caracter de fantasia de 16 bits, pero haciendo esto hubiesemos perdido la ventaja de usar PPMC y LZP que son compresores pensados para trabajar con texto de lenguaje natural.
 
-Los documentos, por facilidad, se trataron en memoria, pero también estuvo el planteo de volcarlos a archivos de trabajo y hacer lecturas de dicha información cuando fuera requerida. Si bien tiene la ventaja de reducir la memoria consumida incrementan las lecturas a disco y teniendo casos como el LZP que requiere la relectura de información pasada podría, si no se implementa algún caché de lectura, ralentizar el proceso.
+Los documentos, por facilidad, se trataron en memoria, pero también estuvo el planteo de volcarlos a archivos de trabajo y hacer lecturas de dicha información cuando fuera requerida. Si bien tiene la ventaja de reducir la memoria consumida incrementan las lecturas a disco que se verían muy perjudicados los algoritmos que acceden a muchas posiciones distintas como es el caso del LZP que requiere la relectura de información pasada podría. Para solucionar esto habría que implementar algún caché de lectura para evitar ralentizar el proceso.
 
 \end{document}

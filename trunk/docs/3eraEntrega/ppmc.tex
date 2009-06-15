@@ -4,6 +4,12 @@ Como en los demás compresores implementados, se realizó una separación entre el 
 Las clases y las interfaces son relativamente simples. Existe sin embargo funcionalidad exactamente igual en ambos, 
 con lo cual algunas cosas se generalizaron.
 
+\begin{figure}[!htp]
+\centering
+\makebox[\textwidth]{\includegraphics[scale=0.5,natwidth=20pt,natheight=10pt,width=0.70\textwidth]{img/PPMC.png}}
+	\caption{Diagrama de clases general de la arquitectura}
+\end{figure}
+
 \subsection{Compresor PPMC}
 Se crea un compresor indicando el orden a utilizar (hasta 4) y opcionalmente puede recibir un PrintStream en el que irá
 logueando información de debugging que puede ser útil (que se está emitiendo en cada caso, y como quedan los contextos).
